@@ -1,0 +1,74 @@
+'use client'
+import { useAppConfig } from '@/context/AppConfigContext'
+import Link from 'next/link'
+
+const categoryBg: Record<string, string> = {
+  '레드': 'bg-red-50',
+  '화이트': 'bg-amber-50',
+  '로제': 'bg-pink-50',
+  '스파클링': 'bg-blue-50',
+}
+
+export default function FeaturedProduct() {
+  const { config } = useAppConfig()
+  const product =
+    config.products.find(p => p.id === config.featuredWineId) ?? config.products[0]
+
+  if (!product) return null
+
+  return (
+    <section className="bg-[#fef9e4] border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-6 py-20">
+
+        {/* 섹션 헤더 */}
+        <div className="flex items-end justify-between mb-12 border-b border-gray-200 pb-6">
+          <div>
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight">Today&apos;s Top Drop</h2>
+          </div>
+          <Link href="/wines" className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors">
+            전체 보기 →
+          </Link>
+        </div>
+
+        {/* 상품 */}
+        <div className="grid md:grid-cols-2 gap-0 border border-gray-200">
+          {/* 이미지 */}
+          <div className={`${categoryBg[product.category]} flex items-center justify-center py-24`}>
+            {product.imageUrl
+              ? <img src={product.imageUrl} alt={product.name} className="h-64 w-64 object-cover" />
+              : <span className="text-[120px] select-none">🍷</span>
+            }
+          </div>
+
+          {/* 상품 정보 */}
+          <div className="p-10 md:p-14 flex flex-col justify-center border-l border-gray-200">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+              {product.category} &nbsp;·&nbsp; {product.origin}
+            </p>
+            <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">
+              {product.name}
+            </h3>
+            <div className="flex items-center gap-1.5 mb-5">
+              <span className="text-[#F5D623] text-sm">★★★★★</span>
+              <span className="text-gray-500 text-xs font-semibold">{product.rating}</span>
+            </div>
+            <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-sm">
+              {product.description}
+            </p>
+            <p className="text-4xl font-black text-gray-900 mb-8">
+              {product.price.toLocaleString()}<span className="text-lg font-semibold text-gray-400 ml-1">원</span>
+            </p>
+            <div className="flex gap-3">
+              <button className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
+                장바구니 담기
+              </button>
+              <button className="flex-1 border-2 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
+                바로 구매
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
