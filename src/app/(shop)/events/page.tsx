@@ -22,7 +22,7 @@ export default function TopDropPage() {
   if (!product) return null
 
   return (
-    <div className="bg-[#fef9e4] min-h-screen">
+    <div className="bg-white min-h-screen">
 
       {/* 상품 상세 */}
       <div className="max-w-7xl mx-auto px-6 py-16">

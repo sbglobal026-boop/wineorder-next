@@ -2,6 +2,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { Product } from '@/data/products'
+import { compressImage } from '@/lib/compressImage'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -29,14 +30,11 @@ function ProductForm({
     onChange({ ...data, type, category: type === 'food' ? '식품' : '레드' })
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      onChange({ ...data, imageUrl: reader.result as string })
-    }
-    reader.readAsDataURL(file)
+    const compressed = await compressImage(file)
+    onChange({ ...data, imageUrl: compressed })
   }
 
   const removeImage = () => {

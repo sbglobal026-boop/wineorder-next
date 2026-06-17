@@ -26,12 +26,22 @@ export type SectionsConfig = {
   adBanner: boolean
 }
 
+export type BlogPost = {
+  id: number
+  title: string
+  content: string
+  imageUrl?: string
+  createdAt: string
+}
+
 export type AppConfig = {
   featuredWineId: number
   sections: SectionsConfig
   bannerSlides: BannerSlide[]
   adBannerContent: AdBannerContent
   products: Product[]
+  blogPosts: BlogPost[]
+  approvedWriters: string[]
 }
 
 type AppConfigContextType = {
@@ -43,6 +53,11 @@ type AppConfigContextType = {
   updateProduct: (product: Product) => void
   addProduct: (product: Omit<Product, 'id'>) => void
   deleteProduct: (id: number) => void
+  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'>) => void
+  updateBlogPost: (post: BlogPost) => void
+  deleteBlogPost: (id: number) => void
+  approveWriter: (email: string) => void
+  revokeWriter: (email: string) => void
 }
 
 const defaultBannerSlides: BannerSlide[] = [
@@ -90,6 +105,8 @@ const defaultConfig: AppConfig = {
   bannerSlides: defaultBannerSlides,
   adBannerContent: defaultAdBannerContent,
   products: defaultProducts,
+  blogPosts: [],
+  approvedWriters: [],
 }
 
 const AppConfigContext = createContext<AppConfigContextType | null>(null)
@@ -112,6 +129,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         if (!parsed.adBannerContent) {
           parsed.adBannerContent = defaultAdBannerContent
         }
+        if (!parsed.blogPosts) parsed.blogPosts = []
+        if (!parsed.approvedWriters) parsed.approvedWriters = []
         setConfig(parsed)
       } catch {}
     }
@@ -120,7 +139,11 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoaded) return
-    localStorage.setItem('wineorder-config', JSON.stringify(config))
+    try {
+      localStorage.setItem('wineorder-config', JSON.stringify(config))
+    } catch {
+      console.warn('localStorage 용량 초과 — 이미지 크기를 줄여주세요')
+    }
   }, [config, isLoaded])
 
   const setFeaturedWine = (id: number) =>
@@ -161,11 +184,47 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       products: prev.products.filter(p => p.id !== id),
     }))
 
+  const addBlogPost = (post: Omit<BlogPost, 'id' | 'createdAt'>) => {
+    const newId = config.blogPosts.length > 0 ? Math.max(...config.blogPosts.map(p => p.id)) + 1 : 1
+    setConfig(prev => ({
+      ...prev,
+      blogPosts: [{ ...post, id: newId, createdAt: new Date().toISOString() }, ...prev.blogPosts],
+    }))
+  }
+
+  const updateBlogPost = (post: BlogPost) =>
+    setConfig(prev => ({
+      ...prev,
+      blogPosts: prev.blogPosts.map(p => p.id === post.id ? post : p),
+    }))
+
+  const deleteBlogPost = (id: number) =>
+    setConfig(prev => ({
+      ...prev,
+      blogPosts: prev.blogPosts.filter(p => p.id !== id),
+    }))
+
+  const approveWriter = (email: string) =>
+    setConfig(prev => ({
+      ...prev,
+      approvedWriters: prev.approvedWriters.includes(email)
+        ? prev.approvedWriters
+        : [...prev.approvedWriters, email],
+    }))
+
+  const revokeWriter = (email: string) =>
+    setConfig(prev => ({
+      ...prev,
+      approvedWriters: prev.approvedWriters.filter(e => e !== email),
+    }))
+
   return (
     <AppConfigContext.Provider value={{
       config, setFeaturedWine, toggleSection,
       updateBannerSlide, updateAdBannerContent,
       updateProduct, addProduct, deleteProduct,
+      addBlogPost, updateBlogPost, deleteBlogPost,
+      approveWriter, revokeWriter,
     }}>
       {children}
     </AppConfigContext.Provider>

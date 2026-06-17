@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[#fef9e4]">
+      <body className="min-h-full bg-white">
         <Providers>{children}</Providers>
       </body>
     </html>

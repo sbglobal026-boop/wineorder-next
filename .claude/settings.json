@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"/Users/sjmac/Desktop/wineorder-next/src/app/\\(shop\\)/blog/[id]\")"
+    ],
+    "additionalDirectories": [
+      "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"
+    ]
+  }
+}

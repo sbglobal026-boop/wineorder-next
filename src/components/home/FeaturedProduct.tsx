@@ -17,7 +17,7 @@ export default function FeaturedProduct() {
   if (!product) return null
 
   return (
-    <section className="bg-[#fef9e4] border-b border-gray-100">
+    <section className="bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 py-20">
 
         {/* 섹션 헤더 */}

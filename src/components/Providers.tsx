@@ -1,6 +1,11 @@
 'use client'
 import { AppConfigProvider } from '@/context/AppConfigContext'
+import { AuthProvider } from '@/context/AuthContext'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return <AppConfigProvider>{children}</AppConfigProvider>
+  return (
+    <AuthProvider>
+      <AppConfigProvider>{children}</AppConfigProvider>
+    </AuthProvider>
+  )
 }

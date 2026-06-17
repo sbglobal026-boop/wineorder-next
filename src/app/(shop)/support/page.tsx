@@ -7,7 +7,7 @@ export default function FoodPage() {
   const foods = config.products.filter(p => p.type === 'food')
 
   return (
-    <div className="bg-[#fef9e4] min-h-screen">
+    <div className="bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-16">
 
         <div className="border-b border-gray-200 pb-8 mb-12">
