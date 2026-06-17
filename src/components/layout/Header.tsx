@@ -10,7 +10,7 @@ export default function Header() {
   const { currentUser, logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-50 bg-[#fef9e4] border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
         {/* 로고 */}

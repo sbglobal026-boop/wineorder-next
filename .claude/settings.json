@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p \"/Users/sjmac/Desktop/wineorder-next/src/app/\\(shop\\)/blog/[id]\")"
+      "Bash(mkdir -p \"/Users/sjmac/Desktop/wineorder-next/src/app/\\(shop\\)/blog/[id]\")",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"
