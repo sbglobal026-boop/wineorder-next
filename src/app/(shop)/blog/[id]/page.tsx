@@ -1,16 +1,22 @@
 'use client'
-import { useAppConfig } from '@/context/AppConfigContext'
+import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { fetchBlogPost, BlogPost } from '@/lib/blog'
+import BlogPostCard from '@/components/blog/BlogPostCard'
 import Link from 'next/link'
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 export default function BlogPostPage() {
-  const { config } = useAppConfig()
   const params = useParams()
-  const post = config.blogPosts.find(p => p.id === Number(params.id))
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchBlogPost(Number(params.id)).then(data => { setPost(data); setLoading(false) })
+  }, [params.id])
+
+  if (loading) {
+    return <div className="bg-white min-h-screen" />
+  }
 
   if (!post) {
     return (
@@ -25,25 +31,11 @@ export default function BlogPostPage() {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-
-        <Link href="/blog" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-10 block">
+      <div className="max-w-xl mx-auto px-6 py-16">
+        <Link href="/blog" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
           ← 블로그
         </Link>
-
-        <p className="text-xs text-gray-400 mb-4">{formatDate(post.createdAt)}</p>
-        <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-8">{post.title}</h1>
-
-        {post.imageUrl && (
-          <div className="mb-10 rounded-2xl overflow-hidden">
-            <img src={post.imageUrl} alt={post.title} className="w-full object-cover max-h-[480px]" />
-          </div>
-        )}
-
-        <div className="text-gray-700 text-base leading-relaxed whitespace-pre-wrap border-t border-gray-100 pt-8">
-          {post.content}
-        </div>
-
+        <BlogPostCard post={post} />
       </div>
     </div>
   )

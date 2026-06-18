@@ -3,16 +3,20 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { compressImage } from '@/lib/compressImage'
+import { createBlogPost } from '@/lib/blog'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const MAX_IMAGES = 10
+
 export default function BlogWritePage() {
   const { currentUser } = useAuth()
-  const { config, addBlogPost } = useAppConfig()
+  const { config } = useAppConfig()
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [imageUrl, setImageUrl] = useState<string | undefined>()
+  const [images, setImages] = useState<string[]>([])
+  const [submitting, setSubmitting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
@@ -22,16 +26,27 @@ export default function BlogWritePage() {
   }, [currentUser, router])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const compressed = await compressImage(file)
-    setImageUrl(compressed)
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    const remaining = MAX_IMAGES - images.length
+    const compressed = await Promise.all(files.slice(0, remaining).map(f => compressImage(f)))
+    setImages(prev => [...prev, ...compressed])
+    if (fileRef.current) fileRef.current.value = ''
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const removeImage = (idx: number) => {
+    setImages(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !content.trim()) return
-    addBlogPost({ title, content, imageUrl })
+    if (!title.trim() || !content.trim() || !currentUser) return
+    setSubmitting(true)
+    await createBlogPost({
+      title, content, images,
+      author_id: currentUser.id,
+      author_name: currentUser.name,
+    })
     router.push('/blog')
   }
 
@@ -67,29 +82,32 @@ export default function BlogWritePage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {/* 이미지 업로드 */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-2">대표 이미지</label>
-            {imageUrl ? (
-              <div className="relative w-full h-64 rounded-2xl overflow-hidden border border-gray-100">
-                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+            <label className="block text-xs font-semibold text-gray-600 mb-2">
+              사진 ({images.length}/{MAX_IMAGES})
+            </label>
+            <div className="grid grid-cols-4 gap-3">
+              {images.map((src, i) => (
+                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-100">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black/80 text-white text-xs w-6 h-6 rounded-full"
+                  >×</button>
+                </div>
+              ))}
+              {images.length < MAX_IMAGES && (
                 <button
                   type="button"
-                  onClick={() => { setImageUrl(undefined); if (fileRef.current) fileRef.current.value = '' }}
-                  className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white text-xs px-3 py-1.5 rounded-full"
+                  onClick={() => fileRef.current?.click()}
+                  className="aspect-square border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
                 >
-                  제거
+                  <span className="text-2xl">+</span>
+                  <span className="text-xs font-medium">추가</span>
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="w-full h-40 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-3xl">+</span>
-                <span className="text-sm font-medium">이미지 업로드</span>
-              </button>
-            )}
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
           </div>
 
           {/* 제목 */}
@@ -120,9 +138,10 @@ export default function BlogWritePage() {
           <div className="flex gap-3">
             <button
               type="submit"
-              className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-8 py-3 rounded-full transition-colors"
+              disabled={submitting}
+              className="bg-gray-900 hover:bg-gray-700 disabled:bg-gray-400 text-white text-sm font-semibold px-8 py-3 rounded-full transition-colors"
             >
-              발행
+              {submitting ? '발행 중...' : '발행'}
             </button>
             <Link
               href="/blog"

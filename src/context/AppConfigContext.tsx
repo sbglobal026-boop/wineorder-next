@@ -26,21 +26,12 @@ export type SectionsConfig = {
   adBanner: boolean
 }
 
-export type BlogPost = {
-  id: number
-  title: string
-  content: string
-  imageUrl?: string
-  createdAt: string
-}
-
 export type AppConfig = {
   featuredWineId: number
   sections: SectionsConfig
   bannerSlides: BannerSlide[]
   adBannerContent: AdBannerContent
   products: Product[]
-  blogPosts: BlogPost[]
   approvedWriters: string[]
 }
 
@@ -53,9 +44,6 @@ type AppConfigContextType = {
   updateProduct: (product: Product) => void
   addProduct: (product: Omit<Product, 'id'>) => void
   deleteProduct: (id: number) => void
-  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'>) => void
-  updateBlogPost: (post: BlogPost) => void
-  deleteBlogPost: (id: number) => void
   approveWriter: (email: string) => void
   revokeWriter: (email: string) => void
 }
@@ -105,7 +93,6 @@ const defaultConfig: AppConfig = {
   bannerSlides: defaultBannerSlides,
   adBannerContent: defaultAdBannerContent,
   products: defaultProducts,
-  blogPosts: [],
   approvedWriters: [],
 }
 
@@ -129,8 +116,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         if (!parsed.adBannerContent) {
           parsed.adBannerContent = defaultAdBannerContent
         }
-        if (!parsed.blogPosts) parsed.blogPosts = []
         if (!parsed.approvedWriters) parsed.approvedWriters = []
+        delete parsed.blogPosts
         setConfig(parsed)
       } catch {}
     }
@@ -184,26 +171,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       products: prev.products.filter(p => p.id !== id),
     }))
 
-  const addBlogPost = (post: Omit<BlogPost, 'id' | 'createdAt'>) => {
-    const newId = config.blogPosts.length > 0 ? Math.max(...config.blogPosts.map(p => p.id)) + 1 : 1
-    setConfig(prev => ({
-      ...prev,
-      blogPosts: [{ ...post, id: newId, createdAt: new Date().toISOString() }, ...prev.blogPosts],
-    }))
-  }
-
-  const updateBlogPost = (post: BlogPost) =>
-    setConfig(prev => ({
-      ...prev,
-      blogPosts: prev.blogPosts.map(p => p.id === post.id ? post : p),
-    }))
-
-  const deleteBlogPost = (id: number) =>
-    setConfig(prev => ({
-      ...prev,
-      blogPosts: prev.blogPosts.filter(p => p.id !== id),
-    }))
-
   const approveWriter = (email: string) =>
     setConfig(prev => ({
       ...prev,
@@ -223,7 +190,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       config, setFeaturedWine, toggleSection,
       updateBannerSlide, updateAdBannerContent,
       updateProduct, addProduct, deleteProduct,
-      addBlogPost, updateBlogPost, deleteBlogPost,
       approveWriter, revokeWriter,
     }}>
       {children}
