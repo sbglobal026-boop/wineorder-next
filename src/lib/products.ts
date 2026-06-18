@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/data/products'
+import { removeStorageFiles } from '@/lib/uploadImage'
 
 type ProductRow = {
   id: number
@@ -60,7 +61,10 @@ export async function updateProductRow(product: Product): Promise<void> {
   if (error) throw error
 }
 
-export async function deleteProductRow(id: number): Promise<void> {
+export async function deleteProductRow(id: number, imageUrl?: string): Promise<void> {
+  if (imageUrl) {
+    await removeStorageFiles('product-images', [imageUrl])
+  }
   const supabase = createClient()
   const { error } = await supabase.from('products').delete().eq('id', id)
   if (error) throw error

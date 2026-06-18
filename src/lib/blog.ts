@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { removeStorageFiles } from '@/lib/uploadImage'
 
 export type BlogPost = {
   id: number
@@ -54,7 +55,10 @@ export async function updateBlogPost(id: number, post: Partial<Pick<BlogPost, 't
   if (error) throw error
 }
 
-export async function deleteBlogPost(id: number) {
+export async function deleteBlogPost(id: number, images: string[] = []) {
+  if (images.length > 0) {
+    await removeStorageFiles('blog-images', images)
+  }
   const supabase = createClient()
   const { error } = await supabase.from('blog_posts').delete().eq('id', id)
   if (error) throw error

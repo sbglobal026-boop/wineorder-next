@@ -56,3 +56,19 @@ export async function uploadBlogImages(files: File[], ownerId: string | null): P
 export async function uploadProductImage(file: File): Promise<string> {
   return uploadImage(file, 'product-images', 'products')
 }
+
+function extractStoragePath(url: string, bucket: string): string | null {
+  const marker = `/object/public/${bucket}/`
+  const idx = url.indexOf(marker)
+  if (idx === -1) return null
+  return url.slice(idx + marker.length)
+}
+
+export async function removeStorageFiles(bucket: string, urls: string[]): Promise<void> {
+  const paths = urls
+    .map(u => extractStoragePath(u, bucket))
+    .filter((p): p is string => !!p)
+  if (paths.length === 0) return
+  const supabase = createClient()
+  await supabase.storage.from(bucket).remove(paths)
+}

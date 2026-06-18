@@ -188,11 +188,12 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   }
 
   const deleteProduct = (id: number) => {
+    const target = config.products.find(p => p.id === id)
     setConfig(prev => ({
       ...prev,
       products: prev.products.filter(p => p.id !== id),
     }))
-    deleteProductRow(id)
+    deleteProductRow(id, target?.imageUrl)
   }
 
   const approveWriter = (email: string) =>

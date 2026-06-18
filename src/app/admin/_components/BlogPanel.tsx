@@ -78,13 +78,13 @@ export default function BlogPanel() {
     loadPosts()
   }
 
-  const handleDelete = async (id: number) => {
-    if (deleteConfirm === id) {
-      await deleteBlogPost(id)
+  const handleDelete = async (post: BlogPost) => {
+    if (deleteConfirm === post.id) {
+      await deleteBlogPost(post.id, post.images)
       setDeleteConfirm(null)
       loadPosts()
     } else {
-      setDeleteConfirm(id)
+      setDeleteConfirm(post.id)
     }
   }
 
@@ -250,7 +250,7 @@ export default function BlogPanel() {
                       className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-full transition-colors"
                     >편집</button>
                     <button
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => handleDelete(post)}
                       className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                         deleteConfirm === post.id
                           ? 'bg-red-600 text-white'
