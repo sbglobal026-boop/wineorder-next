@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { compressImage } from '@/lib/compressImage'
+import { uploadBlogImages } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
 
 const MAX_IMAGES = 10
@@ -22,6 +22,7 @@ export default function BlogPanel() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<FormState | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [uploading, setUploading] = useState(false)
   const addFileRef = useRef<HTMLInputElement>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
 
@@ -37,9 +38,11 @@ export default function BlogPanel() {
     if (files.length === 0) return
     const current = target === 'add' ? addForm.images : (editForm?.images ?? [])
     const remaining = MAX_IMAGES - current.length
-    const compressed = await Promise.all(files.slice(0, remaining).map(f => compressImage(f)))
-    if (target === 'add') setAddForm(f => ({ ...f, images: [...f.images, ...compressed] }))
-    else setEditForm(f => f ? { ...f, images: [...f.images, ...compressed] } : f)
+    setUploading(true)
+    const uploaded = await uploadBlogImages(files.slice(0, remaining), currentUser?.id ?? null)
+    setUploading(false)
+    if (target === 'add') setAddForm(f => ({ ...f, images: [...f.images, ...uploaded] }))
+    else setEditForm(f => f ? { ...f, images: [...f.images, ...uploaded] } : f)
   }
 
   const removeImage = (idx: number, target: 'add' | 'edit') => {
@@ -121,8 +124,9 @@ export default function BlogPanel() {
                 {addForm.images.length < MAX_IMAGES && (
                   <button
                     onClick={() => addFileRef.current?.click()}
+                    disabled={uploading}
                     className="aspect-square border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 text-2xl"
-                  >+</button>
+                  >{uploading ? <span className="text-xs">업로드중</span> : '+'}</button>
                 )}
               </div>
               <input ref={addFileRef} type="file" accept="image/*" multiple onChange={(e) => handleImageUpload(e, 'add')} className="hidden" />
@@ -193,8 +197,9 @@ export default function BlogPanel() {
                         {editForm.images.length < MAX_IMAGES && (
                           <button
                             onClick={() => editFileRef.current?.click()}
+                            disabled={uploading}
                             className="aspect-square border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex items-center justify-center text-gray-400 text-2xl"
-                          >+</button>
+                          >{uploading ? <span className="text-xs">업로드중</span> : '+'}</button>
                         )}
                       </div>
                       <input ref={editFileRef} type="file" accept="image/*" multiple onChange={(e) => handleImageUpload(e, 'edit')} className="hidden" />

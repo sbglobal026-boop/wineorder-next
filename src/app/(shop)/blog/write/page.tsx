@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
-import { compressImage } from '@/lib/compressImage'
+import { uploadBlogImages } from '@/lib/uploadImage'
 import { createBlogPost } from '@/lib/blog'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ export default function BlogWritePage() {
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
@@ -27,10 +28,12 @@ export default function BlogWritePage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
-    if (files.length === 0) return
+    if (files.length === 0 || !currentUser) return
     const remaining = MAX_IMAGES - images.length
-    const compressed = await Promise.all(files.slice(0, remaining).map(f => compressImage(f)))
-    setImages(prev => [...prev, ...compressed])
+    setUploading(true)
+    const uploaded = await uploadBlogImages(files.slice(0, remaining), currentUser.id)
+    setUploading(false)
+    setImages(prev => [...prev, ...uploaded])
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -100,10 +103,17 @@ export default function BlogWritePage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
                   className="aspect-square border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
                 >
-                  <span className="text-2xl">+</span>
-                  <span className="text-xs font-medium">추가</span>
+                  {uploading ? (
+                    <span className="text-xs font-medium">업로드중...</span>
+                  ) : (
+                    <>
+                      <span className="text-2xl">+</span>
+                      <span className="text-xs font-medium">추가</span>
+                    </>
+                  )}
                 </button>
               )}
             </div>
