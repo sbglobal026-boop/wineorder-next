@@ -1,6 +1,14 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { products as defaultProducts, Product } from '@/data/products'
+import { Product } from '@/data/products'
+import {
+  fetchProducts,
+  createProductRow,
+  updateProductRow,
+  deleteProductRow,
+  fetchFeaturedProductId,
+  setFeaturedProductIdRemote,
+} from '@/lib/products'
 
 export type BannerSlide = {
   id: number
@@ -92,7 +100,7 @@ const defaultConfig: AppConfig = {
   sections: { adBanner: true },
   bannerSlides: defaultBannerSlides,
   adBannerContent: defaultAdBannerContent,
-  products: defaultProducts,
+  products: [],
   approvedWriters: [],
 }
 
@@ -102,39 +110,53 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
 
+  // 로컬 전용 설정 (배너, 광고, 섹션, 작성자 승인 목록)
   useEffect(() => {
     const stored = localStorage.getItem('wineorder-config')
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        if (parsed.products) {
-          parsed.products = parsed.products.map((p: Product) => ({
-            ...p,
-            type: p.type ?? 'wine',
-          }))
-        }
-        if (!parsed.adBannerContent) {
-          parsed.adBannerContent = defaultAdBannerContent
-        }
+        if (!parsed.adBannerContent) parsed.adBannerContent = defaultAdBannerContent
         if (!parsed.approvedWriters) parsed.approvedWriters = []
-        delete parsed.blogPosts
-        setConfig(parsed)
+        setConfig(prev => ({
+          ...prev,
+          sections: parsed.sections ?? prev.sections,
+          bannerSlides: parsed.bannerSlides ?? prev.bannerSlides,
+          adBannerContent: parsed.adBannerContent,
+          approvedWriters: parsed.approvedWriters,
+        }))
       } catch {}
     }
     setIsLoaded(true)
   }, [])
 
+  // 상품 / 추천상품 ID는 Supabase에서 로드
+  useEffect(() => {
+    fetchProducts().then(products => setConfig(prev => ({ ...prev, products })))
+    fetchFeaturedProductId().then(id => {
+      if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
+    })
+  }, [])
+
   useEffect(() => {
     if (!isLoaded) return
     try {
-      localStorage.setItem('wineorder-config', JSON.stringify(config))
+      const persisted = {
+        sections: config.sections,
+        bannerSlides: config.bannerSlides,
+        adBannerContent: config.adBannerContent,
+        approvedWriters: config.approvedWriters,
+      }
+      localStorage.setItem('wineorder-config', JSON.stringify(persisted))
     } catch {
       console.warn('localStorage 용량 초과 — 이미지 크기를 줄여주세요')
     }
-  }, [config, isLoaded])
+  }, [config.sections, config.bannerSlides, config.adBannerContent, config.approvedWriters, isLoaded])
 
-  const setFeaturedWine = (id: number) =>
+  const setFeaturedWine = (id: number) => {
     setConfig(prev => ({ ...prev, featuredWineId: id }))
+    setFeaturedProductIdRemote(id)
+  }
 
   const toggleSection = (key: keyof SectionsConfig) =>
     setConfig(prev => ({
@@ -151,25 +173,27 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const updateAdBannerContent = (content: AdBannerContent) =>
     setConfig(prev => ({ ...prev, adBannerContent: content }))
 
-  const updateProduct = (product: Product) =>
+  const updateProduct = (product: Product) => {
     setConfig(prev => ({
       ...prev,
       products: prev.products.map(p => p.id === product.id ? product : p),
     }))
-
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    const newId = Math.max(...config.products.map(p => p.id)) + 1
-    setConfig(prev => ({
-      ...prev,
-      products: [...prev.products, { ...product, id: newId }],
-    }))
+    updateProductRow(product)
   }
 
-  const deleteProduct = (id: number) =>
+  const addProduct = (product: Omit<Product, 'id'>) => {
+    createProductRow(product).then(created => {
+      setConfig(prev => ({ ...prev, products: [...prev.products, created] }))
+    })
+  }
+
+  const deleteProduct = (id: number) => {
     setConfig(prev => ({
       ...prev,
       products: prev.products.filter(p => p.id !== id),
     }))
+    deleteProductRow(id)
+  }
 
   const approveWriter = (email: string) =>
     setConfig(prev => ({

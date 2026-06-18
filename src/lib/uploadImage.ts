@@ -26,20 +26,23 @@ function compressToBlob(file: File, maxWidth = 1080, quality = 0.75): Promise<Bl
   })
 }
 
-export async function uploadBlogImage(file: File, ownerId: string | null): Promise<string> {
+export async function uploadImage(file: File, bucket: string, folder: string): Promise<string> {
   const supabase = createClient()
   const blob = await compressToBlob(file)
-  const folder = ownerId ?? 'admin'
   const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
-  const { error } = await supabase.storage.from('blog-images').upload(filename, blob, {
+  const { error } = await supabase.storage.from(bucket).upload(filename, blob, {
     contentType: 'image/jpeg',
     cacheControl: '31536000',
   })
   if (error) throw error
 
-  const { data } = supabase.storage.from('blog-images').getPublicUrl(filename)
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filename)
   return data.publicUrl
+}
+
+export async function uploadBlogImage(file: File, ownerId: string | null): Promise<string> {
+  return uploadImage(file, 'blog-images', ownerId ?? 'admin')
 }
 
 export async function uploadBlogImages(files: File[], ownerId: string | null): Promise<string[]> {
@@ -48,4 +51,8 @@ export async function uploadBlogImages(files: File[], ownerId: string | null): P
     results.push(await uploadBlogImage(file, ownerId))
   }
   return results
+}
+
+export async function uploadProductImage(file: File): Promise<string> {
+  return uploadImage(file, 'product-images', 'products')
 }

@@ -2,7 +2,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { Product } from '@/data/products'
-import { compressImage } from '@/lib/compressImage'
+import { uploadProductImage } from '@/lib/uploadImage'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -25,6 +25,7 @@ function ProductForm({
   saveLabel: string
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
   const handleTypeChange = (type: 'wine' | 'food') => {
     onChange({ ...data, type, category: type === 'food' ? '식품' : '레드' })
@@ -33,8 +34,10 @@ function ProductForm({
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const compressed = await compressImage(file)
-    onChange({ ...data, imageUrl: compressed })
+    setUploading(true)
+    const url = await uploadProductImage(file)
+    setUploading(false)
+    onChange({ ...data, imageUrl: url })
   }
 
   const removeImage = () => {
@@ -61,10 +64,17 @@ function ProductForm({
         ) : (
           <button
             onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
             className="w-40 h-40 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-2 transition-colors text-gray-400 hover:text-gray-600"
           >
-            <span className="text-3xl">+</span>
-            <span className="text-xs font-medium">이미지 업로드</span>
+            {uploading ? (
+              <span className="text-xs font-medium">업로드중...</span>
+            ) : (
+              <>
+                <span className="text-3xl">+</span>
+                <span className="text-xs font-medium">이미지 업로드</span>
+              </>
+            )}
           </button>
         )}
         <input
