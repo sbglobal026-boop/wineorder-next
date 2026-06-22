@@ -28,7 +28,7 @@ export default function Header() {
       </div>
 
       <div className="bg-[#FBFAF7] border-b border-[#1C1A17]/10">
-        <div className="max-w-7xl mx-auto px-[15px] h-14 flex items-center justify-between">
+        <div className="px-[15px] h-14 flex items-center justify-between">
 
         {/* 로고 */}
         <Link href="/" className="text-[19px] font-semibold tracking-tight text-[#1C1A17]">
