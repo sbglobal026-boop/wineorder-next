@@ -4,7 +4,7 @@ import Hero from '@/components/home/Hero'
 import Statement from '@/components/home/Statement'
 import FavouritesCarousel from '@/components/home/FavouritesCarousel'
 import SubscriptionBanner from '@/components/home/SubscriptionBanner'
-import CategoriesGrid from '@/components/home/CategoriesGrid'
+import BlogListSection from '@/components/home/BlogListSection'
 import WineStory from '@/components/home/WineStory'
 import Newsletter from '@/components/home/Newsletter'
 
@@ -17,7 +17,7 @@ export default function Home() {
       <Statement />
       <FavouritesCarousel />
       <div className="mt-24 md:mt-[140px]">
-        <CategoriesGrid />
+        <BlogListSection />
       </div>
       {config.sections.adBanner && (
         <div className="mt-24 md:mt-[140px]">
