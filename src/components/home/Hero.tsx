@@ -12,7 +12,8 @@ export default function Hero() {
   const slides = config.bannerSlides.slice(0, 2)
 
   return (
-    <section className="grid md:grid-cols-2 h-[90vh] min-h-[560px]">
+    <section className="max-w-7xl mx-auto px-[15px] pt-[15px]">
+      <div className="grid md:grid-cols-2 h-[90vh] min-h-[560px]">
       {slides.map((slide, i) => {
         const style = panelStyles[i] ?? panelStyles[0]
         return (
@@ -40,6 +41,7 @@ export default function Hero() {
           </Link>
         )
       })}
+      </div>
     </section>
   )
 }

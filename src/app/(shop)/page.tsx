@@ -14,12 +14,14 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Statement />
-      <FavouritesCarousel />
-      <CategoriesGrid />
-      {config.sections.adBanner && <SubscriptionBanner />}
-      <WineStory />
-      <Newsletter />
+      <div className="flex flex-col gap-24 md:gap-[140px]">
+        <Statement />
+        <FavouritesCarousel />
+        <CategoriesGrid />
+        {config.sections.adBanner && <SubscriptionBanner />}
+        <WineStory />
+        <Newsletter />
+      </div>
     </>
   )
 }
