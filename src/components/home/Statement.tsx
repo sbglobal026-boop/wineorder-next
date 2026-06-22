@@ -1,6 +1,6 @@
 export default function Statement() {
   return (
-    <section className="py-24 md:py-32 px-6 text-center max-w-3xl mx-auto">
+    <section className="py-24 md:py-32 px-[15px] text-center max-w-3xl mx-auto">
       <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6 text-[#1C1A17]">
         Modern Wine.
       </h2>

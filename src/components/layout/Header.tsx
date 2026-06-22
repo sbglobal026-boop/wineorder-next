@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* 공지 배너 */}
-      <div className="bg-[#1C1A17] text-[#FBFAF7] flex items-center justify-between px-7 py-[9px] text-[12.5px] tracking-wide">
+      <div className="bg-[#1C1A17] text-[#FBFAF7] flex items-center justify-between px-[15px] py-[9px] text-[12.5px] tracking-wide">
         <span className="flex-1" />
         <span className="flex-none text-center">구독하면 10% 할인 — 전국 무료 배송.</span>
         <span className="flex-1 flex justify-end gap-1.5 opacity-70 text-xs">
@@ -28,7 +28,7 @@ export default function Header() {
       </div>
 
       <div className="bg-[#FBFAF7] border-b border-[#1C1A17]/10">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-[15px] h-14 flex items-center justify-between">
 
         {/* 로고 */}
         <Link href="/" className="text-[19px] font-semibold tracking-tight text-[#1C1A17]">
@@ -70,7 +70,7 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <nav className="md:hidden border-t border-[#1C1A17]/10 px-6 py-4 flex flex-col gap-4 bg-[#FBFAF7]">
+          <nav className="md:hidden border-t border-[#1C1A17]/10 px-[15px] py-4 flex flex-col gap-4 bg-[#FBFAF7]">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
                 className="text-[15px] font-medium text-[#1C1A17] opacity-80 hover:opacity-100 transition-opacity">
