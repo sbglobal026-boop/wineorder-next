@@ -17,7 +17,7 @@ export default function WineStory() {
     : { background: 'linear-gradient(180deg,rgba(28,26,23,.25),rgba(28,26,23,.7)),repeating-linear-gradient(135deg,#46403525 0 16px,#3a342b25 16px 32px),#4a4338' }
 
   return (
-    <section className="relative min-h-[560px] flex items-end px-[15px] py-16 text-[#F4EFE6]" style={bg}>
+    <section className="relative min-h-[560px] flex items-end px-[20px] py-16 text-[#F4EFE6]" style={bg}>
       {post.images[0] && <div className="absolute inset-0 bg-black/45" />}
       <div className="relative w-full">
         <p className="text-xs font-semibold tracking-widest uppercase opacity-70 mb-4">추천 와인 이야기</p>

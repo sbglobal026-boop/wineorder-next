@@ -10,7 +10,7 @@ const categories = [
 
 export default function CategoriesGrid() {
   return (
-    <section className="bg-[#1C1A17] text-[#F4EFE6] py-20 md:py-24 px-[15px]">
+    <section className="bg-[#1C1A17] text-[#F4EFE6] py-20 md:py-24 px-[20px]">
       <div>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-10">table code 카테고리.</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
