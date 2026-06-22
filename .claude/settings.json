@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mkdir -p \"/Users/sjmac/Desktop/wineorder-next/src/app/\\(shop\\)/blog/[id]\")",
       "Bash(git pull *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx next *)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"

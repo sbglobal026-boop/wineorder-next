@@ -6,7 +6,7 @@ export default function SubscriptionBanner() {
   const c = config.adBannerContent
 
   return (
-    <section className="py-20 md:py-28 px-6 md:px-10">
+    <section className="py-20 md:py-28 px-6 md:px-10 bg-[#DAD4CD]">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#9a9384] mb-4">{c.badge}</p>
