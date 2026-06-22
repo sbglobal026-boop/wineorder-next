@@ -1,6 +1,6 @@
 export default function Statement() {
   return (
-    <section className="py-24 md:py-32 px-[20px]">
+    <section className="pt-24 md:pt-32 px-[20px]">
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1A17]">
           Modern Wine.

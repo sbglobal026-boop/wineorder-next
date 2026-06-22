@@ -14,12 +14,20 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <div className="flex flex-col gap-24 md:gap-[140px]">
-        <Statement />
-        <FavouritesCarousel />
+      <Statement />
+      <FavouritesCarousel />
+      <div className="mt-24 md:mt-[140px]">
         <CategoriesGrid />
-        {config.sections.adBanner && <SubscriptionBanner />}
+      </div>
+      {config.sections.adBanner && (
+        <div className="mt-24 md:mt-[140px]">
+          <SubscriptionBanner />
+        </div>
+      )}
+      <div className="mt-24 md:mt-[140px]">
         <WineStory />
+      </div>
+      <div className="mt-24 md:mt-[140px]">
         <Newsletter />
       </div>
     </>
