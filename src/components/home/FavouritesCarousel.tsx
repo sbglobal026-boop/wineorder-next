@@ -20,7 +20,7 @@ export default function FavouritesCarousel() {
   return (
     <section className="px-6 md:px-10 pt-6 pb-28 max-w-7xl mx-auto">
       <div className="flex items-end justify-between flex-wrap gap-5 border-b border-[#1C1A17]/12 pb-5 mb-9">
-        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1A17]">table code Favourites.</h2>
+        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1A17]">Top Drop.</h2>
         <div className="flex gap-7 items-center">
           {tabs.map((tab, i) => (
             <button
