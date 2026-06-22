@@ -13,14 +13,14 @@ export default function Hero() {
 
   return (
     <section className="px-[20px] pt-[15px]">
-      <div className="grid md:grid-cols-2 h-[90vh] min-h-[560px]">
+      <div className="grid md:grid-cols-2">
       {slides.map((slide, i) => {
         const style = panelStyles[i] ?? panelStyles[0]
         return (
           <Link
             key={slide.id}
             href={style.href}
-            className="relative flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
+            className="relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
             style={slide.imageUrl
               ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
               : { background: style.bg }
