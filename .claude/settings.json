@@ -6,7 +6,17 @@
       "Bash(npx tsc *)",
       "Bash(npx next *)",
       "Bash(sed -i '' 's/px-\\\\[20px\\\\] h-14 flex items-center justify-between/max-w-[1400px] mx-auto px-[20px] h-14 flex items-center justify-between/' src/components/layout/Header.tsx)",
-      "Bash(sed -i '' 's/border-t border-\\\\[#1C1A17\\\\]\\\\/10 px-\\\\[20px\\\\] py-4 flex flex-col gap-4 bg-\\\\[#FBFAF7\\\\]/border-t border-[#1C1A17]\\\\/10 max-w-[1400px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#FBFAF7]/' src/components/layout/Header.tsx)"
+      "Bash(sed -i '' 's/border-t border-\\\\[#1C1A17\\\\]\\\\/10 px-\\\\[20px\\\\] py-4 flex flex-col gap-4 bg-\\\\[#FBFAF7\\\\]/border-t border-[#1C1A17]\\\\/10 max-w-[1400px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#FBFAF7]/' src/components/layout/Header.tsx)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(rm -f \"src/app/\\(shop\\)/support/.DS_Store\")",
+      "Bash(sed -i '' 's#href=\"/wines\"#href=\"/events/wines\"#g' \"src/app/\\(shop\\)/events/wines/[id]/page.tsx\")",
+      "Bash(sed -i '' 's#href=\"/support\"#href=\"/events/food\"#g' \"src/app/\\(shop\\)/events/food/[id]/page.tsx\")",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill -9)",
+      "Bash(cd \"/Users/sjmac/Desktop/wineorder-next\" && mkdir -p \"src/app/\\(shop\\)/blog/[category]\" && git mv \"src/app/\\(shop\\)/blog/page.tsx\" \"src/app/\\(shop\\)/blog/[category]/page.tsx\" && git mv \"src/app/\\(shop\\)/blog/[id]\" \"src/app/\\(shop\\)/blog/[category]/[id]\" && find \"src/app/\\(shop\\)/blog\" -type f)",
+      "Bash(tail -50 /tmp/dev.log)",
+      "Read(//private/tmp/**)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"

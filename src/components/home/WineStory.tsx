@@ -7,7 +7,7 @@ export default function WineStory() {
   const [post, setPost] = useState<BlogPost | null>(null)
 
   useEffect(() => {
-    fetchBlogPosts().then(posts => setPost(posts[0] ?? null))
+    fetchBlogPosts('wine').then(posts => setPost(posts[0] ?? null))
   }, [])
 
   if (!post) return null
@@ -25,7 +25,7 @@ export default function WineStory() {
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">{post.title}</h2>
           <p className="max-w-lg text-lg leading-relaxed opacity-85 mb-7 line-clamp-3">{post.content}</p>
           <Link
-            href={`/blog/${post.id}`}
+            href={`/blog/wine/${post.id}`}
             className="inline-flex items-center gap-3 border border-white/50 rounded-full px-6 py-3 text-sm font-medium hover:bg-white/10 transition-colors"
           >
             이야기 읽기 →

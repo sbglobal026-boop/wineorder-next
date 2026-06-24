@@ -1,18 +1,32 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { createBlogPost } from '@/lib/blog'
-import { useRouter } from 'next/navigation'
+import { BLOG_CATEGORIES, BlogCategory, isBlogCategory } from '@/lib/blogCategories'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 const MAX_IMAGES = 10
 
 export default function BlogWritePage() {
+  return (
+    <Suspense fallback={<div className="bg-white min-h-screen" />}>
+      <BlogWriteForm />
+    </Suspense>
+  )
+}
+
+function BlogWriteForm() {
   const { currentUser } = useAuth()
   const { config } = useAppConfig()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category')
+  const [category, setCategory] = useState<BlogCategory>(
+    initialCategory && isBlogCategory(initialCategory) ? initialCategory : 'wine'
+  )
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
@@ -46,11 +60,11 @@ export default function BlogWritePage() {
     if (!title.trim() || !content.trim() || !currentUser) return
     setSubmitting(true)
     await createBlogPost({
-      title, content, images,
+      title, content, images, category,
       author_id: currentUser.id,
       author_name: currentUser.name,
     })
-    router.push('/blog')
+    router.push(`/blog/${category}`)
   }
 
   if (!currentUser) return null
@@ -62,7 +76,7 @@ export default function BlogWritePage() {
           <p className="text-4xl mb-4">🔒</p>
           <h2 className="text-xl font-black text-gray-900 mb-2">글쓰기 권한이 없습니다</h2>
           <p className="text-sm text-gray-500 mb-6">관리자에게 승인을 요청해주세요</p>
-          <Link href="/blog" className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
+          <Link href="/blog/wine" className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
             ← 블로그로 돌아가기
           </Link>
         </div>
@@ -74,7 +88,7 @@ export default function BlogWritePage() {
     <div className="bg-white min-h-screen">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-10">
-          <Link href="/blog" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">
+          <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">
             ← 블로그
           </Link>
           <p className="text-xs text-gray-400">{currentUser.name}으로 작성 중</p>
@@ -83,6 +97,27 @@ export default function BlogWritePage() {
         <h1 className="text-2xl font-black text-gray-900 mb-8">새 글 작성</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          {/* 카테고리 */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리 *</label>
+            <div className="flex gap-2">
+              {BLOG_CATEGORIES.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCategory(c.value)}
+                  className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
+                    category === c.value
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 이미지 업로드 */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2">
@@ -154,7 +189,7 @@ export default function BlogWritePage() {
               {submitting ? '발행 중...' : '발행'}
             </button>
             <Link
-              href="/blog"
+              href={`/blog/${category}`}
               className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-8 py-3 rounded-full transition-colors"
             >
               취소

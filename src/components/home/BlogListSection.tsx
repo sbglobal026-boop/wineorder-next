@@ -18,7 +18,7 @@ export default function BlogListSection() {
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-10">Recent Posts.</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
           {posts.map((post) => (
-            <Link key={post.id} href={`/blog/${post.id}`} className="block group">
+            <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group">
               <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-[#2b2720]">
                 {post.images[0] ? (
                   <img src={post.images[0]} alt={post.title} className="w-full h-full object-cover" />

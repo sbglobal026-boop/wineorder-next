@@ -8,7 +8,7 @@ export default function FavouritesCarousel() {
 
   if (!product) return null
 
-  const href = product.type === 'wine' ? `/wines/${product.id}` : `/support/${product.id}`
+  const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
 
   return (
     <section className="max-w-[1640px] mx-auto px-[20px] pb-28">

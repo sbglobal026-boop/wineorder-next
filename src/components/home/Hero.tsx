@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 
 const panelStyles = [
-  { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40', href: '/wines' },
-  { bg: 'linear-gradient(180deg,rgba(28,26,23,.12),rgba(28,26,23,.6)),repeating-linear-gradient(135deg,#3a352d25 0 14px,#2e2a2225 14px 28px),#3f3a31', href: '/blog' },
+  { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40', href: '/events/wines' },
+  { bg: 'linear-gradient(180deg,rgba(28,26,23,.12),rgba(28,26,23,.6)),repeating-linear-gradient(135deg,#3a352d25 0 14px,#2e2a2225 14px 28px),#3f3a31', href: '/blog/wine' },
 ]
 
 export default function Hero() {

@@ -1,24 +1,30 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useParams, notFound } from 'next/navigation'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
+import { isBlogCategory, BLOG_CATEGORIES } from '@/lib/blogCategories'
 import Link from 'next/link'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export default function BlogPage() {
+export default function BlogCategoryPage() {
+  const { category } = useParams<{ category: string }>()
   const { config } = useAppConfig()
   const { currentUser } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
 
+  if (!isBlogCategory(category)) notFound()
+  const meta = BLOG_CATEGORIES.find(c => c.value === category)!
+
   useEffect(() => {
-    fetchBlogPosts().then(data => { setPosts(data); setLoading(false) })
-  }, [])
+    fetchBlogPosts(category).then(data => { setPosts(data); setLoading(false) })
+  }, [category])
 
   return (
     <div className="bg-white min-h-screen">
@@ -26,12 +32,12 @@ export default function BlogPage() {
 
         <div className="border-b border-gray-200 pb-8 mb-12 flex items-end justify-between">
           <div>
-            <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-3">Wine Story</p>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">블로그</h1>
+            <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-3">{meta.eyebrow}</p>
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">{meta.label}</h1>
           </div>
           {isApproved && (
             <Link
-              href="/blog/write"
+              href={`/blog/write?category=${category}`}
               className="bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors"
             >
               + 글쓰기
@@ -46,7 +52,7 @@ export default function BlogPage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
             {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.id}`} className="group block">
+              <Link key={post.id} href={`/blog/${category}/${post.id}`} className="group block">
                 <div className="aspect-square overflow-hidden rounded-xl mb-4 bg-[#fef9e4]">
                   {post.images[0] ? (
                     <img
@@ -61,7 +67,7 @@ export default function BlogPage() {
                   )}
                 </div>
                 <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-2">
-                  {post.images.length > 1 ? `사진 ${post.images.length}장` : 'Wine Story'}
+                  {post.images.length > 1 ? `사진 ${post.images.length}장` : meta.eyebrow}
                 </p>
                 <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B4513] transition-colors">
                   {post.title}
