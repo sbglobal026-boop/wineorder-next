@@ -11,51 +11,78 @@ export default function FavouritesCarousel() {
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
 
   return (
-    <section className="max-w-[1640px] mx-auto px-[20px] pb-28">
-      <div className="flex items-end justify-between flex-wrap gap-5 border-b border-[#1C1A17]/12 pb-5 mb-9">
-        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1A17]">Top Drop.</h2>
-        <Link href="/events" className="text-sm font-medium text-[#5c564c] border-b border-[#1C1A17]/25 pb-1">
-          View all
+    <section className="max-w-[1640px] mx-auto pb-0">
+      <div className="flex flex-col bg-[#DAD4CD]">
+        <h3 className="text-lg md:text-2xl font-medium tracking-tight pt-10 md:pt-14 px-[20px]">Top Drop.</h3>
+
+        <div className="grid md:grid-cols-[560px_560px] gap-[30px] justify-start pl-[20px] pt-[20px] pb-[20px]">
+          {/* 메인 이미지 */}
+          <div className="relative w-[560px] h-[560px] overflow-hidden bg-[#efeae1]">
+            {product.imageUrl ? (
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="absolute inset-0 flex items-center justify-center text-7xl">
+                {product.type === 'wine' ? '🍷' : '🧀'}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col h-[560px] justify-between">
+            <div>
+              {/* 와인 이름 */}
+              <p className="text-2xl md:text-[34px] leading-snug font-semibold tracking-tight mb-3 text-[#1C1A17]">
+                {product.name}
+              </p>
+
+              {/* 와인 설명 */}
+              <p className="text-sm text-[#5c564c] mb-8">
+                {product.description}
+              </p>
+
+              {/* 혜택/정보 리스트 */}
+              <div className="flex flex-col gap-3">
+                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
+                  평점 ★ {product.rating}
+                </p>
+                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
+                  원산지 {product.origin}
+                </p>
+                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
+                  분류 {product.type === 'wine' ? '와인' : '식품'}
+                </p>
+              </div>
+            </div>
+
+            {/* 옵션 카드 (와인 / 식품) */}
+            <div className="flex gap-3">
+              <Link href="/events/wines" className="relative flex-1 aspect-square overflow-hidden bg-[#efeae1] flex items-end p-4 group">
+                <span className="relative z-10 text-xs font-medium uppercase tracking-widest text-[#1C1A17] flex items-center justify-between w-full">
+                  와인
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </Link>
+              <Link href="/events/food" className="relative flex-1 aspect-square overflow-hidden bg-[#efeae1] flex items-end p-4 group">
+                <span className="relative z-10 text-xs font-medium uppercase tracking-widest text-[#1C1A17] flex items-center justify-between w-full">
+                  식품
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 CTA */}
+        <Link
+          href={href}
+          className="flex items-center justify-between border-t border-b border-[#1C1A17]/20 px-10 md:px-14 py-5 text-sm font-medium uppercase tracking-widest text-[#1C1A17] hover:bg-[#1C1A17]/5 transition-colors"
+        >
+          {product.name} 구매하기
+          <span>→</span>
         </Link>
       </div>
-
-      <Link href={href} className="grid md:grid-cols-2 gap-0 border border-[#1C1A17]/12">
-        <div className="relative aspect-square bg-[#efeae1] flex items-center justify-center">
-          {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-7xl">{product.type === 'wine' ? '🍷' : '🧀'}</span>
-          )}
-          <span className="absolute top-4 left-4 text-[10px] tracking-widest text-[#9a9384] font-mono">
-            [ {product.category} ]
-          </span>
-        </div>
-
-        <div className="p-10 md:p-14 flex flex-col justify-center border-t md:border-t-0 md:border-l border-[#1C1A17]/12">
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#9a9384] mb-4">
-            {product.origin}
-          </p>
-          <h3 className="text-3xl md:text-4xl font-semibold tracking-tight mb-5 text-[#1C1A17]">
-            {product.name}
-          </h3>
-          <div className="flex flex-col gap-2 text-[14px] text-[#5c564c] border-t border-[#1C1A17]/10 pt-4 mb-7 max-w-xs">
-            <div className="flex justify-between gap-3">
-              <span className="text-[#9a9384]">평점</span>
-              <span>★ {product.rating}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-[#9a9384]">분류</span>
-              <span>{product.type === 'wine' ? '와인' : '식품'}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-semibold text-[#1C1A17]">{product.price.toLocaleString()}원</span>
-            <span className="bg-[#1C1A17] text-[#FBFAF7] rounded-full px-6 py-3 text-sm font-medium">
-              담기
-            </span>
-          </div>
-        </div>
-      </Link>
     </section>
   )
 }

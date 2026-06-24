@@ -21,24 +21,9 @@ export type BannerSlide = {
   imageUrl?: string
 }
 
-export type AdBannerContent = {
-  badge: string
-  title: string
-  highlight: string
-  description: string
-  primaryBtn: string
-  secondaryBtn: string
-}
-
-export type SectionsConfig = {
-  adBanner: boolean
-}
-
 export type AppConfig = {
   featuredWineId: number
-  sections: SectionsConfig
   bannerSlides: BannerSlide[]
-  adBannerContent: AdBannerContent
   products: Product[]
   approvedWriters: string[]
 }
@@ -46,9 +31,7 @@ export type AppConfig = {
 type AppConfigContextType = {
   config: AppConfig
   setFeaturedWine: (id: number) => void
-  toggleSection: (key: keyof SectionsConfig) => void
   updateBannerSlide: (slide: BannerSlide) => void
-  updateAdBannerContent: (content: AdBannerContent) => void
   updateProduct: (product: Product) => void
   addProduct: (product: Omit<Product, 'id'>) => void
   deleteProduct: (id: number) => void
@@ -86,20 +69,9 @@ const defaultBannerSlides: BannerSlide[] = [
   },
 ]
 
-const defaultAdBannerContent: AdBannerContent = {
-  badge: 'Special Offer',
-  title: '첫 주문 10% 할인 +',
-  highlight: '무료 배송 혜택',
-  description: '회원가입 후 첫 구매 시 자동 적용됩니다',
-  primaryBtn: '지금 가입하기',
-  secondaryBtn: '혜택 자세히 보기',
-}
-
 const defaultConfig: AppConfig = {
   featuredWineId: 1,
-  sections: { adBanner: true },
   bannerSlides: defaultBannerSlides,
-  adBannerContent: defaultAdBannerContent,
   products: [],
   approvedWriters: [],
 }
@@ -110,19 +82,16 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // 로컬 전용 설정 (배너, 광고, 섹션, 작성자 승인 목록)
+  // 로컬 전용 설정 (배너, 작성자 승인 목록)
   useEffect(() => {
     const stored = localStorage.getItem('wineorder-config')
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        if (!parsed.adBannerContent) parsed.adBannerContent = defaultAdBannerContent
         if (!parsed.approvedWriters) parsed.approvedWriters = []
         setConfig(prev => ({
           ...prev,
-          sections: parsed.sections ?? prev.sections,
           bannerSlides: parsed.bannerSlides ?? prev.bannerSlides,
-          adBannerContent: parsed.adBannerContent,
           approvedWriters: parsed.approvedWriters,
         }))
       } catch {}
@@ -142,36 +111,25 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     if (!isLoaded) return
     try {
       const persisted = {
-        sections: config.sections,
         bannerSlides: config.bannerSlides,
-        adBannerContent: config.adBannerContent,
         approvedWriters: config.approvedWriters,
       }
       localStorage.setItem('wineorder-config', JSON.stringify(persisted))
     } catch {
       console.warn('localStorage 용량 초과 — 이미지 크기를 줄여주세요')
     }
-  }, [config.sections, config.bannerSlides, config.adBannerContent, config.approvedWriters, isLoaded])
+  }, [config.bannerSlides, config.approvedWriters, isLoaded])
 
   const setFeaturedWine = (id: number) => {
     setConfig(prev => ({ ...prev, featuredWineId: id }))
     setFeaturedProductIdRemote(id)
   }
 
-  const toggleSection = (key: keyof SectionsConfig) =>
-    setConfig(prev => ({
-      ...prev,
-      sections: { ...prev.sections, [key]: !prev.sections[key] },
-    }))
-
   const updateBannerSlide = (slide: BannerSlide) =>
     setConfig(prev => ({
       ...prev,
       bannerSlides: prev.bannerSlides.map(s => s.id === slide.id ? slide : s),
     }))
-
-  const updateAdBannerContent = (content: AdBannerContent) =>
-    setConfig(prev => ({ ...prev, adBannerContent: content }))
 
   const updateProduct = (product: Product) => {
     setConfig(prev => ({
@@ -212,8 +170,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppConfigContext.Provider value={{
-      config, setFeaturedWine, toggleSection,
-      updateBannerSlide, updateAdBannerContent,
+      config, setFeaturedWine,
+      updateBannerSlide,
       updateProduct, addProduct, deleteProduct,
       approveWriter, revokeWriter,
     }}>

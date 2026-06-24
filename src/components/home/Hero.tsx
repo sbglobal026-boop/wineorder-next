@@ -12,7 +12,7 @@ export default function Hero() {
   const slides = config.bannerSlides.slice(0, 2)
 
   return (
-    <section className="max-w-[1640px] mx-auto px-[20px] pt-[15px]">
+    <section className="max-w-[1640px] mx-auto px-[20px] pt-0">
       <div className="grid md:grid-cols-2">
       {slides.map((slide, i) => {
         const style = panelStyles[i] ?? panelStyles[0]

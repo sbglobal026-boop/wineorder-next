@@ -17,7 +17,9 @@
       "Bash(cd \"/Users/sjmac/Desktop/wineorder-next\" && mkdir -p \"src/app/\\(shop\\)/blog/[category]\" && git mv \"src/app/\\(shop\\)/blog/page.tsx\" \"src/app/\\(shop\\)/blog/[category]/page.tsx\" && git mv \"src/app/\\(shop\\)/blog/[id]\" \"src/app/\\(shop\\)/blog/[category]/[id]\" && find \"src/app/\\(shop\\)/blog\" -type f)",
       "Bash(tail -50 /tmp/dev.log)",
       "Read(//private/tmp/**)",
-      "Bash(security find-internet-password *)"
+      "Bash(security find-internet-password *)",
+      "Bash(sed -i '' 's/--background: #FBFAF7;/--background: #F9F4EE;/' src/app/globals.css)",
+      "Bash(sed -i '' 's/bg-\\\\[#FBFAF7\\\\]/bg-[#F9F4EE]/g' src/components/layout/Header.tsx)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"

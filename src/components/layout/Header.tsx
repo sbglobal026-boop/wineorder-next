@@ -34,8 +34,8 @@ export default function Header() {
         </span>
       </div>
 
-      <div className="border-b border-[#1C1A17]/10">
-        <div className="max-w-[1640px] mx-auto bg-[#FBFAF7] px-[20px] h-14 flex items-center justify-between">
+      <div>
+        <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] px-[20px] h-14 flex items-center justify-between">
 
         {/* 로고 */}
         <Link href="/" className="text-[19px] font-semibold tracking-tight text-[#1C1A17]">
@@ -51,7 +51,7 @@ export default function Header() {
               </Link>
               {item.children && (
                 <div className="absolute left-0 top-full pt-3 hidden group-hover:block">
-                  <div className="min-w-[120px] bg-[#FBFAF7] border border-[#1C1A17]/10 shadow-md py-2">
+                  <div className="min-w-[120px] bg-[#F9F4EE] border border-[#1C1A17]/10 shadow-md py-2">
                     {item.children.map(child => (
                       <Link
                         key={child.href}
@@ -93,8 +93,10 @@ export default function Header() {
         </div>
         </div>
 
+        <div className="max-w-[1600px] mx-auto border-b border-[#1C1A17]" />
+
         {mobileOpen && (
-          <nav className="md:hidden border-t border-[#1C1A17]/10 max-w-[1640px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#FBFAF7]">
+          <nav className="md:hidden border-t border-[#1C1A17]/10 max-w-[1640px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#F9F4EE]">
             {navItems.map((item) => (
               <div key={item.href} className="flex flex-col gap-2">
                 <Link href={item.href} onClick={() => setMobileOpen(false)}
