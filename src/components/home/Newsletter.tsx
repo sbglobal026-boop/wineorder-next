@@ -2,8 +2,8 @@
 
 export default function Newsletter() {
   return (
-    <section className="bg-[#F3EFE8] py-24 px-[20px] text-center">
-      <div className="max-w-[1400px] mx-auto">
+    <section>
+      <div className="max-w-[1640px] mx-auto bg-[#F3EFE8] py-24 px-[20px] text-center">
         <h2 className="text-3xl md:text-[38px] font-semibold tracking-tight mb-3.5 text-[#1C1A17]">
           table code 소식, 당신의 메일로.
         </h2>

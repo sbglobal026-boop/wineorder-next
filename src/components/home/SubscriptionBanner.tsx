@@ -6,8 +6,8 @@ export default function SubscriptionBanner() {
   const c = config.adBannerContent
 
   return (
-    <section className="py-20 md:py-28 px-[20px] bg-[#DAD4CD]">
-      <div className="max-w-[1400px] mx-auto grid md:grid-cols-2 gap-14 items-center">
+    <section>
+      <div className="max-w-[1640px] mx-auto bg-[#DAD4CD] grid md:grid-cols-2 gap-14 items-center py-20 md:py-28 px-[20px]">
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#9a9384] mb-4">{c.badge}</p>
           <h2 className="text-3xl md:text-[42px] font-semibold tracking-tight mb-5 text-[#1C1A17]">
