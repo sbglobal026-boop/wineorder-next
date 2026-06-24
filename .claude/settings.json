@@ -4,7 +4,9 @@
       "Bash(mkdir -p \"/Users/sjmac/Desktop/wineorder-next/src/app/\\(shop\\)/blog/[id]\")",
       "Bash(git pull *)",
       "Bash(npx tsc *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(sed -i '' 's/px-\\\\[20px\\\\] h-14 flex items-center justify-between/max-w-[1400px] mx-auto px-[20px] h-14 flex items-center justify-between/' src/components/layout/Header.tsx)",
+      "Bash(sed -i '' 's/border-t border-\\\\[#1C1A17\\\\]\\\\/10 px-\\\\[20px\\\\] py-4 flex flex-col gap-4 bg-\\\\[#FBFAF7\\\\]/border-t border-[#1C1A17]\\\\/10 max-w-[1400px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#FBFAF7]/' src/components/layout/Header.tsx)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"

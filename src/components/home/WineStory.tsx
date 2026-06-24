@@ -19,7 +19,7 @@ export default function WineStory() {
   return (
     <section className="relative min-h-[560px] flex items-end px-[20px] py-16 text-[#F4EFE6]" style={bg}>
       {post.images[0] && <div className="absolute inset-0 bg-black/45" />}
-      <div className="relative w-full">
+      <div className="relative w-full max-w-[1400px] mx-auto">
         <p className="text-xs font-semibold tracking-widest uppercase opacity-70 mb-4">추천 와인 이야기</p>
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">{post.title}</h2>
         <p className="max-w-lg text-lg leading-relaxed opacity-85 mb-7 line-clamp-3">{post.content}</p>

@@ -11,7 +11,7 @@ export default function FavouritesCarousel() {
   const href = product.type === 'wine' ? `/wines/${product.id}` : `/support/${product.id}`
 
   return (
-    <section className="px-[20px] pb-28">
+    <section className="max-w-[1400px] mx-auto px-[20px] pb-28">
       <div className="flex items-end justify-between flex-wrap gap-5 border-b border-[#1C1A17]/12 pb-5 mb-9">
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1C1A17]">Top Drop.</h2>
         <Link href="/events" className="text-sm font-medium text-[#5c564c] border-b border-[#1C1A17]/25 pb-1">
