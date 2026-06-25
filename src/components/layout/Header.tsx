@@ -38,7 +38,7 @@ export default function Header() {
         <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] px-[20px] h-12 flex items-center justify-between">
 
         {/* 로고 */}
-        <Link href="/" className="font-[family-name:var(--font-libre-baskerville)] text-[21px] font-semibold tracking-tight text-[#1C1A17] pt-3">
+        <Link href="/" className="font-[family-name:var(--font-playfair-display)] text-[21px] font-semibold tracking-tight text-[#1C1A17] pt-3">
           table code
         </Link>
 
