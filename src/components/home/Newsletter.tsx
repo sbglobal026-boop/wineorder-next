@@ -4,7 +4,7 @@ export default function Newsletter() {
   return (
     <section>
       <div className="max-w-[1640px] mx-auto bg-[#DAD4CD] py-24 px-[20px] text-center">
-        <h2 className="text-3xl md:text-[38px] font-normal tracking-tight mb-3.5 text-[#1C1A17]">
+        <h2 className="text-3xl md:text-[38px] font-normal tracking-tight mb-3.5 text-[#1C1A17] font-[family-name:var(--font-playfair-display)]">
           First at the table, Always.
         </h2>
         <p className="text-lg text-[#5c564c] max-w-lg mx-auto mb-8">
