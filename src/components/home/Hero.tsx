@@ -84,12 +84,7 @@ export default function Hero() {
                       <p className="max-w-md text-[22px] md:text-[25px] leading-snug font-normal whitespace-pre-line mb-6">
                         {slide.title}
                       </p>
-                      <div className="flex items-center gap-4">
-                        <span className="text-lg font-semibold">{slide.subtitle}</span>
-                        <span className="border border-white/50 rounded-full px-5 py-2 text-[13.5px] font-medium">
-                          {slide.cta}
-                        </span>
-                      </div>
+                      <span className="text-lg font-semibold">{slide.subtitle}</span>
                     </div>
                   </div>
                 )

@@ -105,14 +105,6 @@ export default function BannerPanel() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">버튼 텍스트</label>
-                  <input
-                    value={form.cta}
-                    onChange={(e) => setForm(prev => prev ? { ...prev, cta: e.target.value } : prev)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-                  />
-                </div>
                 <div className="flex gap-2">
                   <button onClick={save} className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
                     저장
@@ -133,10 +125,7 @@ export default function BannerPanel() {
                   <div className="min-w-0">
                     <p className="text-xs text-gray-400 mb-1">슬라이드 {slide.id}</p>
                     <p className="text-gray-900 font-semibold mb-1">{slide.title.replace('\n', ' / ')}</p>
-                    <p className="text-gray-500 text-sm mb-2">{slide.subtitle}</p>
-                    <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
-                      버튼: {slide.cta}
-                    </span>
+                    <p className="text-gray-500 text-sm">{slide.subtitle}</p>
                   </div>
                 </div>
                 <button
