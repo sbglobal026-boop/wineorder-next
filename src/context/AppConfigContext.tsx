@@ -151,7 +151,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       ...prev,
       products: prev.products.filter(p => p.id !== id),
     }))
-    deleteProductRow(id, target?.imageUrl)
+    deleteProductRow(id, target?.imageUrl, target?.extraImages)
   }
 
   const approveWriter = (email: string) =>

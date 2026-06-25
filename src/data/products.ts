@@ -8,6 +8,7 @@ export type Product = {
   rating: number
   description: string
   imageUrl?: string
+  extraImages?: string[]
 }
 
 export const products: Product[] = [
