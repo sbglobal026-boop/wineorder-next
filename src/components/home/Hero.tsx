@@ -1,13 +1,12 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 
 const AUTO_PLAY_MS = 10000
 
 const panelStyles = [
-  { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40', href: '/events/wines' },
-  { bg: 'linear-gradient(180deg,rgba(28,26,23,.12),rgba(28,26,23,.6)),repeating-linear-gradient(135deg,#3a352d25 0 14px,#2e2a2225 14px 28px),#3f3a31', href: '/blog/wine' },
+  { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40' },
+  { bg: 'linear-gradient(180deg,rgba(28,26,23,.12),rgba(28,26,23,.6)),repeating-linear-gradient(135deg,#3a352d25 0 14px,#2e2a2225 14px 28px),#3f3a31' },
 ]
 
 export default function Hero() {
@@ -57,9 +56,8 @@ export default function Hero() {
               {slides.slice(p * 2, p * 2 + 2).map((slide, i) => {
                 const style = panelStyles[i] ?? panelStyles[0]
                 return (
-                  <Link
+                  <div
                     key={slide.id}
-                    href={style.href}
                     className="relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
                     style={slide.imageUrl
                       ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -93,7 +91,7 @@ export default function Hero() {
                         </span>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 )
               })}
             </div>
