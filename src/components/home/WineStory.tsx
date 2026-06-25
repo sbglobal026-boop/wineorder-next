@@ -23,7 +23,7 @@ export default function WineStory() {
         <div className="max-w-[1600px] mx-auto border-t border-[#FBFAF7] my-[10px]" />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
         <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Monthly Table</h2>
-        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 -mx-[20px] px-[20px] md:mx-0 md:px-0">
+        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 -mx-[20px] px-[20px] md:mx-0 md:px-0 w-full min-w-0">
           {posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group w-[320px] h-[552px] flex flex-col shrink-0 snap-start">
               {/* 이미지 영역 */}
