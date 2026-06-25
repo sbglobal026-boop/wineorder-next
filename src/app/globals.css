@@ -19,10 +19,19 @@ body {
   color: var(--foreground);
 }
 
+.font-korean {
+  font-family: var(--font-grotesk), var(--font-nanum-square), sans-serif;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes hero-progress {
+  from { width: 0%; }
+  to { width: 100%; }
 }

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Schibsted_Grotesk } from "next/font/google";
+import { Libre_Baskerville } from "next/font/google";
+import { Open_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/components/Providers";
 
@@ -15,6 +18,28 @@ const grotesk = Schibsted_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
+const libreBaskerville = Libre_Baskerville({
+  variable: "--font-libre-baskerville",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const nanumSquare = localFont({
+  variable: "--font-nanum-square",
+  src: [
+    { path: "../fonts/nanum-square/NanumSquareL.woff2", weight: "300", style: "normal" },
+    { path: "../fonts/nanum-square/NanumSquareR.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/nanum-square/NanumSquareB.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/nanum-square/NanumSquareEB.woff2", weight: "800", style: "normal" },
+  ],
+});
+
 export const metadata: Metadata = {
   title: "table code | 프리미엄 와인 쇼핑몰",
   description: "엄선된 세계 각국의 와인을 합리적인 가격에 만나보세요",
@@ -26,8 +51,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${geist.variable} ${grotesk.variable} h-full antialiased`}>
-      <body className="min-h-full bg-white font-grotesk">
+    <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${libreBaskerville.variable} ${openSans.variable} ${nanumSquare.variable} h-full antialiased`}>
+      <body className="min-h-full bg-white font-korean">
         <Providers>{children}</Providers>
       </body>
     </html>

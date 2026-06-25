@@ -1,11 +1,13 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useAppConfig, BannerSlide } from '@/context/AppConfigContext'
+import { uploadBannerImage } from '@/lib/uploadImage'
 
 export default function BannerPanel() {
   const { config, updateBannerSlide } = useAppConfig()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState<BannerSlide | null>(null)
+  const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const startEdit = (slide: BannerSlide) => {
@@ -21,14 +23,13 @@ export default function BannerPanel() {
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setForm(prev => prev ? { ...prev, imageUrl: reader.result as string } : prev)
-    }
-    reader.readAsDataURL(file)
+    setUploading(true)
+    const url = await uploadBannerImage(file)
+    setUploading(false)
+    setForm(prev => prev ? { ...prev, imageUrl: url } : prev)
   }
 
   const removeImage = () => {
@@ -64,10 +65,17 @@ export default function BannerPanel() {
                   ) : (
                     <button
                       onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
                       className="w-full h-24 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
                     >
-                      <span className="text-2xl">+</span>
-                      <span className="text-xs font-medium">이미지 업로드</span>
+                      {uploading ? (
+                        <span className="text-xs font-medium">업로드중...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl">+</span>
+                          <span className="text-xs font-medium">이미지 업로드</span>
+                        </>
+                      )}
                     </button>
                   )}
                   <input

@@ -9,15 +9,13 @@ import {
   fetchFeaturedProductId,
   setFeaturedProductIdRemote,
 } from '@/lib/products'
+import { fetchBannerSlides, updateBannerSlideRow } from '@/lib/banners'
 
 export type BannerSlide = {
   id: number
   title: string
   subtitle: string
   cta: string
-  bg: string
-  accent: string
-  ctaStyle: string
   imageUrl?: string
 }
 
@@ -40,33 +38,10 @@ type AppConfigContextType = {
 }
 
 const defaultBannerSlides: BannerSlide[] = [
-  {
-    id: 1,
-    title: "봄의 시작,\n특별한 와인과 함께",
-    subtitle: "프리미엄 와인 최대 30% 할인",
-    cta: "지금 쇼핑하기",
-    bg: "from-red-50 to-amber-50",
-    accent: "text-red-700",
-    ctaStyle: "bg-red-800 hover:bg-red-700 text-white",
-  },
-  {
-    id: 2,
-    title: "새로 입고된\n이탈리아 와인",
-    subtitle: "슈퍼 투스칸 컬렉션 신규 입고",
-    cta: "컬렉션 보기",
-    bg: "from-emerald-50 to-teal-50",
-    accent: "text-emerald-700",
-    ctaStyle: "bg-emerald-800 hover:bg-emerald-700 text-white",
-  },
-  {
-    id: 3,
-    title: "선물로 완벽한\n프리미엄 세트",
-    subtitle: "기프트 패키지 무료 포장",
-    cta: "선물 고르기",
-    bg: "from-purple-50 to-pink-50",
-    accent: "text-purple-700",
-    ctaStyle: "bg-purple-800 hover:bg-purple-700 text-white",
-  },
+  { id: 1, title: "봄의 시작,\n특별한 와인과 함께", subtitle: "프리미엄 와인 최대 30% 할인", cta: "지금 쇼핑하기" },
+  { id: 2, title: "새로 입고된\n이탈리아 와인", subtitle: "슈퍼 투스칸 컬렉션 신규 입고", cta: "컬렉션 보기" },
+  { id: 3, title: "선물로 완벽한\n프리미엄 세트", subtitle: "기프트 패키지 무료 포장", cta: "선물 고르기" },
+  { id: 4, title: "주말 한정\n스파클링 와인", subtitle: "버블의 계절, 지금이 기회", cta: "둘러보기" },
 ]
 
 const defaultConfig: AppConfig = {
@@ -82,54 +57,53 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // 로컬 전용 설정 (배너, 작성자 승인 목록)
+  // 로컬 전용 설정 (작성자 승인 목록)
   useEffect(() => {
     const stored = localStorage.getItem('wineorder-config')
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        if (!parsed.approvedWriters) parsed.approvedWriters = []
         setConfig(prev => ({
           ...prev,
-          bannerSlides: parsed.bannerSlides ?? prev.bannerSlides,
-          approvedWriters: parsed.approvedWriters,
+          approvedWriters: parsed.approvedWriters ?? [],
         }))
       } catch {}
     }
     setIsLoaded(true)
   }, [])
 
-  // 상품 / 추천상품 ID는 Supabase에서 로드
+  // 상품 / 추천상품 ID / 배너 슬라이드는 Supabase에서 로드
   useEffect(() => {
     fetchProducts().then(products => setConfig(prev => ({ ...prev, products })))
     fetchFeaturedProductId().then(id => {
       if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
+    })
+    fetchBannerSlides().then(bannerSlides => {
+      if (bannerSlides.length > 0) setConfig(prev => ({ ...prev, bannerSlides }))
     })
   }, [])
 
   useEffect(() => {
     if (!isLoaded) return
     try {
-      const persisted = {
-        bannerSlides: config.bannerSlides,
-        approvedWriters: config.approvedWriters,
-      }
-      localStorage.setItem('wineorder-config', JSON.stringify(persisted))
+      localStorage.setItem('wineorder-config', JSON.stringify({ approvedWriters: config.approvedWriters }))
     } catch {
-      console.warn('localStorage 용량 초과 — 이미지 크기를 줄여주세요')
+      console.warn('localStorage 용량 초과')
     }
-  }, [config.bannerSlides, config.approvedWriters, isLoaded])
+  }, [config.approvedWriters, isLoaded])
 
   const setFeaturedWine = (id: number) => {
     setConfig(prev => ({ ...prev, featuredWineId: id }))
     setFeaturedProductIdRemote(id)
   }
 
-  const updateBannerSlide = (slide: BannerSlide) =>
+  const updateBannerSlide = (slide: BannerSlide) => {
     setConfig(prev => ({
       ...prev,
       bannerSlides: prev.bannerSlides.map(s => s.id === slide.id ? slide : s),
     }))
+    updateBannerSlideRow(slide)
+  }
 
   const updateProduct = (product: Product) => {
     setConfig(prev => ({

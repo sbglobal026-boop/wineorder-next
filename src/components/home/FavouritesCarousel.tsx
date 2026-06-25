@@ -13,7 +13,7 @@ export default function FavouritesCarousel() {
   return (
     <section className="max-w-[1640px] mx-auto pb-0">
       <div className="flex flex-col bg-[#DAD4CD]">
-        <h3 className="text-lg md:text-2xl font-medium tracking-tight pt-10 md:pt-14 px-[20px]">Top Drop.</h3>
+        <h3 className="text-[20px] font-bold tracking-tight pt-[30px] px-[20px] font-[family-name:var(--font-libre-baskerville)]">top drop</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-[560px_560px] gap-[30px] justify-start px-[20px] pt-[20px] pb-[20px]">
           {/* 메인 이미지 */}
@@ -83,7 +83,7 @@ export default function FavouritesCarousel() {
         {/* 하단 CTA */}
         <Link
           href={href}
-          className="flex items-center justify-between border-t border-b border-[#1C1A17]/20 px-10 md:px-14 py-5 text-sm font-medium uppercase tracking-widest text-[#1C1A17] hover:bg-[#1C1A17]/5 transition-colors"
+          className="flex items-center justify-end gap-2 border-t border-b border-[#1C1A17]/20 px-10 md:px-14 py-[5px] text-sm font-medium uppercase tracking-widest text-[#1C1A17] hover:bg-[#1C1A17]/5 transition-colors"
         >
           {product.name} 구매하기
           <span>→</span>

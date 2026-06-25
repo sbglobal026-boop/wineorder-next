@@ -1,12 +1,12 @@
 export default function Statement() {
   return (
-    <section className="max-w-[1640px] mx-auto pt-24 md:pt-32 pb-[128px] px-[20px]">
+    <section className="max-w-[1640px] mx-auto py-[60px] px-[20px]">
       <div className="grid md:grid-cols-2 gap-8 items-start">
-        <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1A17]">
-          Modern Wine.
+        <h2 className="text-[24px] font-semibold tracking-tight text-[#0e3719] font-[family-name:var(--font-libre-baskerville)] pl-10">
+          New Start.
         </h2>
-        <p className="text-lg md:text-xl leading-relaxed text-[#5c564c]">
-          우리가 추구하는 것: 까다롭게 고른 와인, 정성스러운 디테일, 그리고 모든 순간을 더 특별하게 만드는 경험.
+        <p className="text-[24px] font-bold leading-relaxed text-[#1C1A17] font-[family-name:var(--font-libre-baskerville)] whitespace-pre-line">
+          {"Good food. Good people. Good stories.\nThe table is where culture truly begins.\nTable Code — made for those moments."}
         </p>
       </div>
     </section>
