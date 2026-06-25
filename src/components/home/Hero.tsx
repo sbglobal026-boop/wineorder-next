@@ -81,7 +81,7 @@ export default function Hero() {
                     )}
 
                     <div className="relative">
-                      <p className="max-w-md text-[22px] md:text-[25px] leading-snug font-normal whitespace-pre-line mb-6 font-[family-name:var(--font-libre-baskerville)]">
+                      <p className="max-w-md text-[22px] md:text-[25px] leading-snug font-bold whitespace-pre-line mb-6 font-[family-name:var(--font-libre-baskerville)]">
                         {slide.title}
                       </p>
                       <span className="text-lg font-semibold font-[family-name:var(--font-open-sans)]">{slide.subtitle}</span>
