@@ -3,12 +3,12 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer>
-      <div className="max-w-[1640px] mx-auto bg-[#1C1A17] text-[#F4EFE6] px-[20px] py-16">
+      <div className="max-w-[1640px] mx-auto bg-[#1C1A17] text-[#F4EFE6] px-[20px] py-16 font-lato-korean">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
 
           {/* 브랜드 */}
           <div className="col-span-2 md:col-span-1">
-            <div className="text-[22px] font-semibold tracking-tight mb-4">table code</div>
+            <div className="text-[22px] font-bold tracking-tight mb-4 font-[family-name:var(--font-lato)]">table code</div>
             <p className="text-sm opacity-70 leading-relaxed">
               엄선된 세계 각국의 와인을<br />합리적인 가격에 제공합니다.
             </p>

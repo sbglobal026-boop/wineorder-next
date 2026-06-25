@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Schibsted_Grotesk } from "next/font/google";
 import { Playfair_Display } from "next/font/google";
-import { Open_Sans } from "next/font/google";
+import { Lato } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/components/Providers";
@@ -24,10 +24,10 @@ const playfairDisplay = Playfair_Display({
   weight: ["400", "700"],
 });
 
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
+const lato = Lato({
+  variable: "--font-lato",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
 });
 
 const nanumSquare = localFont({
@@ -51,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${openSans.variable} ${nanumSquare.variable} h-full antialiased`}>
+    <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${lato.variable} ${nanumSquare.variable} h-full antialiased`}>
       <body className="min-h-full bg-white font-korean">
         <Providers>{children}</Providers>
       </body>

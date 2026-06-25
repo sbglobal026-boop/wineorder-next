@@ -13,7 +13,7 @@ export default function FavouritesCarousel() {
   return (
     <section className="max-w-[1640px] mx-auto pb-0">
       <div className="flex flex-col bg-[#DAD4CD]">
-        <h3 className="text-[20px] font-bold tracking-tight pt-[30px] px-[20px] font-[family-name:var(--font-playfair-display)]">Top Drop</h3>
+        <h3 className="text-[30px] font-bold tracking-tight pt-[30px] px-[20px] font-[family-name:var(--font-playfair-display)]">Top Drop</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-[560px_560px] gap-[30px] justify-start px-[20px] pt-[20px] pb-[20px]">
           {/* 메인 이미지 */}

@@ -68,7 +68,7 @@ export default function Hero() {
 
                     {/* 슬라이드 진행 바 (왼쪽 패널에만 표시) */}
                     {i === 0 && (
-                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-24 h-[3px] bg-white/30 z-10">
+                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-[180px] h-[3px] bg-white/30 z-10">
                         {p === page && (
                           <div
                             key={page}
@@ -81,10 +81,10 @@ export default function Hero() {
                     )}
 
                     <div className="relative">
-                      <p className="max-w-md text-[22px] md:text-[25px] leading-snug font-bold whitespace-pre-line mb-6 font-[family-name:var(--font-playfair-display)]">
+                      <p className="max-w-md text-[22px] md:text-[30px] leading-snug font-bold whitespace-pre-line mb-6 font-[family-name:var(--font-playfair-display)]">
                         {slide.title}
                       </p>
-                      <span className="text-lg font-semibold font-[family-name:var(--font-open-sans)]">{slide.subtitle}</span>
+                      <span className="text-lg font-normal font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
                     </div>
                   </div>
                 )

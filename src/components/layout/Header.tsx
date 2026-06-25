@@ -43,7 +43,7 @@ export default function Header() {
         </Link>
 
         {/* 데스크탑 네비게이션 */}
-        <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-open-sans)]">
+        <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-lato)]">
           {navItems.map(item => (
             <div key={item.href} className="group relative">
               <Link href={item.href} className="opacity-80 hover:opacity-100 transition-opacity">
@@ -69,7 +69,7 @@ export default function Header() {
         </nav>
 
         {/* 아이콘 */}
-        <div className="flex items-center gap-5 text-[12px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-open-sans)]">
+        <div className="flex items-center gap-5 text-[12px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-lato)]">
           {currentUser ? (
             <div className="flex items-center gap-3">
               <span className="opacity-70 hidden md:block">{currentUser.name}</span>

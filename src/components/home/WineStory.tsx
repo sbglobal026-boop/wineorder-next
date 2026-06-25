@@ -2,34 +2,79 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
+import { categoryLabel } from '@/lib/blogCategories'
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })
+}
 
 export default function WineStory() {
-  const [post, setPost] = useState<BlogPost | null>(null)
+  const [posts, setPosts] = useState<BlogPost[]>([])
 
   useEffect(() => {
-    fetchBlogPosts('wine').then(posts => setPost(posts[0] ?? null))
+    fetchBlogPosts('monthly-table').then(data => setPosts(data.slice(0, 5)))
   }, [])
 
-  if (!post) return null
-
-  const bg = post.images[0]
-    ? { backgroundImage: `url(${post.images[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { background: 'linear-gradient(180deg,rgba(28,26,23,.25),rgba(28,26,23,.7)),repeating-linear-gradient(135deg,#46403525 0 16px,#3a342b25 16px 32px),#4a4338' }
+  if (posts.length === 0) return null
 
   return (
     <section>
-      <div className="relative max-w-[1640px] mx-auto min-h-[560px] flex items-end px-[20px] py-16 text-[#F4EFE6]" style={bg}>
-        {post.images[0] && <div className="absolute inset-0 bg-black/45" />}
-        <div className="relative w-full">
-          <p className="text-xs font-semibold tracking-widest uppercase opacity-70 mb-4">추천 와인 이야기</p>
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">{post.title}</h2>
-          <p className="max-w-lg text-lg leading-relaxed opacity-85 mb-7 line-clamp-3">{post.content}</p>
-          <Link
-            href={`/blog/wine/${post.id}`}
-            className="inline-flex items-center gap-3 border border-white/50 rounded-full px-6 py-3 text-sm font-medium hover:bg-white/10 transition-colors"
-          >
-            이야기 읽기 →
-          </Link>
+      <div className="max-w-[1640px] mx-auto bg-[#0e3719] text-[#FBFAF7] p-[20px] my-[40px]">
+        <div className="max-w-[1600px] mx-auto border-t border-[#FBFAF7] my-[10px]" />
+        <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
+        <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Monthly Table</h2>
+        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 -mx-[20px] px-[20px] md:mx-0 md:px-0">
+          {posts.map((post) => (
+            <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group w-[320px] h-[552px] flex flex-col shrink-0 snap-start">
+              {/* 이미지 영역 */}
+              <div className="relative w-[320px] h-[380px] shrink-0 rounded-sm overflow-hidden bg-[#FBFAF7]/10">
+                {post.images[0] ? (
+                  <img
+                    src={post.images[0]}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
+                )}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                  <p className="bg-[#0e3719] text-[#FBFAF7] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                    {categoryLabel(post.category)}
+                  </p>
+                  {post.images.length > 1 && (
+                    <p className="bg-[#FBFAF7] text-[#0e3719] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                      사진 {post.images.length}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* 하단 정보 */}
+              <p className="text-[17px] font-semibold leading-normal mt-3.5 truncate">{post.title}</p>
+
+              <div className="border-t border-[#FBFAF7] mt-2" />
+
+              <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{post.content}</p>
+
+              <div className="border-t border-[#FBFAF7]/10 mt-2" />
+
+              <div className="flex items-center justify-between gap-3 mt-2">
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <p className="text-[11px] uppercase tracking-widest opacity-50">작성자.</p>
+                  <p className="text-xs truncate">{post.author_name}</p>
+                </div>
+                <div className="flex flex-col gap-0.5 items-end shrink-0">
+                  <p className="text-[11px] uppercase tracking-widest opacity-50">작성일.</p>
+                  <p className="text-xs">{formatDate(post.created_at)}</p>
+                </div>
+              </div>
+
+              <span className="block mt-2 text-xs font-medium uppercase tracking-widest text-[#FBFAF7]/60 group-hover:text-[#FBFAF7] transition-colors">
+                View →
+              </span>
+            </Link>
+          ))}
+        </div>
         </div>
       </div>
     </section>
