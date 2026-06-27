@@ -19,7 +19,7 @@ export default function RegisterPage() {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent('/blog/wine')}` },
+      options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent('/')}` },
     })
   }
 

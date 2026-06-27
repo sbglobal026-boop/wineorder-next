@@ -1,0 +1,89 @@
+팀원 main 브랜치 merge 이후 (pull 시점부터) 수정한 내용 정리
+작성일: 2026-06-27
+
+배경
+----
+팀원이 자기 브랜치(KIM)를 main에 merge한 뒤, 그 main을 로컬로 pull 받았음.
+pull 직후 main 브랜치 자체가 빌드되지 않는 상태였고(빌드 에러 3건),
+Google 로그인도 admin 페이지에서 정상 동작하지 않는 상태였음.
+아래 내용은 그걸 고치기 위해 수정한 부분.
+
+
+1. 코드 수정 (git commit 5537998, GitHub main에 push 완료)
+------------------------------------------------------------
+
+[1] src/context/AppConfigContext.tsx
+- 문제: `FixedCost` 타입 import 누락, 배너 저장 함수(`updateBannerSlideRow`) import 누락
+  → 타입 에러로 빌드 자체가 안 됨
+- 수정: `import { Product, FixedCost } from '@/data/products'` 로 FixedCost 추가
+        `import { fetchBannerSlides, updateBannerSlideRow } from '@/lib/banners'` 복구
+        상품/배너 로드하는 useEffect에 `fetchBannerSlides()` 호출 다시 추가
+  (이전에 만들어둔 "배너 슬라이드 Supabase 연동" 기능이 머지 과정에서 빠져있던 것을 복구)
+
+[2] src/data/products.ts
+- 문제: 시드 데이터(`products` 배열)에 새로 추가된 필수 필드 `EK`(원가), `margin`(마진)이
+  빠져서 타입 에러
+- 수정: 8개 상품 항목에 전부 `EK: 0, margin: 0` 추가 (이 배열 자체는 현재 코드에서
+  실제로 쓰이는 곳은 없고 타입 정의용 죽은 데이터라, 값만 맞춰서 빌드 에러만 해소함)
+
+[3] src/app/(shop)/login/page.tsx
+- 문제: `useSearchParams()`가 Suspense 경계 없이 사용되어 정적 빌드 시
+  "useSearchParams() should be wrapped in a suspense boundary" 에러로 빌드 실패
+- 수정: 기존 로그인 폼을 `LoginForm`으로 분리하고 `<Suspense>`로 감싸서 해결
+- 추가 수정: Google 로그인 버튼의 redirectTo를
+  `${location.origin}${redirect}` (바로 목적지로) 에서
+  `${location.origin}/auth/callback?next=${encodeURIComponent(redirect)}` 로 변경
+  (아래 [4]의 콜백 라우트를 거치도록)
+
+[4] src/app/auth/callback/route.ts (신규 파일)
+- 문제: Google OAuth 로그인 후 Supabase가 돌려주는 인증 코드(code)를
+  실제 로그인 세션으로 교환해주는 라우트가 코드에 없었음
+  → 로그인은 성공해도 서버(쿠키)가 세션을 인식 못해서 admin 접근 시
+  계속 로그인 화면으로 튕기는 문제 발생
+- 수정: `/auth/callback`에서 `supabase.auth.exchangeCodeForSession(code)`를
+  실행해 세션 쿠키를 설정하고, `next` 파라미터로 지정된 경로로 리다이렉트하는
+  라우트 핸들러 신규 작성
+
+
+2. 로컬 환경변수 추가 (.env.local — git에는 안 올라감, 직접 설정 필요)
+------------------------------------------------------------------
+
+.env.local에 아래 2개 추가함:
+
+  ADMIN_EMAILS=sbglobal026@gmail.com
+  SUPABASE_SERVICE_ROLE_KEY=(Supabase 프로젝트의 service_role 키)
+
+- ADMIN_EMAILS: admin 로그인 보호 기능(팀원이 추가)이 이 목록에 있는 이메일만
+  관리자로 인정함. 없으면 로그인은 되어도 "관리자 권한이 없습니다"로 막힘.
+- SUPABASE_SERVICE_ROLE_KEY: admin 상품 관리 API(/api/admin/products)가
+  서버에서 service_role 키로 DB에 직접 접근하는데, 이 값이 없으면
+  상품 목록이 비어있는 채로 표시됨 (API 호출이 조용히 실패).
+
+※ 이 두 값은 Vercel 배포본에도 별도로 추가해야 함 (Project Settings →
+  Environment Variables). 로컬 .env.local과 Vercel은 서로 안 연동됨.
+
+
+3. 진행 중 / 아직 안 끝난 일
+------------------------------
+
+[Vercel 환경변수]
+Vercel 프로젝트 → Settings → Environment Variables 에 위 2번의
+ADMIN_EMAILS, SUPABASE_SERVICE_ROLE_KEY 추가 필요 (Production/Preview 체크).
+추가 후 반드시 Redeploy 해야 반영됨.
+
+[Supabase Redirect URL 설정 — 아직 미해결]
+실제 배포 도메인(Vercel)에서 Google 로그인 시,
+Supabase Authentication → URL Configuration의
+- Site URL 이 아직 http://localhost:3000 으로 되어 있고
+- Redirect URLs 에도 localhost:3000/auth/callback 만 등록되어 있어서
+배포 사이트에서 로그인하면 다시 localhost:3000/?code=... 로 튕기는 문제가 있음.
+
+해결 방법 (아직 미적용):
+  1. Site URL을 실제 배포 도메인으로 변경
+     예: https://your-vercel-domain.vercel.app
+  2. Redirect URLs에 다음 추가:
+     https://your-vercel-domain.vercel.app/auth/callback
+  (localhost 항목은 로컬 개발용으로 같이 남겨둬도 됨)
+
+→ 실제 Vercel 도메인 주소를 확인해서 Supabase에 등록해야 production
+  Google 로그인이 완전히 정상화됨.
