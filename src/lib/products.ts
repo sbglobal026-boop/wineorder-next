@@ -5,6 +5,8 @@ import { removeStorageFiles } from '@/lib/uploadImage'
 type ProductRow = {
   id: number
   name: string
+  EK: number
+  margin: number
   price: number
   type: string
   category: string
@@ -19,6 +21,8 @@ function rowToProduct(row: ProductRow): Product {
   return {
     id: row.id,
     name: row.name,
+    EK: row.EK,
+    margin: row.margin,
     price: row.price,
     type: row.type as Product['type'],
     category: row.category as Product['category'],
@@ -33,6 +37,8 @@ function rowToProduct(row: ProductRow): Product {
 function productToRow(product: Omit<Product, 'id'>) {
   return {
     name: product.name,
+    EK: product.EK,
+    margin: product.margin,
     price: product.price,
     type: product.type,
     category: product.category,

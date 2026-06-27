@@ -2,6 +2,7 @@
 import { useParams } from 'next/navigation'
 import { useAppConfig } from '@/context/AppConfigContext'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 const categoryBg: Record<string, string> = {
   '레드': 'bg-red-50',
@@ -15,10 +16,38 @@ function extractVintage(name: string): string {
   return match ? match[0] : '—'
 }
 
+// 원산지 → FTA 관세율
+function getImportDutyRate(origin: string): number {
+  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈', '오스트리아', '미국', '칠레', '호주', '뉴질랜드']
+  return ftaOrigins.some(o => origin.includes(o)) ? 0 : 0.15
+}
+
+// 관세 계산
+function calcDuty(priceEur: number, rate: number, origin: string) {
+  const cif = priceEur * rate
+  const importDuty = cif * getImportDutyRate(origin)
+  const exciseTax = (cif + importDuty) * 0.30
+  const educationTax = exciseTax * 0.10
+  const vat = (cif + importDuty + exciseTax + educationTax) * 0.10
+  const total = importDuty + exciseTax + educationTax + vat
+  return { cif, importDuty, exciseTax, educationTax, vat, total }
+}
+
 export default function WineDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { config } = useAppConfig()
+  const { config, addToCart } = useAppConfig()
   const product = config.products.find(p => p.id === Number(id))
+
+  const [eurToKrw, setEurToKrw] = useState<number | null>(null)
+
+  // 환율 API 연동
+  useEffect(() => {
+    fetch('/api/exchange-rate')
+      .then(res => res.json())
+      .then(data => setEurToKrw(data.rate))
+      .catch(() => setEurToKrw(1480)) // Default
+  }, [])
+
 
   if (!product) {
     return (
@@ -79,11 +108,22 @@ export default function WineDetailPage() {
 
             <p className="text-4xl font-black text-gray-900 mb-8">
               {product.price.toLocaleString()}
-              <span className="text-lg font-semibold text-gray-400 ml-1">원</span>
+              <span className="text-lg font-semibold text-gray-400 ml-1">유로</span>
+            </p>
+
+            {/* 예상 관세 */}
+            <p className="text-4xl font-black text-gray-900 mb-8">
+                    기준환율 1유로 = {eurToKrw?.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원 · 참고용 수치입니다
             </p>
 
             <div className="flex gap-3">
-              <button className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
+
+              {/*<button className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">*/}
+              <button
+                onClick={() => {
+                  console.log('clicked', product.id)
+                  addToCart(product.id)}}
+                className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
                 장바구니 담기
               </button>
               <button className="flex-1 border-2 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">

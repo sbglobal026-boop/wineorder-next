@@ -11,9 +11,10 @@ const emptyProduct: Omit<Product, 'id'> = {
   name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '',
 }
 
-{/*가격 계산 함수 */}
-function calculatePrice(EK: number, margin: number) {
-  return Math.round(EK * (1 + margin / 100))
+// 가격 계산 함수
+function calculatePrice(EK: number, margin: number, fixedTotal: number) {
+  return Math.round((EK + fixedTotal) / (1 - (margin / 100)))
+  //return Math.round(EK * (1 + margin / 100))
 }
 
 function ProductForm({
@@ -70,13 +71,15 @@ function ProductForm({
     if (extraFileInputRefs[index].current) extraFileInputRefs[index].current!.value = ''
   }
 
-  {/* 원가 및 마진 변동 가격 자동 계산 핸들러*/}
+  // 원가 및 마진 변동 가격 자동 계산 핸들러
+  const { getTotalFixedCost } = useAppConfig()
+  const fixedTotal = getTotalFixedCost()
   const handleCostChange = (EK: number) => {
-    const price = calculatePrice(EK, data.margin ?? 20)
+    const price = calculatePrice(EK, data.margin ?? 20, fixedTotal)
     onChange({...data, EK, price})
   }
   const handleMarginChange = (margin: number) => {
-    const price = calculatePrice(data.EK ?? onCancel, margin)
+    const price = calculatePrice(data.EK ?? onCancel, margin, fixedTotal)
     onChange({...data, margin, price})
   }
   return (
@@ -303,7 +306,7 @@ function FixedCostsSection() {
             key={cost.id}
             className="flex items-center gap-2 text-xs font-medium bg-white border border-gray-200 rounded-full px-3 py-1.5"
           >
-            {cost.name} · {cost.amount.toLocaleString()}원
+            {cost.name} · {cost.amount.toLocaleString()}유로
             <button
               onClick={() => deleteFixedCost(cost.id)}
               className="text-gray-300 hover:text-red-500 transition-colors"
@@ -325,7 +328,7 @@ function FixedCostsSection() {
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="금액 (원)"
+          placeholder="금액 (유로)"
           className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400 w-28"
         />
         <button
@@ -340,7 +343,7 @@ function FixedCostsSection() {
 }
 
 export default function ProductsPanel() {
-  const { config, updateProduct, addProduct, deleteProduct, setFeaturedWine } = useAppConfig()
+  const { config, updateProduct, addProduct, deleteProduct, setFeaturedWine, getTotalFixedCost} = useAppConfig()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -536,7 +539,7 @@ export default function ProductsPanel() {
                 </div>
                 <span className="text-sm text-gray-600">{product.origin}</span>
                 <span className="text-sm text-gray-600">{product.category}</span>
-                <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}원</span>
+                <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}유로</span>
                 {product.id === config.featuredWineId ? (
                   <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full text-center">
                     ✓ Top Drop

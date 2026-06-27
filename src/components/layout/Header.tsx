@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { useAppConfig } from '@/context/AppConfigContext'
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -20,8 +21,9 @@ const navItems = [
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [cartCount] = useState(2)
   const { currentUser, logout } = useAuth()
+  const { config } = useAppConfig()
+  const cartCount = config.cart.reduce((sum, c) => sum + c.qty, 0)
 
   return (
     <header className="sticky top-0 z-50">

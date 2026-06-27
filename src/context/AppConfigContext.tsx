@@ -10,6 +10,12 @@ import {
   setFeaturedProductIdRemote,
 } from '@/lib/products'
 
+import {
+  createFixedCostRow,
+  deleteFixedCostRow,
+  fetchFixedCosts,
+} from '@/lib/fixedCosts'
+
 export type BannerSlide = {
   id: number
   title: string
@@ -18,12 +24,19 @@ export type BannerSlide = {
   imageUrl?: string
 }
 
+// 장바구니
+export type CartItem = {
+  productId: number
+  qty: number
+}
+
 export type AppConfig = {
   featuredWineId: number
   bannerSlides: BannerSlide[]
   products: Product[]
   approvedWriters: string[]
   fixedCosts: FixedCost[]
+  cart: CartItem[]
 }
 
 type AppConfigContextType = {
@@ -37,6 +50,10 @@ type AppConfigContextType = {
   revokeWriter: (email: string) => void
   addFixedCost: (cost: Omit<FixedCost, 'id'>) => void
   deleteFixedCost: (id: number) => void
+  getTotalFixedCost: () => number
+  addToCart: (productId: number) => void
+  removeFromCart: (productId: number) => void
+  clearCart: () => void
 }
 
 const defaultBannerSlides: BannerSlide[] = [
@@ -52,6 +69,7 @@ const defaultConfig: AppConfig = {
   products: [],
   approvedWriters: [],
   fixedCosts: [],
+  cart: [],
 }
 
 const AppConfigContext = createContext<AppConfigContextType | null>(null)
@@ -91,6 +109,16 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       console.warn('localStorage 용량 초과')
     }
   }, [config.approvedWriters, isLoaded])
+
+  // 고정비 데이터베이스에서 로드
+  useEffect(() => {
+    fetchFixedCosts().then((data) => {
+      setConfig(prev => ({
+        ...prev,
+        fixedCosts: data,
+      }))
+    })
+  }, [])
 
   const setFeaturedWine = (id: number) => {
     setConfig(prev => ({ ...prev, featuredWineId: id }))
@@ -142,12 +170,14 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       approvedWriters: prev.approvedWriters.filter(e => e !== email),
     }))
 
+  // 고정비 추가
   const addFixedCost = (cost: Omit<FixedCost, 'id'>) => {
     createFixedCostRow(cost).then(created => {
       setConfig(prev => ({ ...prev, fixedCosts: [...prev.fixedCosts, created] }))
     })
   }
 
+  // 고정비 삭제
   const deleteFixedCost = (id: number) => {
     setConfig(prev => ({
       ...prev,
@@ -156,6 +186,49 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     deleteFixedCostRow(id)
   }
 
+  // 모든 고정비 합계
+  const getTotalFixedCost = () => {
+  return config.fixedCosts.reduce((sum, cost) => {
+    return sum + Number(cost.amount)
+  }, 0)
+}
+
+// 장바구니 추가
+const addToCart = (productId: number) => {
+  setConfig(prev => {
+    const existing = prev.cart.find(c => c.productId === productId)
+
+    if (existing) {
+      return {
+        ...prev,
+        cart: prev.cart.map(c =>
+          c.productId === productId
+            ? { ...c, qty: c.qty + 1 }
+            : c
+        ),
+      }
+    }
+
+    return {
+      ...prev,
+      cart: [...prev.cart, { productId, qty: 1 }],
+    }
+  })
+}
+
+// 장바구니 삭제
+const removeFromCart = (productId: number) => {
+  setConfig(prev => ({
+    ...prev,
+    cart: prev.cart.filter(c => c.productId !== productId),
+  }))
+}
+
+// 장바구니 비우기
+const clearCart = () => {
+  setConfig(prev => ({ ...prev, cart: [] }))
+}
+
   return (
     <AppConfigContext.Provider value={{
       config, setFeaturedWine,
@@ -163,6 +236,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       updateProduct, addProduct, deleteProduct,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,
+      getTotalFixedCost,
+      addToCart, removeFromCart, clearCart,
     }}>
       {children}
     </AppConfigContext.Provider>

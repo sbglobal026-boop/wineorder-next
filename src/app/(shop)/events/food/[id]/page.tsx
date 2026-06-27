@@ -63,7 +63,7 @@ export default function FoodDetailPage() {
 
             <p className="text-4xl font-black text-gray-900 mb-8">
               {product.price.toLocaleString()}
-              <span className="text-lg font-semibold text-gray-400 ml-1">원</span>
+              <span className="text-lg font-semibold text-gray-400 ml-1">유로</span>
             </p>
 
             <div className="flex gap-3">
