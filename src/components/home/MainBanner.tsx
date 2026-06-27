@@ -25,7 +25,7 @@ export default function MainBanner() {
       {/* 이미지 있을 때 어두운 오버레이 */}
       {hasImage && <div className="absolute inset-0 bg-black/50" />}
 
-      <div className={`relative max-w-7xl mx-auto px-6 py-24 md:py-36 ${!hasImage ? 'bg-[#fef9e4]' : ''}`}>
+      <div className={`relative max-w-7xl mx-auto px-6 py-24 md:py-36 ${!hasImage ? 'bg-white' : ''}`}>
         <div className="max-w-3xl">
           <p className={`text-xs font-bold tracking-widest uppercase mb-6 ${hasImage ? 'text-[#F5D623]' : 'text-[#8B4513]'}`}>
             {slide.subtitle}

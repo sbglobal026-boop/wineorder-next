@@ -2,12 +2,20 @@ export type Product = {
   id: number
   name: string
   price: number
+  EK: number /* 원가 */
+  margin: number
   type: 'wine' | 'food'
   category: '레드' | '화이트' | '로제' | '스파클링' | '식품'
   origin: string
   rating: number
   description: string
   imageUrl?: string
+}
+
+export type FixedCost = {
+  id: number
+  name: string
+  amount: number
 }
 
 export const products: Product[] = [
