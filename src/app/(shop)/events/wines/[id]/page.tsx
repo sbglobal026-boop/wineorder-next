@@ -16,21 +16,21 @@ function extractVintage(name: string): string {
   return match ? match[0] : '—'
 }
 
-// 원산지 → FTA 관세율
-function getImportDutyRate(origin: string): number {
-  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈', '오스트리아', '미국', '칠레', '호주', '뉴질랜드']
-  return ftaOrigins.some(o => origin.includes(o)) ? 0 : 0.15
-}
+// 관세 계산(배송비 미포함 ver.)
+function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
+  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈'] 
+  const isFTA = ftaOrigins.some(o => origin.includes(o))
 
-// 관세 계산
-function calcDuty(priceEur: number, rate: number, origin: string) {
-  const cif = priceEur * rate
-  const importDuty = cif * getImportDutyRate(origin)
-  const exciseTax = (cif + importDuty) * 0.30
-  const educationTax = exciseTax * 0.10
-  const vat = (cif + importDuty + exciseTax + educationTax) * 0.10
-  const total = importDuty + exciseTax + educationTax + vat
-  return { cif, importDuty, exciseTax, educationTax, vat, total }
+  const priceUsd = price * eurToUsd
+  const priceKrw = price * eurToKrw
+
+  if (priceUsd <= 150) {
+    const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)
+    return { total }
+  } else {
+    const total = Math.round(isFTA ? priceKrw * 0.463 : priceKrw * 0.683)
+    return { total }
+  }
 }
 
 export default function WineDetailPage() {
@@ -39,15 +39,18 @@ export default function WineDetailPage() {
   const product = config.products.find(p => p.id === Number(id))
 
   const [eurToKrw, setEurToKrw] = useState<number | null>(null)
+  const [eurToUsd, setEurToUsd] = useState<number | null>(null)
 
   // 환율 API 연동
   useEffect(() => {
     fetch('/api/exchange-rate')
       .then(res => res.json())
-      .then(data => setEurToKrw(data.rate))
-      .catch(() => setEurToKrw(1480)) // Default
+      .then(data => {
+        setEurToKrw(data.krw)
+        setEurToUsd(data.usd)
+      })
+      .catch(() => setEurToKrw(1750)) // Default
   }, [])
-
 
   if (!product) {
     return (
@@ -59,6 +62,8 @@ export default function WineDetailPage() {
       </div>
     )
   }
+  const priceKrw = (eurToKrw) ? product.price * eurToKrw : null
+  const duty = (eurToKrw && eurToUsd) ? calcDuty(product.price, eurToKrw, eurToUsd, product.origin) : null
 
   return (
     <div className="bg-[#fef9e4] min-h-screen">
@@ -110,10 +115,19 @@ export default function WineDetailPage() {
               {product.price.toLocaleString()}
               <span className="text-lg font-semibold text-gray-400 ml-1">유로</span>
             </p>
+            {/* 예상 원화 가격 */}
+            <p className="text-4xl font-black text-gray-900 mb-8">
+              {priceKrw ? priceKrw.toLocaleString():'환율 로딩중'}
+              <span className="text-lg font-semibold text-gray-400 ml-1">원</span>
+              기준환율 1유로 = {eurToKrw?.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+
+            </p>
 
             {/* 예상 관세 */}
             <p className="text-4xl font-black text-gray-900 mb-8">
-                    기준환율 1유로 = {eurToKrw?.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원 · 참고용 수치입니다
+              예상관세=
+              {duty ? duty.total.toLocaleString():'예상 세율 계산중'}
+              <span className="text-lg font-semibold text-gray-400 ml-1">원</span>
             </p>
 
             <div className="flex gap-3">
