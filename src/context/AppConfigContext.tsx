@@ -1,12 +1,13 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { Product } from '@/data/products'
+import { Product, FixedCost } from '@/data/products'
 import { useAuth } from '@/context/AuthContext'
 import {
   fetchProducts,
   fetchFeaturedProductId,
   setFeaturedProductIdRemote,
 } from '@/lib/products'
+import { fetchBannerSlides, updateBannerSlideRow } from '@/lib/banners'
 
 import {
   createFixedCostRow,
@@ -94,6 +95,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     fetchProducts().then(products => setConfig(prev => ({ ...prev, products })))
     fetchFeaturedProductId().then(id => {
       if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
+    })
+    fetchBannerSlides().then(bannerSlides => {
+      if (bannerSlides.length > 0) setConfig(prev => ({ ...prev, bannerSlides }))
     })
   }, [])
 

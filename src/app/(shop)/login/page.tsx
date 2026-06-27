@@ -1,11 +1,19 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const { login } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -20,7 +28,7 @@ export default function LoginPage() {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}${redirect}` },
+      options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(redirect)}` },
     })
   }
 
