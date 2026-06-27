@@ -15,7 +15,7 @@ function extractVintage(name: string): string {
 }
 
 export default function TopDropPage() {
-  const { config } = useAppConfig()
+  const { config, addToCart } = useAppConfig()
   const product = config.products.find(p => p.id === config.featuredWineId) ?? config.products[0]
   const recommended = config.products.filter(p => p.id !== product?.id).slice(0, 4)
 
@@ -68,11 +68,15 @@ export default function TopDropPage() {
 
             <p className="text-4xl font-black text-gray-900 mb-8">
               {product.price.toLocaleString()}
-              <span className="text-lg font-semibold text-gray-400 ml-1">원</span>
+              <span className="text-lg font-semibold text-gray-400 ml-1">유로</span>
             </p>
 
             <div className="flex gap-3">
-              <button className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
+              <button
+                onClick={() => {
+                  console.log('clicked', product.id)
+                  addToCart(product.id)}}
+                className="flex-1 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">
                 장바구니 담기
               </button>
               <button className="flex-1 border-2 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors">

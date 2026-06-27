@@ -10,6 +10,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/blog/wine'
+  const justRegistered = searchParams.get('registered') === '1'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -29,7 +30,11 @@ export default function LoginPage() {
     setError('')
     const err = await login(email, password)
     if (err) {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다')
+      setError(
+        err.toLowerCase().includes('email not confirmed')
+          ? '이메일 인증이 필요합니다. 가입 시 받은 인증 메일의 링크를 클릭해주세요.'
+          : '이메일 또는 비밀번호가 올바르지 않습니다'
+      )
       setLoading(false)
     } else {
       router.push(redirect)
@@ -43,6 +48,12 @@ export default function LoginPage() {
           <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-2">Wine Order</p>
           <h1 className="text-2xl font-black text-gray-900">로그인</h1>
         </div>
+
+        {justRegistered && (
+          <p className="text-center text-sm text-[#2C5F2D] bg-[#2C5F2D]/10 rounded-lg py-2.5 mb-4">
+            회원가입이 완료되었습니다. 이메일로 받은 인증 링크를 클릭한 뒤 로그인해주세요.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>

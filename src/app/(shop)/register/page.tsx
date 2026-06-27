@@ -10,16 +10,29 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
+
+    if (password !== confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다')
+      return
+    }
+
+    setLoading(true)
     const err = await register(name, email, password)
     if (err) {
-      setError('가입에 실패했습니다. 이미 사용 중인 이메일일 수 있습니다.')
+      setError(
+        err.toLowerCase().includes('already registered') || err.toLowerCase().includes('already exists')
+          ? '이미 사용 중인 이메일입니다'
+          : err.toLowerCase().includes('password')
+          ? '비밀번호는 6자 이상이어야 합니다'
+          : '가입에 실패했습니다. 잠시 후 다시 시도해주세요.'
+      )
       setLoading(false)
     } else {
       router.push('/login?registered=1')
@@ -66,6 +79,18 @@ export default function RegisterPage() {
               minLength={6}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-gray-400"
               placeholder="6자 이상"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">비밀번호 확인</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-gray-400"
+              placeholder="비밀번호 다시 입력"
             />
           </div>
 

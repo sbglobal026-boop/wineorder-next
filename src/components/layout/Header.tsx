@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
@@ -24,6 +24,18 @@ export default function Header() {
   const { currentUser, logout } = useAuth()
   const { config } = useAppConfig()
   const cartCount = config.cart.reduce((sum, c) => sum + c.qty, 0)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    if (!currentUser) {
+      setIsAdmin(false)
+      return
+    }
+    fetch('/api/admin/me')
+      .then(res => res.json())
+      .then(data => setIsAdmin(!!data.isAdmin))
+      .catch(() => setIsAdmin(false))
+  }, [currentUser])
 
   return (
     <header className="sticky top-0 z-50">
@@ -74,8 +86,13 @@ export default function Header() {
         <div className="flex items-center gap-5 text-[12px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-lato)]">
           {currentUser ? (
             <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Link href="/admin" className="opacity-70 hover:opacity-100 transition-opacity">
+                  Admin
+                </Link>
+              )}
               <span className="opacity-70 hidden md:block">{currentUser.name}</span>
-              <button onClick={logout} className="opacity-70 hover:opacity-100 transition-opacity">
+              <button onClick={logout} className="opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
                 Logout
               </button>
             </div>
@@ -89,7 +106,7 @@ export default function Header() {
             Cart [{cartCount}]
           </Link>
 
-          <button className="md:hidden opacity-80" onClick={() => setMobileOpen(!mobileOpen)}>
+          <button className="md:hidden opacity-80 cursor-pointer" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? 'Close' : 'Menu'}
           </button>
         </div>

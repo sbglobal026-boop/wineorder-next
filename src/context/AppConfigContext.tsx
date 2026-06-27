@@ -1,11 +1,9 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Product } from '@/data/products'
+import { useAuth } from '@/context/AuthContext'
 import {
   fetchProducts,
-  createProductRow,
-  updateProductRow,
-  deleteProductRow,
   fetchFeaturedProductId,
   setFeaturedProductIdRemote,
 } from '@/lib/products'
@@ -43,9 +41,6 @@ type AppConfigContextType = {
   config: AppConfig
   setFeaturedWine: (id: number) => void
   updateBannerSlide: (slide: BannerSlide) => void
-  updateProduct: (product: Product) => void
-  addProduct: (product: Omit<Product, 'id'>) => void
-  deleteProduct: (id: number) => void
   approveWriter: (email: string) => void
   revokeWriter: (email: string) => void
   addFixedCost: (cost: Omit<FixedCost, 'id'>) => void
@@ -77,6 +72,7 @@ const AppConfigContext = createContext<AppConfigContextType | null>(null)
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
+  const { currentUser } = useAuth()
 
   // 로컬 전용 설정 (작성자 승인 목록)
   useEffect(() => {
@@ -100,6 +96,21 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
     })
   }, [])
+
+  // 장바구니: 로그인한 사용자별로 localStorage에 저장 — 로그아웃하면 비고, 로그인하면 그 계정 것만 복원
+  useEffect(() => {
+    if (!currentUser) {
+      setConfig(prev => ({ ...prev, cart: [] }))
+      return
+    }
+    const stored = localStorage.getItem(`wineorder-cart-${currentUser.id}`)
+    setConfig(prev => ({ ...prev, cart: stored ? JSON.parse(stored) : [] }))
+  }, [currentUser])
+
+  useEffect(() => {
+    if (!currentUser) return
+    localStorage.setItem(`wineorder-cart-${currentUser.id}`, JSON.stringify(config.cart))
+  }, [config.cart, currentUser])
 
   useEffect(() => {
     if (!isLoaded) return
@@ -131,29 +142,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       bannerSlides: prev.bannerSlides.map(s => s.id === slide.id ? slide : s),
     }))
     updateBannerSlideRow(slide)
-  }
-
-  const updateProduct = (product: Product) => {
-    setConfig(prev => ({
-      ...prev,
-      products: prev.products.map(p => p.id === product.id ? product : p),
-    }))
-    updateProductRow(product)
-  }
-
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    createProductRow(product).then(created => {
-      setConfig(prev => ({ ...prev, products: [...prev.products, created] }))
-    })
-  }
-
-  const deleteProduct = (id: number) => {
-    const target = config.products.find(p => p.id === id)
-    setConfig(prev => ({
-      ...prev,
-      products: prev.products.filter(p => p.id !== id),
-    }))
-    deleteProductRow(id, target?.imageUrl, target?.extraImages)
   }
 
   const approveWriter = (email: string) =>
@@ -233,7 +221,6 @@ const clearCart = () => {
     <AppConfigContext.Provider value={{
       config, setFeaturedWine,
       updateBannerSlide,
-      updateProduct, addProduct, deleteProduct,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,
       getTotalFixedCost,

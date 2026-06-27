@@ -1,8 +1,9 @@
 'use client'
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { Product } from '@/data/products'
 import { uploadProductImage } from '@/lib/uploadImage'
+import { fetchAdminProducts, createProductRow, updateProductRow, deleteProductRow } from '@/lib/products'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -12,8 +13,8 @@ const emptyProduct: Omit<Product, 'id'> = {
 }
 
 // 가격 계산 함수
-function calculatePrice(EK: number, margin: number, fixedTotal: number) {
-  return Math.round((EK + fixedTotal) / (1 - (margin / 100)))
+function calculatePrice(EK: number, margin: number) {
+  return Math.round(EK * (1 + margin / 100))
   //return Math.round(EK * (1 + margin / 100))
 }
 
@@ -72,14 +73,14 @@ function ProductForm({
   }
 
   // 원가 및 마진 변동 가격 자동 계산 핸들러
-  const { getTotalFixedCost } = useAppConfig()
-  const fixedTotal = getTotalFixedCost()
+  // const { getTotalFixedCost } = useAppConfig()
+  // const fixedTotal = getTotalFixedCost()
   const handleCostChange = (EK: number) => {
-    const price = calculatePrice(EK, data.margin ?? 20, fixedTotal)
+    const price = calculatePrice(EK, data.margin ?? 20)
     onChange({...data, EK, price})
   }
   const handleMarginChange = (margin: number) => {
-    const price = calculatePrice(data.EK ?? onCancel, margin, fixedTotal)
+    const price = calculatePrice(data.EK ?? onCancel, margin)
     onChange({...data, margin, price})
   }
   return (
@@ -280,6 +281,7 @@ function ProductForm({
   )
 }
 
+/**
 function FixedCostsSection() {
   const { config, addFixedCost, deleteFixedCost } = useAppConfig()
   const [name, setName] = useState('')
@@ -340,10 +342,11 @@ function FixedCostsSection() {
       </div>
     </div>
   )
-}
+}*/
 
 export default function ProductsPanel() {
-  const { config, updateProduct, addProduct, deleteProduct, setFeaturedWine, getTotalFixedCost} = useAppConfig()
+  const { config, setFeaturedWine } = useAppConfig()
+  const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -355,13 +358,17 @@ export default function ProductsPanel() {
   const [filterType, setFilterType] = useState<'all' | 'wine' | 'food'>('all')
   const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
 
+  useEffect(() => {
+    fetchAdminProducts().then(setProducts).catch(() => setProducts([]))
+  }, [])
+
   const origins = useMemo(
-    () => Array.from(new Set(config.products.map(p => p.origin))).sort(),
-    [config.products]
+    () => Array.from(new Set(products.map(p => p.origin))).sort(),
+    [products]
   )
 
   const filtered = useMemo(() => {
-    let list = config.products
+    let list = products
     if (filterType !== 'all')
       list = list.filter(p => p.type === filterType)
     if (searchName.trim())
@@ -373,7 +380,7 @@ export default function ProductsPanel() {
     else if (sortPrice === 'desc')
       list = [...list].sort((a, b) => b.price - a.price)
     return list
-  }, [config.products, searchName, filterOrigin, filterType, sortPrice])
+  }, [products, searchName, filterOrigin, filterType, sortPrice])
 
   const startEdit = (product: Product) => {
     setEditingId(product.id)
@@ -381,21 +388,32 @@ export default function ProductsPanel() {
     setShowAdd(false)
   }
 
-  const saveEdit = () => {
-    if (editForm) { updateProduct(editForm); setEditingId(null); setEditForm(null) }
+  const saveEdit = async () => {
+    if (!editForm) return
+    await updateProductRow(editForm)
+    setProducts(prev => prev.map(p => p.id === editForm.id ? editForm : p))
+    setEditingId(null)
+    setEditForm(null)
   }
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (addForm.name && addForm.price) {
-      addProduct(addForm)
+      const created = await createProductRow(addForm)
+      setProducts(prev => [...prev, created])
       setAddForm(emptyProduct)
       setShowAdd(false)
     }
   }
 
-  const handleDelete = (id: number) => {
-    if (deleteConfirm === id) { deleteProduct(id); setDeleteConfirm(null) }
-    else setDeleteConfirm(id)
+  const handleDelete = async (id: number) => {
+    if (deleteConfirm === id) {
+      const target = products.find(p => p.id === id)
+      await deleteProductRow(id, target?.imageUrl, target?.extraImages)
+      setProducts(prev => prev.filter(p => p.id !== id))
+      setDeleteConfirm(null)
+    } else {
+      setDeleteConfirm(id)
+    }
   }
 
   const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none'
@@ -427,7 +445,7 @@ export default function ProductsPanel() {
       )}
 
       {/* 고정비 */}
-      <FixedCostsSection />
+      {/*<FixedCostsSection />*/}
 
       {/* 필터 */}
       <div className="flex flex-wrap gap-3 mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
