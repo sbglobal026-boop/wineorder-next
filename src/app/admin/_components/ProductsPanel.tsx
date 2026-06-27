@@ -30,7 +30,9 @@ function ProductForm({
   saveLabel: string
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const extraFileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
   const [uploading, setUploading] = useState(false)
+  const [uploadingExtraIndex, setUploadingExtraIndex] = useState<number | null>(null)
 
   const handleTypeChange = (type: 'wine' | 'food') => {
     onChange({ ...data, type, category: type === 'food' ? '식품' : '레드' })
@@ -48,6 +50,24 @@ function ProductForm({
   const removeImage = () => {
     onChange({ ...data, imageUrl: undefined })
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleExtraImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingExtraIndex(index)
+    const url = await uploadProductImage(file)
+    setUploadingExtraIndex(null)
+    const extraImages = [...(data.extraImages ?? [])]
+    extraImages[index] = url
+    onChange({ ...data, extraImages })
+  }
+
+  const removeExtraImage = (index: number) => {
+    const extraImages = [...(data.extraImages ?? [])]
+    extraImages.splice(index, 1)
+    onChange({ ...data, extraImages })
+    if (extraFileInputRefs[index].current) extraFileInputRefs[index].current!.value = ''
   }
 
   {/* 원가 및 마진 변동 가격 자동 계산 핸들러*/}
@@ -98,6 +118,53 @@ function ProductForm({
           onChange={handleImageUpload}
           className="hidden"
         />
+      </div>
+
+      {/* 추가 사진 (Top Drop 작은 사진 2장용) */}
+      <div className="md:col-span-3">
+        <label className="block text-xs font-semibold text-gray-600 mb-2">추가 사진 (최대 2장, Top Drop 섹션에 표시됨)</label>
+        <div className="flex gap-3">
+          {[0, 1].map((index) => {
+            const url = data.extraImages?.[index]
+            return (
+              <div key={index}>
+                {url ? (
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
+                    <img src={url} alt={`추가 사진 ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removeExtraImage(index)}
+                      className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded-full transition-colors"
+                    >
+                      제거
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => extraFileInputRefs[index].current?.click()}
+                    disabled={uploadingExtraIndex === index}
+                    className="w-24 h-24 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
+                  >
+                    {uploadingExtraIndex === index ? (
+                      <span className="text-[10px] font-medium">업로드중...</span>
+                    ) : (
+                      <>
+                        <span className="text-2xl">+</span>
+                        <span className="text-[10px] font-medium">사진 {index + 1}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+                <input
+                  ref={extraFileInputRefs[index]}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleExtraImageUpload(index, e)}
+                  className="hidden"
+                />
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       <div>

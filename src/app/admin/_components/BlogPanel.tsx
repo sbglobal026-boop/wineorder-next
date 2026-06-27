@@ -3,11 +3,12 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
+import { BLOG_CATEGORIES, BlogCategory } from '@/lib/blogCategories'
 
 const MAX_IMAGES = 10
 
-type FormState = { title: string; content: string; images: string[] }
-const emptyForm: FormState = { title: '', content: '', images: [] }
+type FormState = { title: string; content: string; images: string[]; category: BlogCategory }
+const emptyForm: FormState = { title: '', content: '', images: [], category: 'wine' }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -23,6 +24,7 @@ export default function BlogPanel() {
   const [editForm, setEditForm] = useState<FormState | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [filter, setFilter] = useState<BlogCategory | 'all'>('all')
   const addFileRef = useRef<HTMLInputElement>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
 
@@ -32,6 +34,8 @@ export default function BlogPanel() {
   }
 
   useEffect(() => { loadPosts() }, [])
+
+  const visiblePosts = filter === 'all' ? posts : posts.filter(p => p.category === filter)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'add' | 'edit') => {
     const files = Array.from(e.target.files ?? [])
@@ -56,6 +60,7 @@ export default function BlogPanel() {
       title: addForm.title,
       content: addForm.content,
       images: addForm.images,
+      category: addForm.category,
       author_id: currentUser?.id ?? null,
       author_name: currentUser?.name ?? '관리자',
     })
@@ -66,7 +71,7 @@ export default function BlogPanel() {
 
   const startEdit = (post: BlogPost) => {
     setEditingId(post.id)
-    setEditForm({ title: post.title, content: post.content, images: post.images })
+    setEditForm({ title: post.title, content: post.content, images: post.images, category: post.category })
     setShowAdd(false)
   }
 
@@ -99,13 +104,47 @@ export default function BlogPanel() {
           + 새 글 작성
         </button>
       </div>
-      <p className="text-gray-500 text-sm mb-6">블로그 글을 작성하고 관리합니다 (사진 최대 {MAX_IMAGES}장)</p>
+      <p className="text-gray-500 text-sm mb-4">블로그 글을 작성하고 관리합니다 (사진 최대 {MAX_IMAGES}장)</p>
+
+      {/* 카테고리 필터 */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setFilter('all')}
+          className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+            filter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+          }`}
+        >전체</button>
+        {BLOG_CATEGORIES.map(c => (
+          <button
+            key={c.value}
+            onClick={() => setFilter(c.value)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+              filter === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+            }`}
+          >{c.label}</button>
+        ))}
+      </div>
 
       {/* 글쓰기 폼 */}
       {showAdd && (
         <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-6">
           <p className="text-sm font-semibold text-gray-700 mb-4">새 글 작성</p>
           <div className="flex flex-col gap-4">
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리 *</label>
+              <div className="flex gap-2">
+                {BLOG_CATEGORIES.map(c => (
+                  <button
+                    key={c.value}
+                    onClick={() => setAddForm(f => ({ ...f, category: c.value }))}
+                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
+                      addForm.category === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >{c.label}</button>
+                ))}
+              </div>
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-2">
@@ -170,15 +209,30 @@ export default function BlogPanel() {
         <p className="text-sm text-gray-400 text-center py-10">불러오는 중...</p>
       ) : (
         <div className="divide-y divide-gray-100">
-          {posts.length === 0 && (
+          {visiblePosts.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-10">작성된 글이 없습니다</p>
           )}
-          {posts.map((post) => (
+          {visiblePosts.map((post) => (
             <div key={post.id}>
               {editingId === post.id && editForm ? (
                 <div className="py-4 px-4 bg-gray-50 rounded-xl my-2">
                   <p className="text-xs text-gray-400 font-medium mb-4">편집 중: {post.title}</p>
                   <div className="flex flex-col gap-4">
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리</label>
+                      <div className="flex gap-2">
+                        {BLOG_CATEGORIES.map(c => (
+                          <button
+                            key={c.value}
+                            onClick={() => setEditForm(f => f ? { ...f, category: c.value } : f)}
+                            className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
+                              editForm.category === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                            }`}
+                          >{c.label}</button>
+                        ))}
+                      </div>
+                    </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-2">
@@ -240,7 +294,12 @@ export default function BlogPanel() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-400 border border-gray-200 rounded-full px-2 py-0.5">
+                        {BLOG_CATEGORIES.find(c => c.value === post.category)?.label ?? post.category}
+                      </span>
+                      <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
+                    </div>
                     <p className="text-xs text-gray-400 mt-0.5">{formatDate(post.created_at)} · 사진 {post.images.length}장</p>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-1">{post.content}</p>
                   </div>

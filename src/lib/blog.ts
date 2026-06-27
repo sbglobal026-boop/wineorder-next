@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { removeStorageFiles } from '@/lib/uploadImage'
+import { BlogCategory } from '@/lib/blogCategories'
 
 export type BlogPost = {
   id: number
@@ -9,6 +10,7 @@ export type BlogPost = {
   author_id: string | null
   author_name: string
   created_at: string
+  category: BlogCategory
 }
 
 export type BlogComment = {
@@ -20,12 +22,11 @@ export type BlogComment = {
   created_at: string
 }
 
-export async function fetchBlogPosts(): Promise<BlogPost[]> {
+export async function fetchBlogPosts(category?: BlogCategory): Promise<BlogPost[]> {
   const supabase = createClient()
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .order('created_at', { ascending: false })
+  let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
+  if (category) query = query.eq('category', category)
+  const { data, error } = await query
   if (error) throw error
   return data ?? []
 }
@@ -42,6 +43,7 @@ export async function createBlogPost(post: {
   images: string[]
   author_id: string | null
   author_name: string
+  category: BlogCategory
 }) {
   const supabase = createClient()
   const { data, error } = await supabase.from('blog_posts').insert(post).select().single()
@@ -49,7 +51,7 @@ export async function createBlogPost(post: {
   return data as BlogPost
 }
 
-export async function updateBlogPost(id: number, post: Partial<Pick<BlogPost, 'title' | 'content' | 'images'>>) {
+export async function updateBlogPost(id: number, post: Partial<Pick<BlogPost, 'title' | 'content' | 'images' | 'category'>>) {
   const supabase = createClient()
   const { error } = await supabase.from('blog_posts').update(post).eq('id', id)
   if (error) throw error

@@ -12,6 +12,7 @@ type ProductRow = {
   rating: number
   description: string | null
   image_url: string | null
+  extra_images: string[] | null
 }
 
 function rowToProduct(row: ProductRow): Product {
@@ -25,6 +26,7 @@ function rowToProduct(row: ProductRow): Product {
     rating: row.rating,
     description: row.description ?? '',
     imageUrl: row.image_url ?? undefined,
+    extraImages: row.extra_images ?? undefined,
   }
 }
 
@@ -38,6 +40,7 @@ function productToRow(product: Omit<Product, 'id'>) {
     rating: product.rating,
     description: product.description,
     image_url: product.imageUrl ?? null,
+    extra_images: product.extraImages ?? [],
   }
 }
 
@@ -61,9 +64,10 @@ export async function updateProductRow(product: Product): Promise<void> {
   if (error) throw error
 }
 
-export async function deleteProductRow(id: number, imageUrl?: string): Promise<void> {
-  if (imageUrl) {
-    await removeStorageFiles('product-images', [imageUrl])
+export async function deleteProductRow(id: number, imageUrl?: string, extraImages?: string[]): Promise<void> {
+  const imagesToRemove = [imageUrl, ...(extraImages ?? [])].filter((url): url is string => !!url)
+  if (imagesToRemove.length > 0) {
+    await removeStorageFiles('product-images', imagesToRemove)
   }
   const supabase = createClient()
   const { error } = await supabase.from('products').delete().eq('id', id)

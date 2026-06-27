@@ -57,6 +57,10 @@ export async function uploadProductImage(file: File): Promise<string> {
   return uploadImage(file, 'product-images', 'products')
 }
 
+export async function uploadBannerImage(file: File): Promise<string> {
+  return uploadImage(file, 'banner-images', 'banners')
+}
+
 function extractStoragePath(url: string, bucket: string): string | null {
   const marker = `/object/public/${bucket}/`
   const idx = url.indexOf(marker)

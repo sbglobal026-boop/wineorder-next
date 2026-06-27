@@ -12,7 +12,7 @@ export default function FoodDetailPage() {
     return (
       <div className="bg-[#fef9e4] min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-gray-400 text-sm">존재하지 않는 상품입니다</p>
-        <Link href="/support" className="text-xs font-bold uppercase tracking-widest text-[#2C5F2D] hover:text-[#8B4513] transition-colors">
+        <Link href="/events/food" className="text-xs font-bold uppercase tracking-widest text-[#2C5F2D] hover:text-[#8B4513] transition-colors">
           ← 식품 목록으로
         </Link>
       </div>
@@ -23,7 +23,7 @@ export default function FoodDetailPage() {
     <div className="bg-[#fef9e4] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-10">
 
-        <Link href="/support" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors mb-10">
+        <Link href="/events/food" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors mb-10">
           ← 식품 목록
         </Link>
 

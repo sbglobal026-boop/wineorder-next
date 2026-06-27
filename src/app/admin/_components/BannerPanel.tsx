@@ -1,11 +1,13 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useAppConfig, BannerSlide } from '@/context/AppConfigContext'
+import { uploadBannerImage } from '@/lib/uploadImage'
 
 export default function BannerPanel() {
   const { config, updateBannerSlide } = useAppConfig()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState<BannerSlide | null>(null)
+  const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const startEdit = (slide: BannerSlide) => {
@@ -21,14 +23,13 @@ export default function BannerPanel() {
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setForm(prev => prev ? { ...prev, imageUrl: reader.result as string } : prev)
-    }
-    reader.readAsDataURL(file)
+    setUploading(true)
+    const url = await uploadBannerImage(file)
+    setUploading(false)
+    setForm(prev => prev ? { ...prev, imageUrl: url } : prev)
   }
 
   const removeImage = () => {
@@ -64,10 +65,17 @@ export default function BannerPanel() {
                   ) : (
                     <button
                       onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
                       className="w-full h-24 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
                     >
-                      <span className="text-2xl">+</span>
-                      <span className="text-xs font-medium">이미지 업로드</span>
+                      {uploading ? (
+                        <span className="text-xs font-medium">업로드중...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl">+</span>
+                          <span className="text-xs font-medium">이미지 업로드</span>
+                        </>
+                      )}
                     </button>
                   )}
                   <input
@@ -97,14 +105,6 @@ export default function BannerPanel() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">버튼 텍스트</label>
-                  <input
-                    value={form.cta}
-                    onChange={(e) => setForm(prev => prev ? { ...prev, cta: e.target.value } : prev)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-                  />
-                </div>
                 <div className="flex gap-2">
                   <button onClick={save} className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
                     저장
@@ -125,10 +125,7 @@ export default function BannerPanel() {
                   <div className="min-w-0">
                     <p className="text-xs text-gray-400 mb-1">슬라이드 {slide.id}</p>
                     <p className="text-gray-900 font-semibold mb-1">{slide.title.replace('\n', ' / ')}</p>
-                    <p className="text-gray-500 text-sm mb-2">{slide.subtitle}</p>
-                    <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
-                      버튼: {slide.cta}
-                    </span>
+                    <p className="text-gray-500 text-sm">{slide.subtitle}</p>
                   </div>
                 </div>
                 <button

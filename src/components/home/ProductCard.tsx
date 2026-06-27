@@ -9,7 +9,7 @@ const categoryBg: Record<string, string> = {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const href = product.type === 'wine' ? `/wines/${product.id}` : `/support/${product.id}`
+  const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
 
   return (
     <Link href={href} className="bg-[#fef9e4] border border-gray-200 group block rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-2 hover:shadow-xl">

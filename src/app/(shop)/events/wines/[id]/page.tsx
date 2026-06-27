@@ -24,7 +24,7 @@ export default function WineDetailPage() {
     return (
       <div className="bg-[#fef9e4] min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-gray-400 text-sm">존재하지 않는 상품입니다</p>
-        <Link href="/wines" className="text-xs font-bold uppercase tracking-widest text-[#8B4513] hover:text-[#2C5F2D] transition-colors">
+        <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#8B4513] hover:text-[#2C5F2D] transition-colors">
           ← 와인 목록으로
         </Link>
       </div>
@@ -35,7 +35,7 @@ export default function WineDetailPage() {
     <div className="bg-[#fef9e4] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-10">
 
-        <Link href="/wines" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors mb-10">
+        <Link href="/events/wines" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors mb-10">
           ← 와인 목록
         </Link>
 

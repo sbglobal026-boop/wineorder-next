@@ -1,18 +1,21 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, notFound } from 'next/navigation'
 import { fetchBlogPost, BlogPost } from '@/lib/blog'
+import { isBlogCategory, categoryLabel } from '@/lib/blogCategories'
 import BlogPostCard from '@/components/blog/BlogPostCard'
 import Link from 'next/link'
 
 export default function BlogPostPage() {
-  const params = useParams()
+  const { category, id } = useParams<{ category: string; id: string }>()
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
 
+  if (!isBlogCategory(category)) notFound()
+
   useEffect(() => {
-    fetchBlogPost(Number(params.id)).then(data => { setPost(data); setLoading(false) })
-  }, [params.id])
+    fetchBlogPost(Number(id)).then(data => { setPost(data); setLoading(false) })
+  }, [id])
 
   if (loading) {
     return <div className="bg-white min-h-screen" />
@@ -23,7 +26,9 @@ export default function BlogPostPage() {
       <div className="bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-400 text-sm mb-4">글을 찾을 수 없습니다</p>
-          <Link href="/blog" className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">← 블로그로 돌아가기</Link>
+          <Link href={`/blog/${category}`} className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
+            ← {categoryLabel(category)}로 돌아가기
+          </Link>
         </div>
       </div>
     )
@@ -32,8 +37,8 @@ export default function BlogPostPage() {
   return (
     <div className="bg-white min-h-screen">
       <div className="max-w-xl mx-auto px-6 py-16">
-        <Link href="/blog" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
-          ← 블로그
+        <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
+          ← {categoryLabel(category)}
         </Link>
         <BlogPostCard post={post} />
       </div>
