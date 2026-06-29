@@ -18,7 +18,7 @@ function fmt(n: number): string {
 export default function ProductGridCard({ product }: { product: Product }) {
   const { addToCart } = useAppConfig()
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
-  const criticRatings = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
+  const firstCriticRating = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean)[0]
 
   return (
     <div className="flex flex-col">
@@ -39,10 +39,7 @@ export default function ProductGridCard({ product }: { product: Product }) {
         </div>
         <div>
           <p className="text-xs font-medium mb-0.5">평가.</p>
-          {criticRatings.length > 0
-            ? criticRatings.map((r, i) => <p key={i} className="text-xs text-gray-400 leading-relaxed">{r}</p>)
-            : <p className="text-xs text-gray-400">—</p>
-          }
+          <p className="text-xs text-gray-400">{firstCriticRating ?? '—'}</p>
         </div>
       </div>
       <button
