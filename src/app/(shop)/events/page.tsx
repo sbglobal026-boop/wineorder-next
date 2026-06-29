@@ -40,6 +40,7 @@ export default function TopDropPage() {
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [reviewError, setReviewError] = useState<string | null>(null)
 
   useEffect(() => {
     setActiveImg(0)
@@ -78,6 +79,7 @@ export default function TopDropPage() {
   const handleSubmitReview = async () => {
     if (!currentUser || !newComment.trim() || submitting) return
     setSubmitting(true)
+    setReviewError(null)
     try {
       const created = await addReview({
         productId: product.id,
@@ -89,6 +91,11 @@ export default function TopDropPage() {
       setReviews(prev => [created, ...prev])
       setNewComment('')
       setNewRating(5)
+    } catch (err) {
+      const message = err instanceof Error
+        ? err.message
+        : (typeof err === 'object' && err !== null && 'message' in err ? String((err as { message: unknown }).message) : null)
+      setReviewError(message || '리뷰 등록에 실패했습니다')
     } finally {
       setSubmitting(false)
     }
@@ -181,6 +188,9 @@ export default function TopDropPage() {
                     className="w-full text-[13px] p-2.5 border border-[#1C1A17]/15 bg-white resize-none"
                     rows={2}
                   />
+                  {reviewError && (
+                    <p className="text-[12px] text-red-600">{reviewError}</p>
+                  )}
                   <button
                     onClick={handleSubmitReview}
                     disabled={!newComment.trim() || submitting}
