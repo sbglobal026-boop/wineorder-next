@@ -39,3 +39,8 @@ body {
   from { width: 0%; }
   to { width: 100%; }
 }
+
+@keyframes wh-slideup {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
