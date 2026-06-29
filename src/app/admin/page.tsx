@@ -6,11 +6,13 @@ import ProductsPanel from './_components/ProductsPanel'
 import SectionsPanel from './_components/SectionsPanel'
 import BlogPanel from './_components/BlogPanel'
 import WritersPanel from './_components/WritersPanel'
+import ShippingPanel from './_components/ShippingPanel'
 
-type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers'
+type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping'
 
 const navItems: { id: Panel; label: string; icon: string }[] = [
   { id: 'products', label: '상품 관리', icon: '🍷' },
+  { id: 'shipping', label: '배송 관리', icon: '🚚' },
   { id: 'blog', label: '블로그 관리', icon: '✍️' },
   { id: 'writers', label: '작성자 관리', icon: '👥' },
   { id: 'banner', label: '배너 관리', icon: '🖼️' },
@@ -67,6 +69,7 @@ export default function AdminPage() {
       {/* 콘텐츠 영역 */}
       <main className="flex-1 p-8 overflow-auto">
         {activePanel === 'products' && <ProductsPanel />}
+        {activePanel === 'shipping' && <ShippingPanel />}
         {activePanel === 'blog' && <BlogPanel />}
         {activePanel === 'writers' && <WritersPanel />}
         {activePanel === 'banner' && <BannerPanel />}

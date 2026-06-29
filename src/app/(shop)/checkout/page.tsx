@@ -1,9 +1,90 @@
 'use client'
 import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
+const EU_COUNTRIES = ['FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'PL', 'SE', 'DK', 'FI', 'IE', 'GR', 'CZ', 'HU', 'RO', 'SK', 'BG', 'HR', 'SI', 'LT', 'LV', 'EE', 'LU', 'MT', 'CY']
+
+type CountryZone = 'DE' | 'KR' | 'EU'
+
+function getZone(country: string): CountryZone {
+  if (country === 'DE') return 'DE'
+  if (country === 'KR') return 'KR'
+  if (EU_COUNTRIES.includes(country)) return 'EU'
+  return 'EU'
+}
+
+interface Address {
+  id: string
+  recipient_name: string
+  address: string
+  city: string
+  country: string
+  is_default: boolean
+  customs_code: string | null
+}
+
+interface ShippingRate {
+  id: string
+  zone: string
+  fee: number
+  vat_rate: number
+}
+
+const COUNTRY_OPTIONS = [
+  { code: 'KR', label: '🇰🇷 한국' },
+  { code: 'DE', label: '🇩🇪 독일' },
+  { code: 'FR', label: '🇫🇷 프랑스' },
+  { code: 'IT', label: '🇮🇹 이탈리아' },
+  { code: 'ES', label: '🇪🇸 스페인' },
+  { code: 'NL', label: '🇳🇱 네덜란드' },
+  { code: 'BE', label: '🇧🇪 벨기에' },
+  { code: 'AT', label: '🇦🇹 오스트리아' },
+  { code: 'PT', label: '🇵🇹 포르투갈' },
+  { code: 'SE', label: '🇸🇪 스웨덴' },
+  { code: 'PL', label: '🇵🇱 폴란드' },
+]
+
+// 관세 계산
+function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
+  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈'] 
+  const isFTA = ftaOrigins.some(o => origin.includes(o))
+
+  const priceUsd = price * eurToUsd
+  const priceKrw = price * eurToKrw
+
+  if (priceUsd <= 150) {
+    const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)
+    return { total }
+  } else {
+    const total = Math.round(isFTA ? priceKrw * 0.463 : priceKrw * 0.683)
+    return { total }
+  }
+}
 
 export default function CheckoutPage() {
   const { config } = useAppConfig()
+  const supabase = createClient()
+
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [showNewForm, setShowNewForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])  // ← 추가
+  const [eurToKrw, setEurToKrw] = useState<number | null>(null)
+  const [eurToUsd, setEurToUsd] = useState<number | null>(null)
+
+  const [form, setForm] = useState({
+    recipient_name: '',
+    address: '',
+    city: '',
+    country: 'DE',
+    is_default: false,
+    customs_code: '',
+  })
 
   const items = config.cart
     .map(c => {
@@ -12,7 +93,123 @@ export default function CheckoutPage() {
     })
     .filter((item): item is { productId: number; qty: number; product: NonNullable<typeof config.products[number]> } => item !== null)
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.qty, 0)
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.qty, 0)
+
+  const selectedAddress = addresses.find(a => a.id === selectedAddressId)
+  const zone = selectedAddress ? getZone(selectedAddress.country) : null
+
+  // 배송비 데이터베이스에서
+  const rateInfo = shippingRates.find(r => r.zone === zone)
+  const shippingFee = rateInfo?.fee ?? 0
+  const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
+  const total = subtotal + shippingFee + vat
+
+  useEffect(() => {
+    // 배송지 불러오기
+    const fetchAddresses = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+
+      if (data && data.length > 0) {
+        setAddresses(data)
+        const defaultAddr = data.find((a: Address) => a.is_default)
+        setSelectedAddressId(defaultAddr?.id ?? data[0].id)
+      } else {
+        setShowNewForm(true)
+      }
+    }
+
+    // 배송비 불러오기
+    const fetchShippingRates = async () => {
+      const { data } = await supabase
+        .from('shipping_rates')
+        .select('*')
+      if (data) setShippingRates(data)
+    }
+
+    fetchAddresses()
+    fetchShippingRates()
+  }, [])
+
+    // 환율 API 연동
+  useEffect(() => {
+    fetch('/api/exchange-rate')
+      .then(res => res.json())
+      .then(data => {
+        setEurToKrw(data.krw)
+        setEurToUsd(data.usd)
+      })
+      .catch(() => setEurToKrw(1750)) // Default
+  }, [])
+
+  // 장바구니 전체 금액 기준 예상 결제 원화 / 관세
+  const priceKrw = eurToKrw ? subtotal * eurToKrw : null
+  const duty = (eurToKrw && eurToUsd)
+    ? items.reduce((sum, item) => sum + calcDuty(item.product.price * item.qty, eurToKrw, eurToUsd, item.product.origin).total, 0)
+    : null
+
+  const handleSaveAddress = async () => {
+    if (!form.recipient_name || !form.address || !form.city) return
+    if (form.country === 'KR' && !form.customs_code) return
+    setSaving(true)
+    setSaveError('')
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setSaving(false)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('addresses')
+      .insert({ ...form, customs_code: form.country === 'KR' ? form.customs_code : null, user_id: user.id })
+      .select()
+      .single()
+
+    if (!error && data) {
+      setAddresses(prev => [...prev, data])
+      setSelectedAddressId(data.id)
+      setShowNewForm(false)
+      setForm({ recipient_name: '', address: '', city: '', country: 'DE', is_default: false, customs_code: '' })
+    } else if (error) {
+      setSaveError(error.message)
+    }
+    setSaving(false)
+  }
+
+  const handleDeleteAddress = async (id: string) => {
+    if (deleteConfirmId !== id) {
+      setDeleteConfirmId(id)
+      return
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { error } = await supabase
+      .from('addresses')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (!error) {
+      setAddresses(prev => {
+        const next = prev.filter(a => a.id !== id)
+        if (selectedAddressId === id) {
+          setSelectedAddressId(next[0]?.id ?? null)
+          if (next.length === 0) setShowNewForm(true)
+        }
+        return next
+      })
+    }
+    setDeleteConfirmId(null)
+  }
 
   if (items.length === 0) {
     return (
@@ -28,45 +225,238 @@ export default function CheckoutPage() {
   return (
     <div className="bg-[#fef9e4] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-10">
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-10">결제하기</h1>
 
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-10">
-          결제하기
-        </h1>
+        <div className="grid md:grid-cols-2 gap-10">
 
-        <div className="border border-gray-200 divide-y divide-gray-200">
-          {items.map(({ productId, qty, product }) => (
-            <div key={productId} className="flex items-center gap-6 p-6">
-              <div className="w-16 h-16 flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
-                {product.imageUrl
-                  ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                  : <span className="text-2xl select-none">🍷</span>
-                }
+          {/* 왼쪽: 배송지 */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">배송지</h2>
+
+            {addresses.length > 0 && (
+              <div className="flex flex-col gap-3 mb-4">
+                {addresses.map(addr => (
+                  <div
+                    key={addr.id}
+                    onClick={() => { setSelectedAddressId(addr.id); setShowNewForm(false) }}
+                    className={`text-left p-4 border transition-colors cursor-pointer flex items-start justify-between gap-3 ${
+                      selectedAddressId === addr.id
+                        ? 'border-[#8B4513] bg-white'
+                        : 'border-gray-200 bg-white hover:border-gray-400'
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{addr.recipient_name}</p>
+                      <p className="text-sm text-gray-500 mt-1">{addr.address}, {addr.city}</p>
+                      <p className="text-sm text-gray-500">{COUNTRY_OPTIONS.find(c => c.code === addr.country)?.label ?? addr.country}</p>
+                      {addr.country === 'KR' && addr.customs_code && (
+                        <p className="text-xs text-gray-400 mt-1">통관부호 {addr.customs_code}</p>
+                      )}
+                      {addr.is_default && (
+                        <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest mt-1 inline-block">기본 배송지</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteAddress(addr.id) }}
+                      className={`text-xs px-2 py-1 shrink-0 transition-colors cursor-pointer ${
+                        deleteConfirmId === addr.id
+                          ? 'bg-red-600 text-white'
+                          : 'text-gray-400 hover:text-red-600'
+                      }`}
+                    >
+                      {deleteConfirmId === addr.id ? '확인' : '삭제'}
+                    </button>
+                  </div>
+                ))}
               </div>
+            )}
 
-              <div className="flex-1">
-                <p className="text-sm font-bold text-gray-900">{product.name}</p>
-                <p className="text-sm text-gray-400 mt-1">수량 {qty}개</p>
+            {!showNewForm && (
+              <button
+                onClick={() => setShowNewForm(true)}
+                className="w-full border border-dashed border-gray-300 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 hover:border-gray-500 hover:text-gray-600 transition-colors"
+              >
+                + 새 배송지 추가
+              </button>
+            )}
+
+            {showNewForm && (
+              <div className="border border-gray-200 bg-white p-6 flex flex-col gap-4">
+
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">수령인 이름</label>
+                  <input
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    value={form.recipient_name}
+                    onChange={e => setForm(f => ({ ...f, recipient_name: e.target.value }))}
+                    placeholder="홍길동"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">국가</label>
+                  <select
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513] bg-white"
+                    value={form.country}
+                    onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
+                  >
+                    {COUNTRY_OPTIONS.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">도시</label>
+                  <input
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    value={form.city}
+                    onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                    placeholder="Berlin"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">상세 주소</label>
+                  <input
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    value={form.address}
+                    onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                    placeholder="Musterstraße 1"
+                  />
+                </div>
+
+                {/** 주소지가 한국인 경우 개인 통관부호 입력 */}
+                {form.country === 'KR' && (
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">개인통관고유부호</label>
+                    <input
+                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                      value={form.customs_code}
+                      onChange={e => setForm(f => ({ ...f, customs_code: e.target.value }))}
+                      placeholder="P123456789012"
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_default"
+                    checked={form.is_default}
+                    onChange={e => setForm(f => ({ ...f, is_default: e.target.checked }))}
+                  />
+                  <label htmlFor="is_default" className="text-xs text-gray-500">기본 배송지로 저장</label>
+                </div>
+
+                {saveError && (
+                  <p className="text-xs text-red-500">{saveError}</p>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveAddress}
+                    disabled={saving}
+                    className="flex-1 bg-[#8B4513] text-white text-xs font-bold uppercase tracking-widest py-3 hover:bg-[#2C5F2D] transition-colors disabled:opacity-50"
+                  >
+                    {saving ? '저장 중...' : '저장'}
+                  </button>
+                  {addresses.length > 0 && (
+                    <button
+                      onClick={() => setShowNewForm(false)}
+                      className="flex-1 border border-gray-200 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 hover:border-gray-400 transition-colors"
+                    >
+                      취소
+                    </button>
+                  )}
+                </div>
               </div>
+            )}
+          </div>
 
-              <p className="text-base font-black text-gray-900 whitespace-nowrap">
-                {(product.price * qty).toLocaleString()}
-                <span className="text-sm font-semibold text-gray-400 ml-1">유로</span>
-              </p>
+          {/* 오른쪽: 주문 요약 */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">주문 요약</h2>
+
+            <div className="border border-gray-200 divide-y divide-gray-200 bg-white">
+              {items.map(({ productId, qty, product }) => (
+                <div key={productId} className="flex items-center gap-4 p-4">
+                  <div className="w-12 h-12 flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
+                    {product.imageUrl
+                      ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      : <span className="text-xl select-none">🍷</span>
+                    }
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-gray-900">{product.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">수량 {qty}개</p>
+                  </div>
+                  <p className="text-sm font-black text-gray-900 whitespace-nowrap">
+                    €{(product.price * qty).toLocaleString()}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
+
+            {/* 요금 내역 */}
+            <div className="border border-t-0 border-gray-200 bg-white p-5 flex flex-col gap-3">
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>상품 금액</span>
+                <span>€{subtotal.toLocaleString()}</span>
+              </div>
+
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>배송비</span>
+                <span>
+                  {zone
+                    ? `€${shippingFee}`
+                    : <span className="text-gray-300">배송지 선택 후 계산</span>
+                  }
+                </span>
+              </div>
+
+              {zone === 'DE' && vat > 0 && (
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>부가세 (VAT {((rateInfo?.vat_rate ?? 0) * 100).toFixed(0)}%)</span>
+                  <span>€{vat.toFixed(2)}</span>
+                </div>
+              )}
+
+              {zone === 'KR' && (
+                <>
+                  <p className="text-xs text-gray-400">
+                    ※ 한국 배송 시 통관 관세가 별도로 부과될 수 있습니다
+                  </p>
+
+                  {/* 예상 원화 가격 */}
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>예상 원화가 (1€={eurToKrw ? eurToKrw.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) : '-'}원)</span>
+                    <span>{priceKrw ? `₩${Math.round(priceKrw).toLocaleString()}` : '환율 로딩중'}</span>
+                  </div>
+
+                  {/* 예상 관세 */}
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>예상 관세</span>
+                    <span>{duty !== null ? `₩${Math.round(duty).toLocaleString()}` : '예상 세율 계산중'}</span>
+                  </div>
+                </>
+              )}
+
+              <div className="flex justify-between font-black text-gray-900 text-lg border-t border-gray-100 pt-3">
+                <span>총 결제금액</span>
+                <span>€{total.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            <button
+              disabled={!selectedAddressId}
+              className="w-full mt-4 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {selectedAddressId ? '결제 진행' : '배송지를 선택해주세요'}
+            </button>
+          </div>
+
         </div>
-
-        <div className="flex items-center justify-between mt-10">
-          <p className="text-xl font-black text-gray-900">
-            총 결제금액 {total.toLocaleString()}
-            <span className="text-sm font-semibold text-gray-400 ml-1">유로</span>
-          </p>
-
-          <button className="bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 px-10 transition-colors">
-            결제 진행
-          </button>
-        </div>
-
       </div>
     </div>
   )
