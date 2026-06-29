@@ -8,85 +8,32 @@ export default function FavouritesCarousel() {
 
   if (!product) return null
 
-  const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
-
   return (
-    <section className="max-w-[1640px] mx-auto pb-0">
-      <div className="flex flex-col bg-[#DAD4CD]">
-        <h3 className="text-[30px] font-bold tracking-tight pt-[30px] px-[20px] font-[family-name:var(--font-playfair-display)]">Top Drop</h3>
+    <section className="relative max-w-[1640px] mx-auto overflow-hidden bg-[#1C1A17]">
+      {product.imageUrl && (
+        <img src={product.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0e3719]/85 via-[#1C1A17]/85 to-black/90" />
+      <div className="absolute inset-0 [background:radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)]" />
 
-        <div className="grid grid-cols-1 md:grid-cols-[560px_560px] gap-[30px] justify-start px-[20px] pt-[20px] pb-[20px]">
-          {/* 메인 이미지 */}
-          <div className="relative w-full aspect-square md:w-[560px] md:h-[560px] overflow-hidden bg-[#efeae1]">
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="absolute inset-0 flex items-center justify-center text-7xl">
-                {product.type === 'wine' ? '🍷' : '🧀'}
-              </span>
-            )}
-          </div>
+      <div className="relative z-10 max-w-xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center">
+        <h2 className="font-[family-name:var(--font-playfair-display)] font-bold text-[40px] md:text-[56px] leading-tight text-[#FBFAF7] mb-10">
+          Today&apos;s Top Drop
+        </h2>
 
-          <div className="flex flex-col h-auto md:h-[560px] justify-between">
-            <div>
-              {/* 와인 이름 */}
-              <p className="text-2xl md:text-[34px] leading-snug font-semibold tracking-tight mb-3 text-[#1C1A17]">
-                {product.name}
-              </p>
-
-              {/* 와인 설명 */}
-              <p className="text-sm text-[#5c564c] mb-8">
-                {product.description}
-              </p>
-
-              {/* 혜택/정보 리스트 */}
-              <div className="flex flex-col gap-3">
-                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
-                  평점 ★ {product.rating}
-                </p>
-                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
-                  원산지 {product.origin}
-                </p>
-                <p className="flex items-center gap-3 text-sm text-[#1C1A17]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C1A17] shrink-0" />
-                  분류 {product.type === 'wine' ? '와인' : '식품'}
-                </p>
-              </div>
-            </div>
-
-            {/* 추가 사진 2장 */}
-            <div className="flex gap-3">
-              <Link href={href} className="relative flex-1 aspect-square overflow-hidden bg-[#efeae1] group">
-                {product.extraImages?.[0] && (
-                  <img
-                    src={product.extraImages[0]}
-                    alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                )}
-              </Link>
-              <Link href={href} className="relative flex-1 aspect-square overflow-hidden bg-[#efeae1] group">
-                {product.extraImages?.[1] && (
-                  <img
-                    src={product.extraImages[1]}
-                    alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                )}
-              </Link>
-            </div>
-          </div>
+        <div className="w-full max-w-[500px] aspect-square overflow-hidden mb-8 bg-[#DAD4CD]/10">
+          {product.imageUrl
+            ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+            : <span className="w-full h-full flex items-center justify-center text-7xl">{product.type === 'wine' ? '🍷' : '🧀'}</span>
+          }
         </div>
 
-        {/* 하단 CTA */}
-        <Link
-          href={href}
-          className="flex items-center justify-end gap-2 border-t border-b border-[#1C1A17]/20 px-10 md:px-14 py-[5px] text-sm font-medium uppercase tracking-widest text-[#1C1A17] hover:bg-[#1C1A17]/5 transition-colors"
-        >
-          {product.name} 구매하기
-          <span>→</span>
+        <p className="text-white text-sm leading-relaxed line-clamp-1 mb-7 max-w-sm">
+          {product.description}
+        </p>
+
+        <Link href="/events" className="inline-flex items-center gap-2 text-[#FBFAF7] font-semibold text-sm no-underline hover:opacity-80 transition-opacity">
+          Go to the Top Drop <span>→</span>
         </Link>
       </div>
     </section>

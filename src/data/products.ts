@@ -12,6 +12,7 @@ export type Product = {
   imageUrl?: string
   extraImages?: string[]
   criticRatings?: string
+  grapeVariety?: string
 }
 
 export type FixedCost = {

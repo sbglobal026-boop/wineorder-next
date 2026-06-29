@@ -147,13 +147,11 @@ export default function ProductDetailView({
   const criticRatings = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
 
   const previewRows = [
+    { k: 'Type', v: product.category },
+    { k: '포도품종', v: product.grapeVariety || '—' },
     { k: 'Vintage', v: extractVintage(product.name) },
     { k: 'Origin', v: product.origin },
     { k: '평가', v: criticRatings.length > 0 ? criticRatings.join(', ') : '—' },
-    ...(showDuty ? [
-      { k: '예상 원화가', v: priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중' },
-      { k: '예상 관세', v: duty ? `${duty.total.toLocaleString()}원` : '계산중' },
-    ] : []),
   ]
 
   return (
@@ -266,9 +264,15 @@ export default function ProductDetailView({
             {product.name}
           </h1>
 
-          <p className="text-[28px] font-bold tracking-tight mb-6 text-gray-900">
+          <p className={`text-[28px] font-bold tracking-tight text-gray-900 ${showDuty ? 'mb-1' : 'mb-6'}`}>
             {fmt(product.price)}
           </p>
+
+          {showDuty && (
+            <p className="text-xs text-gray-400 mb-6">
+              * 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}
+            </p>
+          )}
 
           {/* 수량 + 장바구니 */}
           <div className="flex gap-2.5 mb-4.5">
@@ -343,9 +347,11 @@ export default function ProductDetailView({
           <div className="flex items-baseline justify-end mb-9">
             <Link href="/events/wines" className="text-sm font-medium text-gray-900 no-underline inline-flex gap-1.5 items-center">전체보기 →</Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory">
             {recommended.map(rec => (
-              <ProductGridCard key={rec.id} product={rec} />
+              <div key={rec.id} className="w-[260px] flex-shrink-0 snap-start">
+                <ProductGridCard product={rec} />
+              </div>
             ))}
           </div>
         </section>
