@@ -1,14 +1,14 @@
 'use client'
 import { useAppConfig } from '@/context/AppConfigContext'
-import ProductCard from '@/components/home/ProductCard'
+import ProductGridCard from '@/components/product/ProductGridCard'
 
 export default function FoodPage() {
   const { config } = useAppConfig()
   const foods = config.products.filter(p => p.type === 'food')
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="bg-[#F9F4EE] min-h-screen">
+      <div className="max-w-[1640px] mx-auto px-5 py-16">
 
         <div className="border-b border-gray-200 pb-8 mb-12">
           <p className="text-[#2C5F2D] text-xs font-bold tracking-widest uppercase mb-3">Food Collection</p>
@@ -22,9 +22,9 @@ export default function FoodPage() {
             <p className="text-sm">등록된 식품이 없습니다</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {foods.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductGridCard key={product.id} product={product} />
             ))}
           </div>
         )}

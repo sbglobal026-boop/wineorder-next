@@ -9,7 +9,7 @@ type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
 
 const emptyProduct: Omit<Product, 'id'> = {
-  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '',
+  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '',
 }
 
 // 가격 계산 함수
@@ -258,6 +258,15 @@ function ProductForm({
           value={data.rating}
           onChange={(e) => onChange({ ...data, rating: Number(e.target.value) })}
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">평가 (평론가 점수)</label>
+        <input
+          value={data.criticRatings ?? ''}
+          onChange={(e) => onChange({ ...data, criticRatings: e.target.value })}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          placeholder="예: RP90, JS100, FS100"
         />
       </div>
       <div className="md:col-span-3">

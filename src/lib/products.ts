@@ -15,6 +15,7 @@ export type ProductRow = {
   description: string | null
   image_url: string | null
   extra_images: string[] | null
+  critic_ratings: string | null
 }
 
 export function rowToProduct(row: ProductRow): Product {
@@ -31,6 +32,7 @@ export function rowToProduct(row: ProductRow): Product {
     description: row.description ?? '',
     imageUrl: row.image_url ?? undefined,
     extraImages: row.extra_images ?? undefined,
+    criticRatings: row.critic_ratings ?? undefined,
   }
 }
 
@@ -47,6 +49,7 @@ export function productToRow(product: Omit<Product, 'id'>) {
     description: product.description,
     image_url: product.imageUrl ?? null,
     extra_images: product.extraImages ?? [],
+    critic_ratings: product.criticRatings ?? null,
   }
 }
 

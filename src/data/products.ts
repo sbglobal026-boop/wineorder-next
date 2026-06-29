@@ -11,6 +11,7 @@ export type Product = {
   description: string
   imageUrl?: string
   extraImages?: string[]
+  criticRatings?: string
 }
 
 export type FixedCost = {

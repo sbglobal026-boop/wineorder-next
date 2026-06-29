@@ -38,7 +38,11 @@
       "Bash(npx --yes chromium-cli --help)",
       "Read(//usr/local/bin/**)",
       "Bash(npm ls *)",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(rm -rf .next)"
     ],
     "additionalDirectories": [
       "/Users/sjmac/Desktop/wineorder-next/src/app/(shop)/blog"
