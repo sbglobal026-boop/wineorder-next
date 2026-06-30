@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
-import { BLOG_CATEGORIES, BlogCategory } from '@/lib/blogCategories'
+import { BlogCategory, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 import RichTextEditor from '@/components/blog/RichTextEditor'
 
@@ -14,6 +14,42 @@ const emptyForm: FormState = { title: '', content: '', images: [], category: 'wi
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function CategoryButtons({
+  value,
+  onChange,
+  size = 'md',
+  allLabel,
+}: {
+  value: BlogCategory | 'all'
+  onChange: (v: BlogCategory | 'all') => void
+  size?: 'sm' | 'md'
+  allLabel?: string
+}) {
+  const base = size === 'sm'
+    ? 'text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors'
+    : 'text-sm font-semibold px-4 py-2 rounded-full border transition-colors'
+  const cls = (active: boolean) =>
+    `${base} ${active ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'}`
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2 flex-wrap">
+        {allLabel && (
+          <button type="button" onClick={() => onChange('all')} className={cls(value === 'all')}>{allLabel}</button>
+        )}
+        {topLevelCategories().map(c => (
+          <button key={c.value} type="button" onClick={() => onChange(c.value)} className={cls(value === c.value)}>{c.label}</button>
+        ))}
+      </div>
+      <div className="flex gap-2 flex-wrap pl-5">
+        {childCategories('wine').map(v => (
+          <button key={v} type="button" onClick={() => onChange(v)} className={cls(value === v)}>└ {categoryLabel(v)}</button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function BlogPanel() {
@@ -109,22 +145,8 @@ export default function BlogPanel() {
       <p className="text-gray-500 text-sm mb-4">블로그 글을 작성하고 관리합니다 (사진 최대 {MAX_IMAGES}장)</p>
 
       {/* 카테고리 필터 */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
-            filter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-          }`}
-        >전체</button>
-        {BLOG_CATEGORIES.map(c => (
-          <button
-            key={c.value}
-            onClick={() => setFilter(c.value)}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
-              filter === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-            }`}
-          >{c.label}</button>
-        ))}
+      <div className="mb-6">
+        <CategoryButtons value={filter} onChange={setFilter} size="sm" allLabel="전체" />
       </div>
 
       {/* 글쓰기 폼 */}
@@ -135,17 +157,10 @@ export default function BlogPanel() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리 *</label>
-              <div className="flex gap-2">
-                {BLOG_CATEGORIES.map(c => (
-                  <button
-                    key={c.value}
-                    onClick={() => setAddForm(f => ({ ...f, category: c.value }))}
-                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
-                      addForm.category === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                    }`}
-                  >{c.label}</button>
-                ))}
-              </div>
+              <CategoryButtons
+                value={addForm.category}
+                onChange={(v) => { if (v !== 'all') setAddForm(f => ({ ...f, category: v })) }}
+              />
             </div>
 
             <div>
@@ -221,17 +236,10 @@ export default function BlogPanel() {
 
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리</label>
-                      <div className="flex gap-2">
-                        {BLOG_CATEGORIES.map(c => (
-                          <button
-                            key={c.value}
-                            onClick={() => setEditForm(f => f ? { ...f, category: c.value } : f)}
-                            className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
-                              editForm.category === c.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                            }`}
-                          >{c.label}</button>
-                        ))}
-                      </div>
+                      <CategoryButtons
+                        value={editForm.category}
+                        onChange={(v) => { if (v !== 'all') setEditForm(f => f ? { ...f, category: v } : f) }}
+                      />
                     </div>
 
                     <div>
@@ -294,7 +302,7 @@ export default function BlogPanel() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-gray-400 border border-gray-200 rounded-full px-2 py-0.5">
-                        {BLOG_CATEGORIES.find(c => c.value === post.category)?.label ?? post.category}
+                        {categoryLabel(post.category)}
                       </span>
                       <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
                     </div>

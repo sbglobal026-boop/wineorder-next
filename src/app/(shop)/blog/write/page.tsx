@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { createBlogPost } from '@/lib/blog'
-import { BLOG_CATEGORIES, BlogCategory, isBlogCategory } from '@/lib/blogCategories'
+import { BlogCategory, isBlogCategory, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 import RichTextEditor from '@/components/blog/RichTextEditor'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -102,21 +102,39 @@ function BlogWriteForm() {
           {/* 카테고리 */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2">카테고리 *</label>
-            <div className="flex gap-2">
-              {BLOG_CATEGORIES.map(c => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setCategory(c.value)}
-                  className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
-                    category === c.value
-                      ? 'bg-gray-900 text-white border-gray-900'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                  }`}
-                >
-                  {c.label}
-                </button>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 flex-wrap">
+                {topLevelCategories().map(c => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setCategory(c.value)}
+                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
+                      category === c.value
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 flex-wrap pl-5">
+                {childCategories('wine').map(v => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setCategory(v)}
+                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors ${
+                      category === v
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    └ {categoryLabel(v)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -22,10 +22,11 @@ export type BlogComment = {
   created_at: string
 }
 
-export async function fetchBlogPosts(category?: BlogCategory): Promise<BlogPost[]> {
+export async function fetchBlogPosts(category?: BlogCategory | BlogCategory[]): Promise<BlogPost[]> {
   const supabase = createClient()
   let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
-  if (category) query = query.eq('category', category)
+  if (Array.isArray(category)) query = query.in('category', category)
+  else if (category) query = query.eq('category', category)
   const { data, error } = await query
   if (error) throw error
   return data ?? []

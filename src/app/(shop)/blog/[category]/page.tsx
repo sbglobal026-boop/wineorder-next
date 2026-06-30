@@ -4,7 +4,7 @@ import { useParams, notFound } from 'next/navigation'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
-import { isBlogCategory, BLOG_CATEGORIES } from '@/lib/blogCategories'
+import { isBlogCategory, BLOG_CATEGORIES, BlogCategory, childCategories, categoryEyebrow, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 import Link from 'next/link'
 
@@ -18,14 +18,22 @@ export default function BlogCategoryPage() {
   const { currentUser } = useAuth()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [subFilter, setSubFilter] = useState<BlogCategory | 'all'>('all')
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
 
   if (!isBlogCategory(category)) notFound()
   const meta = BLOG_CATEGORIES.find(c => c.value === category)!
+  const children = childCategories(category)
 
   useEffect(() => {
-    fetchBlogPosts(category).then(data => { setPosts(data); setLoading(false) })
+    if (!isBlogCategory(category)) return
+    setSubFilter('all')
+    const childCats = childCategories(category)
+    const target = childCats.length > 0 ? [category, ...childCats] : category
+    fetchBlogPosts(target).then(data => { setPosts(data); setLoading(false) })
   }, [category])
+
+  const visiblePosts = subFilter === 'all' ? posts : posts.filter(p => p.category === subFilter)
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
@@ -46,14 +54,34 @@ export default function BlogCategoryPage() {
           )}
         </div>
 
+        {children.length > 0 && (
+          <div className="flex gap-2 flex-wrap mb-10">
+            <button
+              onClick={() => setSubFilter('all')}
+              className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
+                subFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+              }`}
+            >전체</button>
+            {children.map((c) => (
+              <button
+                key={c}
+                onClick={() => setSubFilter(c)}
+                className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
+                  subFilter === c ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                }`}
+              >{categoryLabel(c)}</button>
+            ))}
+          </div>
+        )}
+
         {loading ? (
           <p className="text-gray-400 text-sm text-center py-24">불러오는 중...</p>
-        ) : posts.length === 0 ? (
+        ) : visiblePosts.length === 0 ? (
           <p className="text-gray-400 text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
-            {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${category}/${post.id}`} className="group block">
+            {visiblePosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="group block">
                 <div className="aspect-[4/3] overflow-hidden mb-4 bg-[#fef9e4]">
                   {post.images[0] ? (
                     <img
@@ -68,7 +96,7 @@ export default function BlogCategoryPage() {
                   )}
                 </div>
                 <p className="text-gray-900 text-xs font-bold tracking-widest uppercase mb-2">
-                  {meta.eyebrow}
+                  {categoryEyebrow(post.category)}
                 </p>
                 <h2 className="text-lg font-bold text-gray-900 uppercase leading-tight mb-3 line-clamp-3 group-hover:text-[#8B4513] transition-colors">
                   {post.title}
