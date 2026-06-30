@@ -22,10 +22,10 @@ export default function ProductGridCard({ product }: { product: Product }) {
 
   return (
     <div className="flex flex-col">
-      <Link href={href} className="relative aspect-[3/4] block no-underline overflow-hidden">
+      <Link href={href} className="relative aspect-square block no-underline overflow-hidden">
         <div className={`absolute inset-0 ${categoryBg[product.category] ?? 'bg-gray-50'}`} />
         {product.imageUrl
-          ? <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-contain p-3.5" />
+          ? <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-contain" />
           : <span className="absolute inset-0 flex items-center justify-center text-6xl select-none">{product.type === 'wine' ? '🍷' : '🧀'}</span>
         }
       </Link>
