@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { categoryLabel } from '@/lib/blogCategories'
+import BlogContent from './BlogContent'
 import {
   BlogPost,
   BlogComment,
@@ -94,8 +95,9 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
           {categoryLabel(post.category)}
         </Link>
 
-        <p className="text-base text-gray-700 whitespace-pre-wrap mb-3">{post.content}</p>
-        <p className="text-xs text-gray-400 mb-4">{post.author_name} · {formatDate(post.created_at)}</p>
+        <p className="text-xs text-gray-400 mb-5">{post.author_name} · {formatDate(post.created_at)}</p>
+
+        <BlogContent html={post.content} className="text-base text-gray-700 mb-4" />
 
         {/* 액션 바 */}
         <div className="flex items-center gap-5 border-t border-gray-100 pt-4">

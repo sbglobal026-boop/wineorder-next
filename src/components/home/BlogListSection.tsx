@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
 import { categoryLabel } from '@/lib/blogCategories'
+import { stripHtml } from '@/lib/sanitizeHtml'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -54,7 +55,7 @@ export default function BlogListSection() {
 
               <div className="border-t border-[#1C1A17] mt-2" />
 
-              <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{post.content}</p>
+              <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{stripHtml(post.content)}</p>
 
               <div className="border-t border-[#1C1A17]/10 mt-2" />
 

@@ -16,7 +16,7 @@ export default function FavouritesCarousel() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#0e3719]/85 via-[#1C1A17]/85 to-black/90" />
       <div className="absolute inset-0 [background:radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)]" />
 
-      <div className="relative z-10 max-w-xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center">
+      <div className="relative z-10 max-w-xl mx-auto px-6 py-[90px] flex flex-col items-center text-center">
         <h2 className="font-[family-name:var(--font-playfair-display)] font-bold text-[40px] md:text-[56px] leading-tight text-[#FBFAF7] mb-10">
           Today&apos;s Top Drop
         </h2>

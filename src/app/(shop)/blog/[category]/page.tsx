@@ -5,6 +5,7 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
 import { isBlogCategory, BLOG_CATEGORIES } from '@/lib/blogCategories'
+import { stripHtml } from '@/lib/sanitizeHtml'
 import Link from 'next/link'
 
 function formatDate(iso: string) {
@@ -72,7 +73,7 @@ export default function BlogCategoryPage() {
                 <h2 className="text-lg font-bold text-gray-900 uppercase leading-tight mb-3 line-clamp-3 group-hover:text-[#8B4513] transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-sm text-gray-700 line-clamp-2 mb-3">{post.content}</p>
+                <p className="text-sm text-gray-700 line-clamp-2 mb-3">{stripHtml(post.content)}</p>
                 <p className="text-xs text-gray-500 italic">{post.author_name} · {formatDate(post.created_at)}</p>
               </Link>
             ))}

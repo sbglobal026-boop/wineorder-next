@@ -4,6 +4,8 @@ import { useAuth } from '@/context/AuthContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
 import { BLOG_CATEGORIES, BlogCategory } from '@/lib/blogCategories'
+import { stripHtml } from '@/lib/sanitizeHtml'
+import RichTextEditor from '@/components/blog/RichTextEditor'
 
 const MAX_IMAGES = 10
 
@@ -55,7 +57,7 @@ export default function BlogPanel() {
   }
 
   const handleAdd = async () => {
-    if (!addForm.title.trim() || !addForm.content.trim()) return
+    if (!addForm.title.trim() || !stripHtml(addForm.content)) return
     await createBlogPost({
       title: addForm.title,
       content: addForm.content,
@@ -183,11 +185,9 @@ export default function BlogPanel() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">내용 *</label>
-              <textarea
+              <RichTextEditor
                 value={addForm.content}
-                onChange={(e) => setAddForm(f => ({ ...f, content: e.target.value }))}
-                rows={8}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
+                onChange={(html) => setAddForm(f => ({ ...f, content: html }))}
                 placeholder="글 내용을 입력하세요"
               />
             </div>
@@ -270,11 +270,9 @@ export default function BlogPanel() {
 
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1">내용</label>
-                      <textarea
+                      <RichTextEditor
                         value={editForm.content}
-                        onChange={(e) => setEditForm(f => f ? { ...f, content: e.target.value } : f)}
-                        rows={8}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
+                        onChange={(html) => setEditForm(f => f ? { ...f, content: html } : f)}
                       />
                     </div>
 
@@ -301,7 +299,7 @@ export default function BlogPanel() {
                       <p className="text-sm font-semibold text-gray-900 truncate">{post.title}</p>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">{formatDate(post.created_at)} · 사진 {post.images.length}장</p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{post.content}</p>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{stripHtml(post.content)}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
