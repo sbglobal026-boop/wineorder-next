@@ -20,7 +20,7 @@ body {
 }
 
 .font-korean {
-  font-family: var(--font-grotesk), var(--font-nanum-square), sans-serif;
+  font-family: var(--font-nanum-square), sans-serif;
 }
 
 .font-lato-korean {

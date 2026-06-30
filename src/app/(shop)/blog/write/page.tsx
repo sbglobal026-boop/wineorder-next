@@ -12,7 +12,7 @@ const MAX_IMAGES = 10
 
 export default function BlogWritePage() {
   return (
-    <Suspense fallback={<div className="bg-white min-h-screen" />}>
+    <Suspense fallback={<div className="bg-[#F9F4EE] min-h-screen" />}>
       <BlogWriteForm />
     </Suspense>
   )
@@ -71,7 +71,7 @@ function BlogWriteForm() {
 
   if (!isApproved) {
     return (
-      <div className="bg-white min-h-screen flex items-center justify-center px-4">
+      <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-4xl mb-4">🔒</p>
           <h2 className="text-xl font-black text-gray-900 mb-2">글쓰기 권한이 없습니다</h2>
@@ -85,7 +85,7 @@ function BlogWriteForm() {
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-[#F9F4EE] min-h-screen">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-10">
           <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">

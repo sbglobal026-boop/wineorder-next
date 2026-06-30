@@ -4,6 +4,8 @@ import { useParams, notFound } from 'next/navigation'
 import { fetchBlogPost, BlogPost } from '@/lib/blog'
 import { isBlogCategory, categoryLabel } from '@/lib/blogCategories'
 import BlogPostCard from '@/components/blog/BlogPostCard'
+import BlogSidebar from '@/components/blog/BlogSidebar'
+import ImageCarousel from '@/components/blog/ImageCarousel'
 import Link from 'next/link'
 
 export default function BlogPostPage() {
@@ -18,12 +20,12 @@ export default function BlogPostPage() {
   }, [id])
 
   if (loading) {
-    return <div className="bg-white min-h-screen" />
+    return <div className="bg-[#F9F4EE] min-h-screen" />
   }
 
   if (!post) {
     return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
+      <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-400 text-sm mb-4">글을 찾을 수 없습니다</p>
           <Link href={`/blog/${category}`} className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
@@ -35,12 +37,20 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-xl mx-auto px-6 py-16">
+    <div className="bg-[#F9F4EE] min-h-screen">
+      <div className="max-w-[1640px] mx-auto px-10 py-16">
         <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
           ← {categoryLabel(category)}
         </Link>
-        <BlogPostCard post={post} />
+        <div className="max-w-[1240px] mx-auto">
+          <div className="w-full lg:max-w-[1240px] mb-8">
+            <ImageCarousel images={post.images} />
+          </div>
+          <div className="flex flex-col lg:flex-row gap-10 items-start">
+            <BlogPostCard post={post} />
+            <BlogSidebar />
+          </div>
+        </div>
       </div>
     </div>
   )

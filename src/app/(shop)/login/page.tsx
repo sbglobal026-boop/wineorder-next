@@ -50,7 +50,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-white min-h-screen flex items-center justify-center px-4">
+    <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-2">Wine Order</p>

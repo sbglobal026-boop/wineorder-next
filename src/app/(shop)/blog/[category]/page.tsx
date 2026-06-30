@@ -27,8 +27,8 @@ export default function BlogCategoryPage() {
   }, [category])
 
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="bg-[#F9F4EE] min-h-screen">
+      <div className="max-w-[1640px] mx-auto px-5 py-16">
 
         <div className="border-b border-gray-200 pb-8 mb-12 flex items-end justify-between">
           <div>
@@ -50,10 +50,10 @@ export default function BlogCategoryPage() {
         ) : posts.length === 0 ? (
           <p className="text-gray-400 text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
             {posts.map((post) => (
               <Link key={post.id} href={`/blog/${category}/${post.id}`} className="group block">
-                <div className="aspect-square overflow-hidden rounded-xl mb-4 bg-[#fef9e4]">
+                <div className="aspect-[4/3] overflow-hidden mb-4 bg-[#fef9e4]">
                   {post.images[0] ? (
                     <img
                       src={post.images[0]}
@@ -66,14 +66,14 @@ export default function BlogCategoryPage() {
                     </div>
                   )}
                 </div>
-                <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-2">
-                  {post.images.length > 1 ? `사진 ${post.images.length}장` : meta.eyebrow}
+                <p className="text-gray-900 text-xs font-bold tracking-widest uppercase mb-2">
+                  {meta.eyebrow}
                 </p>
-                <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#8B4513] transition-colors">
+                <h2 className="text-lg font-bold text-gray-900 uppercase leading-tight mb-3 line-clamp-3 group-hover:text-[#8B4513] transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-3">{post.content}</p>
-                <p className="text-xs text-gray-400">{post.author_name} · {formatDate(post.created_at)}</p>
+                <p className="text-sm text-gray-700 line-clamp-2 mb-3">{post.content}</p>
+                <p className="text-xs text-gray-500 italic">{post.author_name} · {formatDate(post.created_at)}</p>
               </Link>
             ))}
           </div>

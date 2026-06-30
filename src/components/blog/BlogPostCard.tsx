@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import ImageCarousel from './ImageCarousel'
+import Link from 'next/link'
+import { categoryLabel } from '@/lib/blogCategories'
 import {
   BlogPost,
   BlogComment,
@@ -59,14 +60,42 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
     setCommentText('')
   }
 
-  return (
-    <div className="border border-gray-100 rounded-2xl overflow-hidden mb-8">
-      <ImageCarousel images={post.images} />
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`
+  const xShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(post.title)}`
+  const emailShareUrl = `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(pageUrl)}`
 
+  return (
+    <div className="w-full lg:max-w-[952px] border border-gray-100 overflow-hidden mb-8">
       <div className="p-5">
-        <p className="text-xs text-gray-400 mb-2">{post.author_name} · {formatDate(post.created_at)}</p>
-        <h2 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h2>
-        <p className="text-sm text-gray-600 whitespace-pre-wrap mb-4">{post.content}</p>
+        {/* 브레드크럼 */}
+        <nav className="text-xs text-gray-400 mb-5 flex items-center gap-1.5 flex-wrap">
+          <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
+          <span>›</span>
+          <Link href={`/blog/${post.category}`} className="hover:text-gray-900 transition-colors">{categoryLabel(post.category)}</Link>
+          <span>›</span>
+          <span className="text-gray-600 truncate">{post.title}</span>
+        </nav>
+
+        {/* 소셜 공유 아이콘 */}
+        <div className="flex items-center gap-3 mb-5">
+          <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer" aria-label="페이스북 공유" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-xs text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors">f</a>
+          <a href={xShareUrl} target="_blank" rel="noopener noreferrer" aria-label="X 공유" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-xs text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors">X</a>
+          <a href={emailShareUrl} aria-label="이메일 공유" className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-xs text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors">✉</a>
+        </div>
+
+        <h2 className="text-2xl md:text-3xl font-black text-gray-900 uppercase leading-tight mb-4">{post.title}</h2>
+
+        {/* 카테고리 버튼 (지금은 카테고리 목록으로 이동, 추후 별도 태그 링크로 교체 가능) */}
+        <Link
+          href={`/blog/${post.category}`}
+          className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full mb-5 transition-colors"
+        >
+          {categoryLabel(post.category)}
+        </Link>
+
+        <p className="text-base text-gray-700 whitespace-pre-wrap mb-3">{post.content}</p>
+        <p className="text-xs text-gray-400 mb-4">{post.author_name} · {formatDate(post.created_at)}</p>
 
         {/* 액션 바 */}
         <div className="flex items-center gap-5 border-t border-gray-100 pt-4">

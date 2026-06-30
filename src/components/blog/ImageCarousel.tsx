@@ -19,7 +19,7 @@ export default function ImageCarousel({ images }: { images: string[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-[#fef9e4] flex items-center justify-center">
+      <div className="aspect-[1240/775] bg-[#fef9e4] flex items-center justify-center">
         <span className="text-6xl">🍷</span>
       </div>
     )
@@ -30,7 +30,7 @@ export default function ImageCarousel({ images }: { images: string[] }) {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar aspect-square"
+        className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar aspect-[1240/775]"
       >
         {images.map((src, i) => (
           <img key={i} src={src} alt="" className="w-full h-full object-cover shrink-0 snap-center" />
