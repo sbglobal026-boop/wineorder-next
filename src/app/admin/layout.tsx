@@ -14,6 +14,7 @@ export default async function AdminLayout({
     redirect('/login?redirect=/admin')
   }
 
+  // 관리자 체크
   const admin = await getAdminUser()
   if (!admin) {
     return (

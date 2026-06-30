@@ -20,7 +20,7 @@ export default function CartPage() {
     })
     .filter((item): item is { productId: number; qty: number; product: NonNullable<typeof config.products[number]> } => item !== null)
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.qty, 0)
+  // const total = items.reduce((sum, item) => sum + item.product.price * item.qty, 0)
 
   if (items.length === 0) {
     return (
@@ -32,7 +32,6 @@ export default function CartPage() {
       </div>
     )
   }
-
   return (
     <div className="bg-[#fef9e4] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-10">
@@ -83,10 +82,10 @@ export default function CartPage() {
           </button>
 
           <div className="flex items-center gap-8">
-            <p className="text-xl font-black text-gray-900">
+            {/* <p className="text-xl font-black text-gray-900">
               합계 {total.toLocaleString()}
               <span className="text-sm font-semibold text-gray-400 ml-1">유로</span>
-            </p>
+            </p> */}
             <button
               onClick={handleOrder}
               className="bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 px-10 transition-colors"
