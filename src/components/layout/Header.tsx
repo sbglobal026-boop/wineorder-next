@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
+import { childCategories, categoryLabel } from '@/lib/blogCategories'
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -14,7 +15,11 @@ const navItems = [
       { label: '식품', href: '/events/food' },
     ],
   },
-  { label: 'Wine', href: '/blog/wine' },
+  {
+    label: 'Wine',
+    href: '/blog/wine',
+    children: childCategories('wine').map(c => ({ label: categoryLabel(c), href: `/blog/${c}` })),
+  },
   { label: 'Food & Drink', href: '/blog/food-drink' },
   { label: 'Travel', href: '/blog/travel' },
 ]
