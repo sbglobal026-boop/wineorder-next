@@ -30,6 +30,13 @@ export default function Header() {
   const { config } = useAppConfig()
   const cartCount = config.cart.reduce((sum, c) => sum + c.qty, 0)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (!currentUser) {
@@ -57,8 +64,15 @@ export default function Header() {
         <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] px-[20px] h-12 flex items-center justify-between">
 
         {/* 로고 */}
-        <Link href="/" className="font-[family-name:var(--font-playfair-display)] text-[21px] font-semibold tracking-tight text-[#1C1A17] pt-3">
-          table code
+        <Link href="/" className="relative flex items-center h-full w-[120px] shrink-0">
+          <span className={`font-[family-name:var(--font-playfair-display)] text-[21px] font-semibold tracking-tight text-[#1C1A17] pt-3 transition-opacity duration-300 whitespace-nowrap ${scrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            table code
+          </span>
+          <img
+            src="/table code-7.png"
+            alt="TC"
+            className={`absolute h-7 w-auto mt-[6px] transition-opacity duration-300 ${scrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          />
         </Link>
 
         {/* 데스크탑 네비게이션 */}

@@ -40,7 +40,7 @@ export default function CartPage() {
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-5 py-16">
+      <div className="max-w-[1640px] mx-auto px-[40px] py-16">
 
         <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-12">
           장바구니
