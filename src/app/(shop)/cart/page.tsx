@@ -40,52 +40,54 @@ export default function CartPage() {
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-[40px] py-16">
+      <div className="max-w-7xl mx-auto px-6 py-10">
 
-        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-12">
+        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
           장바구니
         </h1>
+        <div className="border-t border-gray-900 mb-10" />
 
-        <div className="flex flex-col lg:flex-row gap-12 items-start">
+        <div className="flex flex-col lg:flex-row gap-10 items-start">
 
           {/* 상품 목록 */}
           <div className="flex-1 min-w-0">
-            <div className="border-t border-gray-900 divide-y divide-gray-200">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700 mb-4">상품</h2>
+            <div className="border border-gray-200 bg-white divide-y divide-gray-200">
               {items.map(({ productId, qty, product }) => (
-                <div key={productId} className="flex items-center gap-6 py-6">
+                <div key={productId} className="flex items-center gap-4 p-4">
                   {/* 이미지 */}
                   <Link href={product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`}
-                    className="w-24 h-24 shrink-0 bg-gray-50 overflow-hidden block">
+                    className="w-12 h-12 shrink-0 bg-gray-50 overflow-hidden block">
                     {product.imageUrl
                       ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" />
-                      : <span className="w-full h-full flex items-center justify-center text-3xl select-none">🍷</span>
+                      : <span className="w-full h-full flex items-center justify-center text-xl select-none">🍷</span>
                     }
                   </Link>
 
                   {/* 정보 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">
                       {product.category} · {product.origin}
                     </p>
-                    <p className="text-base font-black text-gray-900 mb-3">{product.name}</p>
+                    <p className="text-sm font-bold text-gray-900 mb-2">{product.name}</p>
 
                     {/* 수량 조절 */}
-                    <div className="flex items-center border border-gray-300 w-fit">
+                    <div className="flex items-center border border-gray-200 w-fit">
                       <button
                         onClick={() => updateCartQty(productId, qty - 1)}
-                        className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors text-lg"
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
                       >−</button>
-                      <span className="w-9 text-center text-sm font-bold text-gray-900">{qty}</span>
+                      <span className="w-8 text-center text-sm font-bold text-gray-900">{qty}</span>
                       <button
                         onClick={() => updateCartQty(productId, qty + 1)}
-                        className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors text-lg"
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
                       >+</button>
                     </div>
                   </div>
 
                   {/* 금액 + 삭제 */}
-                  <div className="flex flex-col items-end gap-3 shrink-0">
-                    <p className="text-lg font-black text-gray-900">
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <p className="text-sm font-black text-gray-900">
                       €{(product.price * qty).toLocaleString()}
                     </p>
                     <button
@@ -100,8 +102,8 @@ export default function CartPage() {
             </div>
 
             {/* 메모 */}
-            <div className="mt-8">
-              <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
+            <div className="mt-6">
+              <label className="block text-sm font-bold uppercase tracking-widest text-gray-700 mb-2">
                 주문 메모
               </label>
               <textarea
@@ -116,36 +118,39 @@ export default function CartPage() {
 
           {/* 주문 요약 */}
           <div className="w-full lg:w-[340px] shrink-0 sticky top-[110px]">
-            <div className="border-t border-gray-900 pt-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">주문 요약</h2>
-
-              <div className="flex flex-col gap-3 mb-8">
-                {items.map(({ productId, qty, product }) => (
-                  <div key={productId} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate pr-4">{product.name} × {qty}</span>
-                    <span className="font-bold text-gray-900 shrink-0">€{(product.price * qty).toLocaleString()}</span>
-                  </div>
-                ))}
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700 mb-4">주문 요약</h2>
+            <div className="border border-gray-200 bg-white p-5 flex flex-col gap-3">
+              {items.map(({ productId, qty, product }) => (
+                <div key={productId} className="flex justify-between text-sm">
+                  <span className="text-gray-500 truncate pr-4">{product.name} × {qty}</span>
+                  <span className="font-medium text-gray-900 shrink-0">€{(product.price * qty).toLocaleString()}</span>
+                </div>
+              ))}
+              <div className="flex justify-between font-black text-gray-900 text-2xl border-t border-gray-100 pt-3">
+                <span>합계</span>
+                <span>€{items.reduce((s, i) => s + i.product.price * i.qty, 0).toLocaleString()}</span>
               </div>
-
-              <button
-                onClick={handleOrder}
-                className="w-full bg-[#0e3719] hover:bg-[#1a5c2a] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors mb-3"
-              >
-                주문하기
-              </button>
-              <button
-                onClick={clearCart}
-                className="w-full text-xs font-bold uppercase tracking-widest text-gray-300 hover:text-[#8B4513] transition-colors py-2"
-              >
-                전체 비우기
-              </button>
             </div>
+            <button
+              onClick={handleOrder}
+              className="w-full mt-3 bg-[#0e3719] hover:bg-[#1a5c2a] text-white text-sm font-bold uppercase tracking-widest py-4 transition-colors"
+            >
+              주문하기
+            </button>
+            <button
+              onClick={clearCart}
+              className="w-full text-xs font-bold uppercase tracking-widest text-gray-300 hover:text-[#8B4513] transition-colors py-2"
+            >
+              전체 비우기
+            </button>
           </div>
         </div>
 
-        {/* 추천 와인 */}
-        {recommended.length > 0 && (
+      </div>
+
+      {/* 추천 와인 - 원래 너비 유지 */}
+      {recommended.length > 0 && (
+        <div className="max-w-[1640px] mx-auto px-[40px] pb-16">
           <section className="mt-24 md:mt-[140px]">
             <h2 className="text-[13px] font-medium tracking-wide border-t border-gray-900 pt-2.5 mb-9">
               함께 보면 좋은 와인.
@@ -161,9 +166,9 @@ export default function CartPage() {
               ))}
             </div>
           </section>
-        )}
+        </div>
+      )}
 
-      </div>
     </div>
   )
 }

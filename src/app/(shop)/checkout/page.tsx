@@ -257,7 +257,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="bg-[#fef9e4] min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="bg-[#F9F4EE] min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-gray-400 text-sm">장바구니가 비어 있습니다</p>
         <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#8B4513] hover:text-[#2C5F2D] transition-colors">
           ← 와인 목록으로
@@ -267,30 +267,16 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-[#fef9e4] min-h-screen">
+    <div className="bg-[#F9F4EE] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-10">결제하기</h1>
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-3">결제하기</h1>
+        <div className="border-t border-gray-900 mb-10" />
 
         <div className="grid md:grid-cols-2 gap-10">
 
           {/* 왼쪽: 배송지 */}
           <div>
-            {/* 분할배송 요청 */}
-            <div className="mb-6 flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="split_delivery"
-                checked={splitDelivery}
-                onChange={e => setSplitDelivery(e.target.checked)}
-                className="mt-0.5 cursor-pointer"
-              />
-              <label htmlFor="split_delivery" className="text-sm text-gray-700 cursor-pointer">
-                분할배송 요청
-                <span className="block text-xs text-gray-400 mt-0.5">병당 €1 추가 · 총 €{totalQty} 추가</span>
-              </label>
-            </div>
-
-            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">배송지</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700 mb-4">배송지</h2>
 
             {addresses.length > 0 && (
               <div className="flex flex-col gap-3 mb-4">
@@ -505,7 +491,7 @@ export default function CheckoutPage() {
 
           {/* 오른쪽: 주문 요약 */}
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">주문 요약</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700 mb-4">주문 요약</h2>
 
             <div className="border border-gray-200 divide-y divide-gray-200 bg-white">
               {items.map(({ productId, qty, product }) => {
@@ -524,7 +510,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-bold text-gray-900">{product.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">수량 {qty}개</p>
+                        <p className="text-xs text-gray-600 mt-0.5">수량 {qty}개</p>
                       </div>
                       <p className="text-sm font-black text-gray-900 whitespace-nowrap">
                         €{(product.price * qty).toLocaleString()}
@@ -532,14 +518,14 @@ export default function CheckoutPage() {
                     </div>
 
                     {zone === 'KR' && (
-                      <div className="mt-2 ml-16 flex flex-col gap-0.5">
-                        <p className="text-xs text-gray-400">
+                      <div className="mt-2 flex flex-col gap-0.5 items-end">
+                        <p className="text-xs text-[#0e3719]">
                           1병 예상 원화가 {perBottleKrw ? `₩${Math.round(perBottleKrw).toLocaleString()}` : '로딩중'}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-[#0e3719]">
                           1병 예상 관세 {perBottleDuty !== null ? `₩${perBottleDuty.toLocaleString()}` : '계산중'}
                         </p>
-                        <p className="text-xs text-gray-300 mt-0.5">※ 통관 관세가 별도로 부과됩니다</p>
+                        <p className="text-xs text-[#0e3719] mt-0.5">※ 통관 관세가 별도로 부과됩니다</p>
                       </div>
                     )}
                   </div>
@@ -549,14 +535,14 @@ export default function CheckoutPage() {
 
             {/* 요금 내역 */}
             <div className="border border-t-0 border-gray-200 bg-white p-5 flex flex-col gap-3">
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>상품 금액</span>
-                <span>€{subtotal.toLocaleString()}</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">상품 금액</span>
+                <span className="text-gray-900 font-medium">€{subtotal.toLocaleString()}</span>
               </div>
 
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>배송비</span>
-                <span>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">배송비</span>
+                <span className="text-gray-900 font-medium">
                   {zone
                     ? `€${shippingFee}`
                     : <span className="text-gray-300">배송지 선택 후 계산</span>
@@ -564,21 +550,36 @@ export default function CheckoutPage() {
                 </span>
               </div>
 
+              {/* 분할배송 요청 */}
+              <div className="flex items-start gap-3 pl-1">
+                <input
+                  type="checkbox"
+                  id="split_delivery"
+                  checked={splitDelivery}
+                  onChange={e => setSplitDelivery(e.target.checked)}
+                  className="mt-0.5 cursor-pointer"
+                />
+                <label htmlFor="split_delivery" className="text-sm text-gray-600 cursor-pointer">
+                  분할배송 요청
+                  <span className="block text-xs text-gray-400 mt-0.5">병당 €1 추가 · 총 €{totalQty} 추가</span>
+                </label>
+              </div>
+
               {zone === 'DE' && vat > 0 && (
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>부가세 (VAT {((rateInfo?.vat_rate ?? 0) * 100).toFixed(0)}%)</span>
-                  <span>€{vat.toFixed(2)}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">부가세 (VAT {((rateInfo?.vat_rate ?? 0) * 100).toFixed(0)}%)</span>
+                  <span className="text-gray-900 font-medium">€{vat.toFixed(2)}</span>
                 </div>
               )}
 
               {splitDelivery && (
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>분할배송비 ({totalQty}병 × €1)</span>
-                  <span>€{splitFee}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">분할배송비 ({totalQty}병 × €1)</span>
+                  <span className="text-gray-900 font-medium">€{splitFee}</span>
                 </div>
               )}
 
-              <div className="flex justify-between font-black text-gray-900 text-lg border-t border-gray-100 pt-3">
+              <div className="flex justify-between font-black text-gray-900 text-2xl border-t border-gray-100 pt-3">
                 <span>총 결제금액</span>
                 <span>€{total.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
@@ -599,14 +600,14 @@ export default function CheckoutPage() {
             </div>
             <Link
               href="/cart"
-              className="block w-full text-center text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 transition-colors py-1 mt-3"
+              className="block w-full text-center text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:opacity-70 transition-opacity py-1 mt-3"
             >
               ← 장바구니로 돌아가기
             </Link>
             <button
               disabled={!selectedAddressId}
               onClick={() => selectedAddressId && setShowPaymentConfirm(true)}
-              className="w-full mt-3 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full mt-3 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-sm font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {selectedAddressId ? '결제 진행' : '배송지를 선택해주세요'}
               </button>
