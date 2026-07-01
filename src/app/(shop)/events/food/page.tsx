@@ -8,14 +8,14 @@ export default function FoodPage() {
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-5 py-16">
-
-        <div className="border-b border-gray-200 pb-8 mb-12">
-          <p className="text-[#2C5F2D] text-xs font-bold tracking-widest uppercase mb-3">Food Collection</p>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">식품 목록</h1>
-          <p className="text-gray-400 text-sm mt-3">엄선된 프리미엄 식품 {foods.length}종</p>
+      <div className="max-w-[1640px] mx-auto">
+        <div className="bg-[#1C1A17] flex items-center px-5 h-12">
+          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
+            Food Collection
+          </h1>
         </div>
-
+      </div>
+      <div className="max-w-[1640px] mx-auto px-5 py-12">
         {foods.length === 0 ? (
           <div className="text-center py-24 text-gray-400">
             <p className="text-4xl mb-4">🧀</p>
@@ -31,4 +31,5 @@ export default function FoodPage() {
       </div>
     </div>
   )
+
 }

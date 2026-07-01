@@ -8,5 +8,16 @@ export default function TopDropPage() {
 
   if (!product) return null
 
-  return <ProductDetailView product={product} showDuty={product.type === 'wine'} />
+  return (
+    <>
+      <div className="max-w-[1640px] mx-auto">
+        <div className="bg-[#1C1A17] flex items-center px-5 h-12">
+          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
+            Top Drop
+          </h1>
+        </div>
+      </div>
+      <ProductDetailView product={product} showDuty={product.type === 'wine'} />
+    </>
+  )
 }

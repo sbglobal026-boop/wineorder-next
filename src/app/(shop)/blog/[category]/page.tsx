@@ -40,14 +40,14 @@ export default function BlogCategoryPage() {
 
       {/* 히어로 섹션 */}
       <div className="max-w-[1640px] mx-auto">
-        <div className="relative bg-[#1C1A17] flex items-end justify-between px-5 py-14">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-3xl md:text-4xl font-bold tracking-tight">
+        <div className="relative bg-[#1C1A17] flex items-center justify-between px-5 h-12">
+          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
             {meta.label}
           </h1>
           {isApproved && (
             <Link
               href={`/blog/write?category=${category}`}
-              className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 mb-2"
+              className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-5 py-2 rounded-full transition-colors shrink-0"
             >
               + 글쓰기
             </Link>
