@@ -20,6 +20,7 @@ interface Address {
   recipient_name: string
   address: string
   city: string
+  postal_code: string | null
   country: string
   is_default: boolean
   customs_code: string | null
@@ -76,11 +77,17 @@ export default function CheckoutPage() {
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])  // ← 추가
   const [eurToKrw, setEurToKrw] = useState<number | null>(null)
   const [eurToUsd, setEurToUsd] = useState<number | null>(null)
+  const [splitDelivery, setSplitDelivery] = useState(false)
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false)
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
+
+  const emptyForm = { recipient_name: '', address: '', city: '', postal_code: '', country: 'DE', is_default: false, customs_code: '' }
 
   const [form, setForm] = useState({
     recipient_name: '',
     address: '',
     city: '',
+    postal_code: '',
     country: 'DE',
     is_default: false,
     customs_code: '',
@@ -100,9 +107,12 @@ export default function CheckoutPage() {
 
   // 배송비 데이터베이스에서
   const rateInfo = shippingRates.find(r => r.zone === zone)
-  const shippingFee = rateInfo?.fee ?? 0
+  const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
+  // 한국 배송은 병수만큼 배송비 곱하기, 그 외는 고정 배송비
+  const shippingFee = rateInfo ? (zone === 'KR' ? rateInfo.fee * totalQty : rateInfo.fee) : 0
+  const splitFee = splitDelivery ? totalQty * 1 : 0
   const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
-  const total = subtotal + shippingFee + vat
+  const total = subtotal + shippingFee + splitFee + vat
 
   useEffect(() => {
     // 배송지 불러오기
@@ -148,11 +158,21 @@ export default function CheckoutPage() {
       .catch(() => setEurToKrw(1750)) // Default
   }, [])
 
-  // 장바구니 전체 금액 기준 예상 결제 원화 / 관세
-  const priceKrw = eurToKrw ? subtotal * eurToKrw : null
-  const duty = (eurToKrw && eurToUsd)
-    ? items.reduce((sum, item) => sum + calcDuty(item.product.price * item.qty, eurToKrw, eurToUsd, item.product.origin).total, 0)
-    : null
+  // 예상 원화가/관세는 상품별로 계산해서 각 아이템 아래에 표시 (아래 items.map 참고)
+
+  const startEdit = (addr: Address) => {
+    setEditingAddressId(addr.id)
+    setShowNewForm(false)
+    setForm({
+      recipient_name: addr.recipient_name,
+      address: addr.address,
+      city: addr.city,
+      postal_code: addr.postal_code ?? '',
+      country: addr.country,
+      is_default: addr.is_default,
+      customs_code: addr.customs_code ?? '',
+    })
+  }
 
   const handleSaveAddress = async () => {
     if (!form.recipient_name || !form.address || !form.city) return
@@ -161,24 +181,48 @@ export default function CheckoutPage() {
     setSaveError('')
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setSaving(false)
-      return
+    if (!user) { setSaving(false); return }
+
+    const payload = {
+      ...form,
+      postal_code: form.postal_code || null,
+      customs_code: form.country === 'KR' ? form.customs_code : null,
     }
 
-    const { data, error } = await supabase
-      .from('addresses')
-      .insert({ ...form, customs_code: form.country === 'KR' ? form.customs_code : null, user_id: user.id })
-      .select()
-      .single()
+    if (editingAddressId) {
+      // 수정
+      const { data, error } = await supabase
+        .from('addresses')
+        .update(payload)
+        .eq('id', editingAddressId)
+        .eq('user_id', user.id)
+        .select()
+        .single()
 
-    if (!error && data) {
-      setAddresses(prev => [...prev, data])
-      setSelectedAddressId(data.id)
-      setShowNewForm(false)
-      setForm({ recipient_name: '', address: '', city: '', country: 'DE', is_default: false, customs_code: '' })
-    } else if (error) {
-      setSaveError(error.message)
+      if (!error && data) {
+        setAddresses(prev => prev.map(a => a.id === editingAddressId ? data : a))
+        setEditingAddressId(null)
+        setShowNewForm(false)
+        setForm(emptyForm)
+      } else if (error) {
+        setSaveError(error.message)
+      }
+    } else {
+      // 신규 추가
+      const { data, error } = await supabase
+        .from('addresses')
+        .insert({ ...payload, user_id: user.id })
+        .select()
+        .single()
+
+      if (!error && data) {
+        setAddresses(prev => [...prev, data])
+        setSelectedAddressId(data.id)
+        setShowNewForm(false)
+        setForm(emptyForm)
+      } else if (error) {
+        setSaveError(error.message)
+      }
     }
     setSaving(false)
   }
@@ -231,41 +275,113 @@ export default function CheckoutPage() {
 
           {/* 왼쪽: 배송지 */}
           <div>
+            {/* 분할배송 요청 */}
+            <div className="mb-6 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="split_delivery"
+                checked={splitDelivery}
+                onChange={e => setSplitDelivery(e.target.checked)}
+                className="mt-0.5 cursor-pointer"
+              />
+              <label htmlFor="split_delivery" className="text-sm text-gray-700 cursor-pointer">
+                분할배송 요청
+                <span className="block text-xs text-gray-400 mt-0.5">병당 €1 추가 · 총 €{totalQty} 추가</span>
+              </label>
+            </div>
+
             <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">배송지</h2>
 
             {addresses.length > 0 && (
               <div className="flex flex-col gap-3 mb-4">
                 {addresses.map(addr => (
-                  <div
-                    key={addr.id}
-                    onClick={() => { setSelectedAddressId(addr.id); setShowNewForm(false) }}
-                    className={`text-left p-4 border transition-colors cursor-pointer flex items-start justify-between gap-3 ${
-                      selectedAddressId === addr.id
-                        ? 'border-[#8B4513] bg-white'
-                        : 'border-gray-200 bg-white hover:border-gray-400'
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{addr.recipient_name}</p>
-                      <p className="text-sm text-gray-500 mt-1">{addr.address}, {addr.city}</p>
-                      <p className="text-sm text-gray-500">{COUNTRY_OPTIONS.find(c => c.code === addr.country)?.label ?? addr.country}</p>
-                      {addr.country === 'KR' && addr.customs_code && (
-                        <p className="text-xs text-gray-400 mt-1">통관부호 {addr.customs_code}</p>
-                      )}
-                      {addr.is_default && (
-                        <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest mt-1 inline-block">기본 배송지</span>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteAddress(addr.id) }}
-                      className={`text-xs px-2 py-1 shrink-0 transition-colors cursor-pointer ${
-                        deleteConfirmId === addr.id
-                          ? 'bg-red-600 text-white'
-                          : 'text-gray-400 hover:text-red-600'
-                      }`}
-                    >
-                      {deleteConfirmId === addr.id ? '확인' : '삭제'}
-                    </button>
+                  <div key={addr.id} className={`border bg-white transition-colors ${
+                    selectedAddressId === addr.id && editingAddressId !== addr.id
+                      ? 'border-[#8B4513]'
+                      : 'border-gray-200'
+                  }`}>
+                    {editingAddressId === addr.id ? (
+                      /* 인라인 수정 폼 */
+                      <div className="p-4 flex flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">수령인</label>
+                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                              value={form.recipient_name} onChange={e => setForm(f => ({ ...f, recipient_name: e.target.value }))} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">국가</label>
+                            <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513] bg-white"
+                              value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}>
+                              {COUNTRY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">도시</label>
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                            value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">상세 주소</label>
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                            value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">우편번호</label>
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                            value={form.postal_code} onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="10115" />
+                        </div>
+                        {form.country === 'KR' && (
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">개인통관고유부호</label>
+                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                              value={form.customs_code} onChange={e => setForm(f => ({ ...f, customs_code: e.target.value }))} placeholder="P123456789012" />
+                          </div>
+                        )}
+                        {saveError && <p className="text-xs text-red-500">{saveError}</p>}
+                        <div className="flex gap-2">
+                          <button onClick={handleSaveAddress} disabled={saving}
+                            className="flex-1 bg-[#8B4513] text-white text-xs font-bold uppercase tracking-widest py-2.5 hover:bg-[#2C5F2D] transition-colors disabled:opacity-50">
+                            {saving ? '저장 중...' : '저장'}
+                          </button>
+                          <button onClick={() => { setEditingAddressId(null); setForm(emptyForm); setSaveError('') }}
+                            className="flex-1 border border-gray-200 text-gray-400 text-xs font-bold uppercase tracking-widest py-2.5 hover:border-gray-400 transition-colors">
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* 일반 표시 */
+                      <div
+                        onClick={() => { setSelectedAddressId(addr.id) }}
+                        className="p-4 cursor-pointer flex items-start justify-between gap-3"
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{addr.recipient_name}</p>
+                          <p className="text-sm text-gray-500 mt-1">{addr.address}, {addr.city}</p>
+                          <p className="text-sm text-gray-500">{COUNTRY_OPTIONS.find(c => c.code === addr.country)?.label ?? addr.country}</p>
+                          {addr.country === 'KR' && addr.customs_code && (
+                            <p className="text-xs text-gray-400 mt-1">통관부호 {addr.customs_code}</p>
+                          )}
+                          {addr.is_default && (
+                            <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest mt-1 inline-block">기본 배송지</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); startEdit(addr) }}
+                            className="text-xs px-2 py-1 text-gray-400 hover:text-gray-700 transition-colors"
+                          >수정</button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteAddress(addr.id) }}
+                            className={`text-xs px-2 py-1 transition-colors ${
+                              deleteConfirmId === addr.id ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-red-600'
+                            }`}
+                          >{deleteConfirmId === addr.id ? '확인' : '삭제'}</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -273,7 +389,7 @@ export default function CheckoutPage() {
 
             {!showNewForm && (
               <button
-                onClick={() => setShowNewForm(true)}
+                onClick={() => { setEditingAddressId(null); setForm(emptyForm); setShowNewForm(true) }}
                 className="w-full border border-dashed border-gray-300 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 hover:border-gray-500 hover:text-gray-600 transition-colors"
               >
                 + 새 배송지 추가
@@ -282,6 +398,9 @@ export default function CheckoutPage() {
 
             {showNewForm && (
               <div className="border border-gray-200 bg-white p-6 flex flex-col gap-4">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                  {editingAddressId ? '배송지 수정' : '새 배송지'}
+                </p>
 
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">수령인 이름</label>
@@ -326,6 +445,16 @@ export default function CheckoutPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">우편번호</label>
+                  <input
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    value={form.postal_code}
+                    onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))}
+                    placeholder="10115"
+                  />
+                </div>
+
                 {/** 주소지가 한국인 경우 개인 통관부호 입력 */}
                 {form.country === 'KR' && (
                   <div>
@@ -363,7 +492,7 @@ export default function CheckoutPage() {
                   </button>
                   {addresses.length > 0 && (
                     <button
-                      onClick={() => setShowNewForm(false)}
+                      onClick={() => { setShowNewForm(false); setEditingAddressId(null); setForm(emptyForm); setSaveError('') }}
                       className="flex-1 border border-gray-200 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 hover:border-gray-400 transition-colors"
                     >
                       취소
@@ -379,23 +508,43 @@ export default function CheckoutPage() {
             <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">주문 요약</h2>
 
             <div className="border border-gray-200 divide-y divide-gray-200 bg-white">
-              {items.map(({ productId, qty, product }) => (
-                <div key={productId} className="flex items-center gap-4 p-4">
-                  <div className="w-12 h-12 flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
-                    {product.imageUrl
-                      ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                      : <span className="text-xl select-none">🍷</span>
-                    }
+              {items.map(({ productId, qty, product }) => {
+                const perBottleKrw = eurToKrw ? product.price * eurToKrw : null
+                const perBottleDuty = (eurToKrw && eurToUsd)
+                  ? calcDuty(product.price, eurToKrw, eurToUsd, product.origin).total
+                  : null
+                return (
+                  <div key={productId} className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 flex items-center justify-center bg-gray-50 overflow-hidden shrink-0">
+                        {product.imageUrl
+                          ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                          : <span className="text-xl select-none">🍷</span>
+                        }
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-gray-900">{product.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">수량 {qty}개</p>
+                      </div>
+                      <p className="text-sm font-black text-gray-900 whitespace-nowrap">
+                        €{(product.price * qty).toLocaleString()}
+                      </p>
+                    </div>
+
+                    {zone === 'KR' && (
+                      <div className="mt-2 ml-16 flex flex-col gap-0.5">
+                        <p className="text-xs text-gray-400">
+                          1병 예상 원화가 {perBottleKrw ? `₩${Math.round(perBottleKrw).toLocaleString()}` : '로딩중'}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          1병 예상 관세 {perBottleDuty !== null ? `₩${perBottleDuty.toLocaleString()}` : '계산중'}
+                        </p>
+                        <p className="text-xs text-gray-300 mt-0.5">※ 통관 관세가 별도로 부과됩니다</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-gray-900">{product.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">수량 {qty}개</p>
-                  </div>
-                  <p className="text-sm font-black text-gray-900 whitespace-nowrap">
-                    €{(product.price * qty).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* 요금 내역 */}
@@ -422,34 +571,36 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {zone === 'KR' && (
-                <>
-                  <p className="text-xs text-gray-400">
-                    ※ 한국 배송 시 통관 관세가 별도로 부과될 수 있습니다
-                  </p>
-
-                  {/* 예상 원화 가격 */}
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>예상 원화가 (1€={eurToKrw ? eurToKrw.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) : '-'}원)</span>
-                    <span>{priceKrw ? `₩${Math.round(priceKrw).toLocaleString()}` : '환율 로딩중'}</span>
-                  </div>
-
-                  {/* 예상 관세 */}
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>예상 관세</span>
-                    <span>{duty !== null ? `₩${Math.round(duty).toLocaleString()}` : '예상 세율 계산중'}</span>
-                  </div>
-                </>
+              {splitDelivery && (
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>분할배송비 ({totalQty}병 × €1)</span>
+                  <span>€{splitFee}</span>
+                </div>
               )}
 
               <div className="flex justify-between font-black text-gray-900 text-lg border-t border-gray-100 pt-3">
                 <span>총 결제금액</span>
                 <span>€{total.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
+
+              {zone === 'KR' && eurToKrw && (
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>총 예상 원화가</span>
+                  <span className="font-bold">₩{Math.round(total * eurToKrw).toLocaleString()}</span>
+                </div>
+              )}
+
+              {zone === 'KR' && eurToKrw && (
+                <div className="flex justify-between text-xs text-gray-400">
+                  <span>기준 환율</span>
+                  <span>1€ = ₩{eurToKrw.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}</span>
+                </div>
+              )}
             </div>
 
             <button
               disabled={!selectedAddressId}
+              onClick={() => selectedAddressId && setShowPaymentConfirm(true)}
               className="w-full mt-4 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {selectedAddressId ? '결제 진행' : '배송지를 선택해주세요'}
@@ -458,6 +609,37 @@ export default function CheckoutPage() {
 
         </div>
       </div>
+
+      {/* 결제 전 관세로 인한 환불불가 안내창 */}
+      {showPaymentConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPaymentConfirm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-8">
+            <h3 className="text-lg font-black text-gray-900 mb-3">결제 전 안내</h3>
+            <p className="text-sm font-bold text-gray-800 mb-2">통관 관세로 인한 환불 불가</p>
+            <p className="text-xs text-gray-400 leading-relaxed mb-8">
+              해외 직배송 상품 특성상 통관 과정에서 발생하는 관세 및 부가세는 구매자 부담이며, 이로 인한 반품 및 환불은 불가합니다.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setShowPaymentConfirm(false)
+                  // TODO: PG 결제 연동
+                }}
+                className="w-full bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors"
+              >
+                확인했습니다 — 결제하기
+              </button>
+              <button
+                onClick={() => setShowPaymentConfirm(false)}
+                className="w-full text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 py-3 transition-colors"
+              >
+                돌아가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
