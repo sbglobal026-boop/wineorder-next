@@ -597,14 +597,20 @@ export default function CheckoutPage() {
                 </div>
               )}
             </div>
-
+            <Link
+              href="/cart"
+              className="block w-full text-center text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 transition-colors py-1 mt-3"
+            >
+              ← 장바구니로 돌아가기
+            </Link>
             <button
               disabled={!selectedAddressId}
               onClick={() => selectedAddressId && setShowPaymentConfirm(true)}
-              className="w-full mt-4 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full mt-3 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {selectedAddressId ? '결제 진행' : '배송지를 선택해주세요'}
-            </button>
+              </button>
+            
           </div>
 
         </div>
