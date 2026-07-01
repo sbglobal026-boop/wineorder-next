@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
 import { categoryLabel } from '@/lib/blogCategories'
@@ -8,12 +8,28 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+const CARD_WIDTH = 340 // 320px 카드 + 20px gap
+
 export default function WineStory() {
   const [posts, setPosts] = useState<BlogPost[]>([])
+  const [canLeft, setCanLeft] = useState(false)
+  const [canRight, setCanRight] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchBlogPosts('monthly-table').then(data => setPosts(data.slice(0, 5)))
   }, [])
+
+  const updateArrows = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanLeft(el.scrollLeft > 0)
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }
+
+  const scrollBy = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'right' ? CARD_WIDTH : -CARD_WIDTH, behavior: 'smooth' })
+  }
 
   if (posts.length === 0) return null
 
@@ -22,59 +38,78 @@ export default function WineStory() {
       <div className="max-w-[1640px] mx-auto bg-[#0e3719] text-[#FBFAF7] pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]">
         <div className="max-w-[1600px] mx-auto border-t border-[#FBFAF7] my-[10px]" />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
-        <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Monthly Table</h2>
-        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 -ml-[20px] w-[calc(100%+20px)] pl-[20px] scroll-pl-5 pr-[20px] md:ml-0 md:w-full md:pl-0 md:scroll-pl-0 md:pr-0">
-          {posts.map((post) => (
-            <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group w-[320px] h-[552px] flex flex-col shrink-0 snap-start">
-              {/* 이미지 영역 */}
-              <div className="relative w-[320px] h-[380px] shrink-0 rounded-sm overflow-hidden bg-[#FBFAF7]/10">
-                {post.images[0] ? (
-                  <img
-                    src={post.images[0]}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
-                )}
-                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                  <p className="bg-[#0e3719] text-[#FBFAF7] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
-                    {categoryLabel(post.category)}
-                  </p>
-                  {post.images.length > 1 && (
-                    <p className="bg-[#FBFAF7] text-[#0e3719] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
-                      사진 {post.images.length}
-                    </p>
-                  )}
-                </div>
-              </div>
+          <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Monthly Table</h2>
 
-              {/* 하단 정보 */}
-              <p className="text-[17px] font-semibold leading-normal mt-3.5 truncate">{post.title}</p>
+          {/* 스크롤 영역 + 화살표 */}
+          <div className="relative w-full min-w-0">
+            {/* 왼쪽 화살표 */}
+            <button
+              onClick={() => scrollBy('left')}
+              className={`hidden md:flex absolute left-0 top-0 h-[380px] z-10 items-center px-3 transition-opacity duration-200 ${canLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            >
+              <span className="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-[#FBFAF7] w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors text-sm">←</span>
+            </button>
 
-              <div className="border-t border-[#FBFAF7] mt-2" />
+            {/* 오른쪽 화살표 */}
+            <button
+              onClick={() => scrollBy('right')}
+              className={`hidden md:flex absolute right-0 top-0 h-[380px] z-10 items-center px-3 transition-opacity duration-200 ${canRight ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            >
+              <span className="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-[#FBFAF7] w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors text-sm">→</span>
+            </button>
 
-              <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{post.content}</p>
+            <div
+              ref={scrollRef}
+              onScroll={updateArrows}
+              className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory no-scrollbar -ml-[20px] w-[calc(100%+20px)] pl-[20px] scroll-pl-5 pr-[20px] md:ml-0 md:w-full md:pl-0 md:scroll-pl-0 md:pr-0"
+            >
+              {posts.map((post) => (
+                <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group w-[320px] h-[552px] flex flex-col shrink-0 snap-start">
+                  {/* 이미지 영역 */}
+                  <div className="relative w-[320px] h-[380px] shrink-0 rounded-sm overflow-hidden bg-[#FBFAF7]/10">
+                    {post.images[0] ? (
+                      <img
+                        src={post.images[0]}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
+                    )}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                      <p className="bg-[#0e3719] text-[#FBFAF7] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                        {categoryLabel(post.category)}
+                      </p>
+                      {post.images.length > 1 && (
+                        <p className="bg-[#FBFAF7] text-[#0e3719] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                          사진 {post.images.length}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="border-t border-[#FBFAF7]/10 mt-2" />
-
-              <div className="flex items-center justify-between gap-3 mt-2">
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <p className="text-[11px] uppercase tracking-widest opacity-50">작성자.</p>
-                  <p className="text-xs truncate">{post.author_name}</p>
-                </div>
-                <div className="flex flex-col gap-0.5 items-end shrink-0">
-                  <p className="text-[11px] uppercase tracking-widest opacity-50">작성일.</p>
-                  <p className="text-xs">{formatDate(post.created_at)}</p>
-                </div>
-              </div>
-
-              <span className="block mt-2 text-xs font-medium uppercase tracking-widest text-[#FBFAF7]/60 group-hover:text-[#FBFAF7] transition-colors">
-                View →
-              </span>
-            </Link>
-          ))}
-        </div>
+                  {/* 하단 정보 */}
+                  <p className="text-[17px] font-semibold leading-normal mt-3.5 truncate">{post.title}</p>
+                  <div className="border-t border-[#FBFAF7] mt-2" />
+                  <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{post.content}</p>
+                  <div className="border-t border-[#FBFAF7]/10 mt-2" />
+                  <div className="flex items-center justify-between gap-3 mt-2">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <p className="text-[11px] uppercase tracking-widest opacity-50">작성자.</p>
+                      <p className="text-xs truncate">{post.author_name}</p>
+                    </div>
+                    <div className="flex flex-col gap-0.5 items-end shrink-0">
+                      <p className="text-[11px] uppercase tracking-widest opacity-50">작성일.</p>
+                      <p className="text-xs">{formatDate(post.created_at)}</p>
+                    </div>
+                  </div>
+                  <span className="block mt-2 text-xs font-medium uppercase tracking-widest text-[#FBFAF7]/60 group-hover:text-[#FBFAF7] transition-colors">
+                    View →
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

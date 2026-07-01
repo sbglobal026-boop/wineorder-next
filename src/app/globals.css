@@ -19,6 +19,9 @@ body {
   color: var(--foreground);
 }
 
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 .font-korean {
   font-family: var(--font-nanum-square), sans-serif;
 }
