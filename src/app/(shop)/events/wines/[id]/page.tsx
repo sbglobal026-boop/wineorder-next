@@ -24,7 +24,7 @@ export default function WineDetailPage() {
     <ProductDetailView
       product={product}
       eyebrow={product.category}
-      backLink={{ href: '/events/wines', label: '← 와인 목록' }}
+      backLink={{ href: '/events/wines', label: '와인 목록' }}
       showDuty
     />
   )

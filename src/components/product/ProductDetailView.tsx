@@ -100,6 +100,16 @@ export default function ProductDetailView({
 
   const images = [product.imageUrl, ...(product.extraImages ?? [])].filter(Boolean) as string[]
   const bg = categoryBg[product.category] ?? 'bg-gray-50'
+  const isSoldOut = (product.stock ?? 1) === 0
+
+  // 5초마다 자동 슬라이드
+  useEffect(() => {
+    if (images.length <= 1) return
+    const timer = setInterval(() => {
+      setActiveImg(i => (i + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [images.length])
 
   const handleAdd = () => {
     for (let i = 0; i < qty; i++) addToCart(product.id)
@@ -151,11 +161,20 @@ export default function ProductDetailView({
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
 
+      {/* 히어로 바 — backLink 있을 때만 표시 */}
       {backLink && (
-        <div className="max-w-[1640px] mx-auto px-5 pt-8">
-          <Link href={backLink.href} className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors no-underline">
-            {backLink.label}
-          </Link>
+        <div className="max-w-[1640px] mx-auto">
+          <div className="bg-[#1C1A17] flex items-center justify-between px-5 h-12">
+            <Link
+              href={backLink.href}
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors no-underline"
+            >
+              {backLink.label}
+            </Link>
+            <h2 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
+              {product.name}
+            </h2>
+          </div>
         </div>
       )}
 
@@ -169,21 +188,50 @@ export default function ProductDetailView({
 
           <div className={`relative w-full aspect-square ${bg} overflow-hidden`}>
             {images.length > 0
-              ? <img src={images[activeImg]} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+              ? images.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateX(${(i - activeImg) * 100}%)` }}
+                  />
+                ))
               : <span className="absolute inset-0 flex items-center justify-center text-[160px] select-none">{product.type === 'wine' ? '🍷' : '🧀'}</span>
             }
+            {isSoldOut && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                <span className="text-white text-sm font-bold tracking-widest uppercase border border-white/60 px-5 py-2">Sold Out</span>
+              </div>
+            )}
+            {/* 좌우 화살표 */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center text-white text-2xl drop-shadow"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => setActiveImg(i => (i + 1) % images.length)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center text-white text-2xl drop-shadow"
+                >
+                  ›
+                </button>
+              </>
+            )}
           </div>
 
+          {/* dot 인디케이터 */}
           {images.length > 1 && (
-            <div className="grid grid-cols-3 gap-3 mt-3.5">
-              {images.map((src, i) => (
+            <div className="flex justify-center gap-2 mt-3">
+              {images.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`aspect-square p-0 ${bg} overflow-hidden cursor-pointer`}
-                >
-                  <img src={src} alt="" className="w-full h-full object-cover block" />
-                </button>
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeImg ? 'bg-gray-900' : 'bg-gray-300'}`}
+                />
               ))}
             </div>
           )}
@@ -270,16 +318,23 @@ export default function ProductDetailView({
 
           {/* 수량 + 장바구니 */}
           <div className="flex gap-2.5 mb-4.5">
-            <div className="flex items-center border-[1.5px] border-gray-300">
-              <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-[46px] h-[54px] cursor-pointer text-lg">−</button>
-              <span className="w-9 text-center text-sm">{qty}</span>
-              <button onClick={() => setQty(q => q + 1)} className="w-[46px] h-[54px] cursor-pointer text-lg">+</button>
-            </div>
+            {!isSoldOut && (
+              <div className="flex items-center border-[1.5px] border-gray-300">
+                <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-[46px] h-[54px] cursor-pointer text-lg">−</button>
+                <span className="w-9 text-center text-sm">{qty}</span>
+                <button onClick={() => setQty(q => q + 1)} className="w-[46px] h-[54px] cursor-pointer text-lg">+</button>
+              </div>
+            )}
             <button
-              onClick={handleAdd}
-              className="flex-1 flex items-center justify-between px-5 h-[54px] bg-[#DAD4CD] hover:bg-[#2C5F2D] text-white text-sm font-medium transition-colors cursor-pointer"
+              onClick={isSoldOut ? undefined : handleAdd}
+              disabled={isSoldOut}
+              className={`flex-1 flex items-center justify-between px-5 h-[54px] text-sm font-medium transition-colors ${
+                isSoldOut
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#DAD4CD] hover:bg-[#2C5F2D] text-white cursor-pointer'
+              }`}
             >
-              <span>장바구니 담기</span>
+              <span>{isSoldOut ? '품절' : '장바구니 담기'}</span>
               <span className="opacity-85">{fmt(product.price)}</span>
             </button>
           </div>
@@ -360,10 +415,15 @@ export default function ProductDetailView({
               <p className="text-base font-medium text-gray-900">{product.name}</p>
             </div>
             <button
-              onClick={handleAdd}
-              className="flex items-center gap-7 px-5 h-12 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-sm font-medium transition-colors cursor-pointer"
+              onClick={isSoldOut ? undefined : handleAdd}
+              disabled={isSoldOut}
+              className={`flex items-center gap-7 px-5 h-12 text-sm font-medium transition-colors ${
+                isSoldOut
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#8B4513] hover:bg-[#2C5F2D] text-white cursor-pointer'
+              }`}
             >
-              <span>장바구니 담기</span>
+              <span>{isSoldOut ? '품절' : '장바구니 담기'}</span>
               <span className="opacity-85">{fmt(product.price)}</span>
             </button>
           </div>

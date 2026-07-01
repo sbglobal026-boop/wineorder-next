@@ -24,7 +24,7 @@ export default function FoodDetailPage() {
     <ProductDetailView
       product={product}
       eyebrow="식품"
-      backLink={{ href: '/events/food', label: '← 식품 목록' }}
+      backLink={{ href: '/events/food', label: '식품 목록' }}
     />
   )
 }

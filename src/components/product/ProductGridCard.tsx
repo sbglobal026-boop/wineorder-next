@@ -19,6 +19,7 @@ export default function ProductGridCard({ product }: { product: Product }) {
   const { addToCart, openCart } = useAppConfig()
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
   const firstCriticRating = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean)[0]
+  const isSoldOut = (product.stock ?? 1) === 0
 
   return (
     <div className="flex flex-col hover:-translate-y-1 transition-transform duration-300">
@@ -28,6 +29,11 @@ export default function ProductGridCard({ product }: { product: Product }) {
           ? <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-contain" />
           : <span className="absolute inset-0 flex items-center justify-center text-6xl select-none">{product.type === 'wine' ? '🍷' : '🧀'}</span>
         }
+        {isSoldOut && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white text-xs font-bold tracking-widest uppercase border border-white/60 px-3 py-1">Sold Out</span>
+          </div>
+        )}
       </Link>
       <Link href={href} className="no-underline text-gray-900">
         <p className="text-[17px] font-medium mt-3.5 mb-3 tracking-tight truncate">{product.name}</p>
@@ -42,13 +48,23 @@ export default function ProductGridCard({ product }: { product: Product }) {
           <p className="text-xs text-gray-400">{firstCriticRating ?? '—'}</p>
         </div>
       </div>
-      <button
-        onClick={() => { addToCart(product.id); openCart() }}
-        className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-white text-[13px] font-medium cursor-pointer hover:border-gray-900 transition-colors"
-      >
-        <span>장바구니 담기</span>
-        <span className="inline-flex items-center gap-2.5 text-gray-400">{fmt(product.price)} <span className="text-base text-gray-900">+</span></span>
-      </button>
+      {isSoldOut ? (
+        <button
+          disabled
+          className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-gray-50 text-[13px] font-medium text-gray-300 cursor-not-allowed"
+        >
+          <span>품절</span>
+          <span className="inline-flex items-center gap-2.5">{fmt(product.price)}</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => { addToCart(product.id); openCart() }}
+          className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-white text-[13px] font-medium cursor-pointer hover:border-gray-900 transition-colors"
+        >
+          <span>장바구니 담기</span>
+          <span className="inline-flex items-center gap-2.5 text-gray-400">{fmt(product.price)} <span className="text-base text-gray-900">+</span></span>
+        </button>
+      )}
     </div>
   )
 }

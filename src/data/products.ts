@@ -13,6 +13,7 @@ export type Product = {
   extraImages?: string[]
   criticRatings?: string
   grapeVariety?: string
+  stock?: number
 }
 
 export type FixedCost = {

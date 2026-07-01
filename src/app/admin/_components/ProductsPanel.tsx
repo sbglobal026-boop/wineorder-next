@@ -9,7 +9,7 @@ type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
 
 const emptyProduct: Omit<Product, 'id'> = {
-  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '', grapeVariety: '',
+  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '', grapeVariety: '', stock: 0,
 }
 
 // 가격 계산 함수
@@ -278,6 +278,17 @@ function ProductForm({
           placeholder="예: RP90, JS100, FS100"
         />
       </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">재고 수량</label>
+        <input
+          type="number"
+          min="0"
+          value={data.stock ?? 0}
+          onChange={(e) => onChange({ ...data, stock: Number(e.target.value) })}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          placeholder="예: 10"
+        />
+      </div>
       <div className="md:col-span-3">
         <label className="block text-xs font-semibold text-gray-600 mb-1">상품 설명</label>
         <input
@@ -524,13 +535,14 @@ export default function ProductsPanel() {
       </div>
 
       {/* 리스트 헤더 */}
-      <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_100px_auto] gap-4 px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">
+      <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_80px_100px_auto] gap-4 px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">
         <span></span>
         <span>구분</span>
         <span>상품명</span>
         <span>원산지</span>
         <span>카테고리</span>
         <span>가격</span>
+        <span>재고</span>
         <span>Top Drop</span>
         <span></span>
       </div>
@@ -554,7 +566,7 @@ export default function ProductsPanel() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_100px_auto] gap-4 items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+              <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_80px_100px_auto] gap-4 items-center px-4 py-3 hover:bg-gray-50 transition-colors">
                 {/* 썸네일 */}
                 <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
                   {product.imageUrl
@@ -576,6 +588,9 @@ export default function ProductsPanel() {
                 <span className="text-sm text-gray-600">{product.origin}</span>
                 <span className="text-sm text-gray-600">{product.category}</span>
                 <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}유로</span>
+                <span className={`text-sm font-bold ${(product.stock ?? 0) === 0 ? 'text-red-500' : 'text-gray-700'}`}>
+                  {(product.stock ?? 0) === 0 ? '품절' : product.stock}
+                </span>
                 {product.id === config.featuredWineId ? (
                   <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full text-center">
                     ✓ Top Drop
