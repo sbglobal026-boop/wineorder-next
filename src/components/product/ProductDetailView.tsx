@@ -311,9 +311,12 @@ export default function ProductDetailView({
           </p>
 
           {showDuty && (
-            <p className="text-xs text-gray-400 mb-6">
-              * 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}
-            </p>
+            <div className="mb-6">
+              <p className="text-xs text-[#0e3719]">
+                * 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}
+              </p>
+              <p className="text-xs text-[#0e3719] mt-0.5">* 배송비 별도</p>
+            </div>
           )}
 
           {/* 수량 + 장바구니 */}
@@ -345,14 +348,14 @@ export default function ProductDetailView({
 
           <div className="mt-5 flex flex-col">
             {previewRows.map(row => (
-              <div key={row.k} className="flex justify-between gap-4 py-2.5 border-t border-[#1C1A17]/15 text-base">
+              <div key={row.k} className="flex justify-between gap-4 py-2.5 border-t border-[#1C1A17]/15 text-sm">
                 <span className="font-medium text-gray-700">{row.k}</span>
                 <span className="text-gray-400 text-right">{row.v}</span>
               </div>
             ))}
           </div>
 
-          <p className="text-[20px] leading-relaxed text-gray-600 mt-5 pt-5 border-t border-[#1C1A17]/15">
+          <p className="text-[18px] leading-relaxed text-gray-600 mt-5 pt-5 border-t border-[#1C1A17]/15 whitespace-pre-line">
             {product.description}
           </p>
         </section>

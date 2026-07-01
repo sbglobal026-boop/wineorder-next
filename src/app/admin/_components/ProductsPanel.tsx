@@ -86,88 +86,91 @@ function ProductForm({
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-      {/* 이미지 업로드 */}
-      <div className="md:col-span-3">
-        <label className="block text-xs font-semibold text-gray-600 mb-2">상품 이미지</label>
-        {data.imageUrl ? (
-          <div className="relative w-40 h-40 rounded-xl overflow-hidden border border-gray-200">
-            <img src={data.imageUrl} alt="상품 이미지" className="w-full h-full object-cover" />
+      {/* 이미지 업로드 (메인 + 추가 사진 나란히) */}
+      <div className="md:col-span-3 flex gap-6 items-start">
+        {/* 메인 이미지 */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-2">메인 이미지</label>
+          {data.imageUrl ? (
+            <div className="relative w-40 h-40 rounded-xl overflow-hidden border border-gray-200">
+              <img src={data.imageUrl} alt="상품 이미지" className="w-full h-full object-cover" />
+              <button
+                onClick={removeImage}
+                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded-full transition-colors"
+              >
+                제거
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={removeImage}
-              className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded-full transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-40 h-40 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-2 transition-colors text-gray-400 hover:text-gray-600"
             >
-              제거
+              {uploading ? (
+                <span className="text-xs font-medium">업로드중...</span>
+              ) : (
+                <>
+                  <span className="text-3xl">+</span>
+                  <span className="text-xs font-medium">이미지 업로드</span>
+                </>
+              )}
             </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-40 h-40 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-2 transition-colors text-gray-400 hover:text-gray-600"
-          >
-            {uploading ? (
-              <span className="text-xs font-medium">업로드중...</span>
-            ) : (
-              <>
-                <span className="text-3xl">+</span>
-                <span className="text-xs font-medium">이미지 업로드</span>
-              </>
-            )}
-          </button>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
-      </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
 
-      {/* 추가 사진 (Top Drop 작은 사진 2장용) */}
-      <div className="md:col-span-3">
-        <label className="block text-xs font-semibold text-gray-600 mb-2">추가 사진 (최대 2장, Top Drop 섹션에 표시됨)</label>
-        <div className="flex gap-3">
-          {[0, 1].map((index) => {
-            const url = data.extraImages?.[index]
-            return (
-              <div key={index}>
-                {url ? (
-                  <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
-                    <img src={url} alt={`추가 사진 ${index + 1}`} className="w-full h-full object-cover" />
+        {/* 추가 사진 (Top Drop 작은 사진 2장용) */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-2">추가 사진 (Top Drop 섹션용)</label>
+          <div className="flex gap-3">
+            {[0, 1].map((index) => {
+              const url = data.extraImages?.[index]
+              return (
+                <div key={index}>
+                  {url ? (
+                    <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-gray-200">
+                      <img src={url} alt={`추가 사진 ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeExtraImage(index)}
+                        className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded-full transition-colors"
+                      >
+                        제거
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      onClick={() => removeExtraImage(index)}
-                      className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-[10px] px-1.5 py-0.5 rounded-full transition-colors"
+                      onClick={() => extraFileInputRefs[index].current?.click()}
+                      disabled={uploadingExtraIndex === index}
+                      className="w-24 h-24 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
                     >
-                      제거
+                      {uploadingExtraIndex === index ? (
+                        <span className="text-[10px] font-medium">업로드중...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl">+</span>
+                          <span className="text-[10px] font-medium">사진 {index + 1}</span>
+                        </>
+                      )}
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => extraFileInputRefs[index].current?.click()}
-                    disabled={uploadingExtraIndex === index}
-                    className="w-24 h-24 border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors text-gray-400 hover:text-gray-600"
-                  >
-                    {uploadingExtraIndex === index ? (
-                      <span className="text-[10px] font-medium">업로드중...</span>
-                    ) : (
-                      <>
-                        <span className="text-2xl">+</span>
-                        <span className="text-[10px] font-medium">사진 {index + 1}</span>
-                      </>
-                    )}
-                  </button>
-                )}
-                <input
-                  ref={extraFileInputRefs[index]}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleExtraImageUpload(index, e)}
-                  className="hidden"
-                />
-              </div>
-            )
-          })}
+                  )}
+                  <input
+                    ref={extraFileInputRefs[index]}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleExtraImageUpload(index, e)}
+                    className="hidden"
+                  />
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -291,10 +294,11 @@ function ProductForm({
       </div>
       <div className="md:col-span-3">
         <label className="block text-xs font-semibold text-gray-600 mb-1">상품 설명</label>
-        <input
+        <textarea
           value={data.description}
           onChange={(e) => onChange({ ...data, description: e.target.value })}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          rows={4}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
           placeholder="예: 보르도의 왕이라 불리는 명품 레드와인"
         />
       </div>
@@ -537,98 +541,97 @@ export default function ProductsPanel() {
         )}
       </div>
 
-      {/* 리스트 헤더 */}
-      <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_80px_100px_auto] gap-4 px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">
-        <span></span>
-        <span>구분</span>
-        <span>상품명</span>
-        <span>원산지</span>
-        <span>카테고리</span>
-        <span>가격</span>
-        <span>재고</span>
-        <span>Top Drop</span>
-        <span></span>
-      </div>
-
       {/* 리스트 */}
-      <div className="divide-y divide-gray-100">
-        {filtered.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-10">검색 결과가 없습니다</p>
-        )}
-        {filtered.map((product) => (
-          <div key={product.id}>
-            {editingId === product.id && editForm ? (
-              <div className="py-4 px-4 bg-gray-50">
-                <p className="text-xs text-gray-400 font-medium mb-4">편집 중: {product.name}</p>
-                <ProductForm
-                  data={editForm}
-                  onChange={(d) => setEditForm({ ...d, id: product.id })}
-                  onSave={saveEdit}
-                  onCancel={() => setEditingId(null)}
-                  saveLabel="저장"
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-[48px_80px_2fr_1fr_1fr_1fr_80px_100px_auto] gap-4 items-center px-4 py-3 hover:bg-gray-50 transition-colors">
-                {/* 썸네일 */}
-                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
-                  {product.imageUrl
-                    ? <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
-                    : <span className="text-lg">{product.type === 'wine' ? '🍷' : '🧀'}</span>
-                  }
-                </div>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full w-fit ${
-                  product.type === 'wine'
-                    ? 'bg-[#8B4513]/10 text-[#8B4513]'
-                    : 'bg-[#2C5F2D]/10 text-[#2C5F2D]'
-                }`}>
-                  {product.type === 'wine' ? '와인' : '식품'}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">{product.description}</p>
-                </div>
-                <span className="text-sm text-gray-600">{product.origin}</span>
-                <span className="text-sm text-gray-600">{product.category}</span>
-                <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}유로</span>
-                <span className={`text-sm font-bold ${(product.stock ?? 0) === 0 ? 'text-red-500' : 'text-gray-700'}`}>
-                  {(product.stock ?? 0) === 0 ? '품절' : product.stock}
-                </span>
-                {product.id === config.featuredWineId ? (
-                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full text-center">
-                    ✓ Top Drop
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => setFeaturedWine(product.id)}
-                    className="text-xs text-gray-500 hover:text-amber-700 border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-2 py-1 rounded-full transition-colors"
-                  >
-                    선택
-                  </button>
-                )}
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => startEdit(product)}
-                    className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-full transition-colors"
-                  >
-                    편집
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
-                      deleteConfirm === product.id
-                        ? 'bg-red-600 text-white'
-                        : 'text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-200'
-                    }`}
-                  >
-                    {deleteConfirm === product.id ? '확인?' : '삭제'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="border-b border-gray-100">
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[80px]">구분</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2">상품명</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">카테고리</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">가격</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[70px]">재고</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">Top Drop</th>
+            <th className="px-3 py-2 w-[130px]"></th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {filtered.length === 0 && (
+            <tr>
+              <td colSpan={7} className="text-sm text-gray-400 text-center py-10">검색 결과가 없습니다</td>
+            </tr>
+          )}
+          {filtered.map((product) => (
+            <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+              {editingId === product.id && editForm ? (
+                <td colSpan={7} className="py-4 px-3 bg-gray-50">
+                  <p className="text-xs text-gray-400 font-medium mb-4">편집 중: {product.name}</p>
+                  <ProductForm
+                    data={editForm}
+                    onChange={(d) => setEditForm({ ...d, id: product.id })}
+                    onSave={saveEdit}
+                    onCancel={() => setEditingId(null)}
+                    saveLabel="저장"
+                  />
+                </td>
+              ) : (
+                <>
+                  <td className="px-3 py-1.5">
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                      product.type === 'wine'
+                        ? 'bg-[#8B4513]/10 text-[#8B4513]'
+                        : 'bg-[#2C5F2D]/10 text-[#2C5F2D]'
+                    }`}>
+                      {product.type === 'wine' ? '와인' : '식품'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-1.5 text-sm font-semibold text-gray-900 max-w-0">
+                    <p className="truncate cursor-pointer hover:text-gray-500 transition-colors" onClick={() => startEdit(product)}>{product.name}</p>
+                  </td>
+                  <td className="px-3 py-1.5 text-sm text-gray-600">{product.category}</td>
+                  <td className="px-3 py-1.5 text-sm font-semibold text-gray-900 whitespace-nowrap">€{product.price.toLocaleString()}</td>
+                  <td className={`px-3 py-1.5 text-sm font-bold ${(product.stock ?? 0) === 0 ? 'text-red-500' : 'text-gray-700'}`}>
+                    {(product.stock ?? 0) === 0 ? '품절' : product.stock}
+                  </td>
+                  <td className="px-3 py-1.5">
+                    {product.id === config.featuredWineId ? (
+                      <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full whitespace-nowrap">
+                        ✓ Top Drop
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setFeaturedWine(product.id)}
+                        className="text-xs text-gray-500 hover:text-amber-700 border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-2 py-1 rounded-full transition-colors"
+                      >
+                        선택
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => startEdit(product)}
+                        className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-full transition-colors"
+                      >
+                        편집
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                          deleteConfirm === product.id
+                            ? 'bg-red-600 text-white'
+                            : 'text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-200'
+                        }`}
+                      >
+                        {deleteConfirm === product.id ? '확인?' : '삭제'}
+                      </button>
+                    </div>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       <p className="text-xs text-gray-400 mt-4">{filtered.length}개 상품</p>
     </div>

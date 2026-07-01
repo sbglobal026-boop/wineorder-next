@@ -85,15 +85,15 @@ export default function BlogCategoryPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
             {visiblePosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="group block">
-                <div className="aspect-[4/3] overflow-hidden mb-4 bg-[#fef9e4]">
+                <div className="relative w-full pb-[118.75%] mb-4 bg-[#fef9e4] overflow-hidden">
                   {post.images[0] ? (
                     <img
                       src={post.images[0]}
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-5xl">🍷</span>
                     </div>
                   )}
