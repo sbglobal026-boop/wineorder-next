@@ -20,11 +20,11 @@ export default function BlogListSection() {
 
   return (
     <section>
-      <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] text-[#1C1A17] p-[20px] my-[40px]">
+      <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] text-[#1C1A17] pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]">
         <div className="max-w-[1600px] mx-auto border-t border-[#1C1A17] my-[10px]" />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
         <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Recent Posts</h2>
-        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 w-full min-w-0">
+        <div className="flex flex-nowrap gap-5 overflow-x-auto snap-x snap-mandatory pb-2 w-full min-w-0 pr-[20px] md:pr-0">
           {posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="block group w-[320px] h-[552px] flex flex-col shrink-0 snap-start">
               {/* 이미지 영역 */}

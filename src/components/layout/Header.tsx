@@ -11,8 +11,8 @@ const navItems = [
     label: 'Top Drop',
     href: '/events',
     children: [
-      { label: '와인', href: '/events/wines' },
-      { label: '식품', href: '/events/food' },
+      { label: 'Wine', href: '/events/wines' },
+      { label: 'Food', href: '/events/food' },
     ],
   },
   {
