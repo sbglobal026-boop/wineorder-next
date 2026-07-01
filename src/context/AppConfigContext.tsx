@@ -49,7 +49,11 @@ type AppConfigContextType = {
   getTotalFixedCost: () => number
   addToCart: (productId: number) => void
   removeFromCart: (productId: number) => void
+  updateCartQty: (productId: number, qty: number) => void
   clearCart: () => void
+  isCartOpen: boolean
+  openCart: () => void
+  closeCart: () => void
 }
 
 const defaultBannerSlides: BannerSlide[] = [
@@ -73,7 +77,11 @@ const AppConfigContext = createContext<AppConfigContextType | null>(null)
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const { currentUser } = useAuth()
+
+  const openCart = () => setIsCartOpen(true)
+  const closeCart = () => setIsCartOpen(false)
 
   // 로컬 전용 설정 (작성자 승인 목록)
   useEffect(() => {
@@ -208,6 +216,18 @@ const addToCart = (productId: number) => {
   })
 }
 
+// 장바구니 수량 직접 변경 (0 이하면 삭제)
+const updateCartQty = (productId: number, qty: number) => {
+  if (qty <= 0) {
+    setConfig(prev => ({ ...prev, cart: prev.cart.filter(c => c.productId !== productId) }))
+  } else {
+    setConfig(prev => ({
+      ...prev,
+      cart: prev.cart.map(c => c.productId === productId ? { ...c, qty } : c),
+    }))
+  }
+}
+
 // 장바구니 삭제
 const removeFromCart = (productId: number) => {
   setConfig(prev => ({
@@ -228,7 +248,8 @@ const clearCart = () => {
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,
       getTotalFixedCost,
-      addToCart, removeFromCart, clearCart,
+      addToCart, removeFromCart, updateCartQty, clearCart,
+      isCartOpen, openCart, closeCart,
     }}>
       {children}
     </AppConfigContext.Provider>

@@ -37,22 +37,25 @@ export default function BlogCategoryPage() {
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-5 py-16">
 
-        <div className="border-b border-gray-200 pb-8 mb-12 flex items-end justify-between">
-          <div>
-            <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-3">{meta.eyebrow}</p>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">{meta.label}</h1>
-          </div>
+      {/* 히어로 섹션 */}
+      <div className="max-w-[1640px] mx-auto">
+        <div className="relative bg-[#1C1A17] flex items-end justify-between px-5 py-14">
+          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-3xl md:text-4xl font-bold tracking-tight">
+            {meta.label}
+          </h1>
           {isApproved && (
             <Link
               href={`/blog/write?category=${category}`}
-              className="bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors"
+              className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 mb-2"
             >
               + 글쓰기
             </Link>
           )}
         </div>
+      </div>
+
+      <div className="max-w-[1640px] mx-auto px-5 py-12">
 
         {children.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-10">

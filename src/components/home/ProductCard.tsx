@@ -11,13 +11,14 @@ const categoryBg: Record<string, string> = {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useAppConfig()
+  const { addToCart, openCart } = useAppConfig()
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     addToCart(product.id)
+    openCart()
   }
 
   return (

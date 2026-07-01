@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
@@ -52,16 +52,14 @@ export default function ProductDetailView({
   backLink?: { href: string; label: string }
   showDuty?: boolean
 }) {
-  const { config, addToCart } = useAppConfig()
+  const { config, addToCart, openCart } = useAppConfig()
   const { currentUser } = useAuth()
   const recommended = config.products.filter(p => p.id !== product.id).slice(0, 4)
   const foodGuide = config.products.find(p => p.type === 'food')
 
   const [activeImg, setActiveImg] = useState(0)
   const [qty, setQty] = useState(1)
-  const [toast, setToast] = useState(false)
   const [sticky, setSticky] = useState(false)
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [reviewOpen, setReviewOpen] = useState(false)
@@ -100,16 +98,12 @@ export default function ProductDetailView({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current) }, [])
-
   const images = [product.imageUrl, ...(product.extraImages ?? [])].filter(Boolean) as string[]
   const bg = categoryBg[product.category] ?? 'bg-gray-50'
 
   const handleAdd = () => {
     for (let i = 0; i < qty; i++) addToCart(product.id)
-    setToast(true)
-    if (toastTimer.current) clearTimeout(toastTimer.current)
-    toastTimer.current = setTimeout(() => setToast(false), 2200)
+    openCart()
   }
 
   const avgRating = reviews.length > 0
@@ -347,11 +341,9 @@ export default function ProductDetailView({
           <div className="flex items-baseline justify-end mb-9">
             <Link href="/events/wines" className="text-sm font-medium text-gray-900 no-underline inline-flex gap-1.5 items-center">전체보기 →</Link>
           </div>
-          <div className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {recommended.map(rec => (
-              <div key={rec.id} className="w-[260px] flex-shrink-0 snap-start">
-                <ProductGridCard product={rec} />
-              </div>
+              <ProductGridCard key={rec.id} product={rec} />
             ))}
           </div>
         </section>
@@ -375,13 +367,6 @@ export default function ProductDetailView({
               <span className="opacity-85">{fmt(product.price)}</span>
             </button>
           </div>
-        </div>
-      )}
-
-      {/* 토스트 */}
-      {toast && (
-        <div className="fixed left-1/2 bottom-24 -translate-x-1/2 z-[90] bg-gray-900 text-white px-5.5 py-3.5 text-sm font-medium shadow-lg">
-          장바구니에 추가됨 ✓
         </div>
       )}
 

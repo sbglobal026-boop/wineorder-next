@@ -16,12 +16,12 @@ function fmt(n: number): string {
 }
 
 export default function ProductGridCard({ product }: { product: Product }) {
-  const { addToCart } = useAppConfig()
+  const { addToCart, openCart } = useAppConfig()
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
   const firstCriticRating = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean)[0]
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col hover:-translate-y-1 transition-transform duration-300">
       <Link href={href} className="relative aspect-square block no-underline overflow-hidden">
         <div className={`absolute inset-0 ${categoryBg[product.category] ?? 'bg-gray-50'}`} />
         {product.imageUrl
@@ -43,7 +43,7 @@ export default function ProductGridCard({ product }: { product: Product }) {
         </div>
       </div>
       <button
-        onClick={() => addToCart(product.id)}
+        onClick={() => { addToCart(product.id); openCart() }}
         className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-white text-[13px] font-medium cursor-pointer hover:border-gray-900 transition-colors"
       >
         <span>장바구니 담기</span>
