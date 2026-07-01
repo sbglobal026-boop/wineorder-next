@@ -374,7 +374,7 @@ function FixedCostsSection() {
 }*/
 
 export default function ProductsPanel() {
-  const { config, setFeaturedWine } = useAppConfig()
+  const { config, setFeaturedWine, refreshProducts } = useAppConfig()
   const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
@@ -421,6 +421,7 @@ export default function ProductsPanel() {
     if (!editForm) return
     await updateProductRow(editForm)
     setProducts(prev => prev.map(p => p.id === editForm.id ? editForm : p))
+    await refreshProducts()
     setEditingId(null)
     setEditForm(null)
   }
@@ -429,6 +430,7 @@ export default function ProductsPanel() {
     if (addForm.name && addForm.price) {
       const created = await createProductRow(addForm)
       setProducts(prev => [...prev, created])
+      await refreshProducts()
       setAddForm(emptyProduct)
       setShowAdd(false)
     }
@@ -439,6 +441,7 @@ export default function ProductsPanel() {
       const target = products.find(p => p.id === id)
       await deleteProductRow(id, target?.imageUrl, target?.extraImages)
       setProducts(prev => prev.filter(p => p.id !== id))
+      await refreshProducts()
       setDeleteConfirm(null)
     } else {
       setDeleteConfirm(id)

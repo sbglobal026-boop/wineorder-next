@@ -54,6 +54,7 @@ type AppConfigContextType = {
   isCartOpen: boolean
   openCart: () => void
   closeCart: () => void
+  refreshProducts: () => Promise<void>
 }
 
 const defaultBannerSlides: BannerSlide[] = [
@@ -142,6 +143,11 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       }))
     })
   }, [])
+
+  const refreshProducts = async () => {
+    const products = await fetchProducts()
+    setConfig(prev => ({ ...prev, products }))
+  }
 
   const setFeaturedWine = (id: number) => {
     setConfig(prev => ({ ...prev, featuredWineId: id }))
@@ -250,6 +256,7 @@ const clearCart = () => {
       getTotalFixedCost,
       addToCart, removeFromCart, updateCartQty, clearCart,
       isCartOpen, openCart, closeCart,
+      refreshProducts,
     }}>
       {children}
     </AppConfigContext.Provider>
