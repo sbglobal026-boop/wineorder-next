@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const EU_COUNTRIES = ['FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'PL', 'SE', 'DK', 'FI', 'IE', 'GR', 'CZ', 'HU', 'RO', 'SK', 'BG', 'HR', 'SI', 'LT', 'LV', 'EE', 'LU', 'MT', 'CY']
@@ -65,8 +66,9 @@ function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: str
 }
 
 export default function CheckoutPage() {
-  const { config } = useAppConfig()
+  const { config, clearCart } = useAppConfig()
   const supabase = createClient()
+  const router = useRouter()
 
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
@@ -74,12 +76,14 @@ export default function CheckoutPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])  // ← 추가
+  const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])
   const [eurToKrw, setEurToKrw] = useState<number | null>(null)
   const [eurToUsd, setEurToUsd] = useState<number | null>(null)
   const [splitDelivery, setSplitDelivery] = useState(false)
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false)
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderError, setOrderError] = useState('')
 
   const emptyForm = { recipient_name: '', address: '', city: '', postal_code: '', country: 'DE', is_default: false, customs_code: '' }
 
@@ -550,8 +554,9 @@ export default function CheckoutPage() {
                 </span>
               </div>
 
-              {/* 분할배송 요청 */}
-              <div className="flex items-start gap-3 pl-1">
+              {/* 분할배송 요청 (배송지가 한국일 경우에만)*/}
+              {zone === 'KR' && (
+                <div className="flex items-start gap-3 pl-1">
                 <input
                   type="checkbox"
                   id="split_delivery"
@@ -564,6 +569,7 @@ export default function CheckoutPage() {
                   <span className="block text-xs text-gray-400 mt-0.5">병당 €1 추가 · 총 €{totalQty} 추가</span>
                 </label>
               </div>
+              )}
 
               {zone === 'DE' && vat > 0 && (
                 <div className="flex justify-between text-sm">
@@ -627,15 +633,58 @@ export default function CheckoutPage() {
             <p className="text-xs text-gray-400 leading-relaxed mb-8">
               해외 직배송 상품 특성상 통관 과정에서 발생하는 관세 및 부가세는 구매자 부담이며, 이로 인한 반품 및 환불은 불가합니다.
             </p>
+            {orderError && (
+              <p className="text-red-500 text-xs mb-3">{orderError}</p>
+            )}
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => {
-                  setShowPaymentConfirm(false)
-                  // TODO: PG 결제 연동
+                disabled={orderLoading}
+                onClick={async () => {
+                  setOrderLoading(true)
+                  setOrderError('')
+                  try {
+                    const orderItems = items.map(i => ({
+                      productId: i.productId,
+                      name: i.product.name,
+                      qty: i.qty,
+                      price_eur: i.product.price,
+                    }))
+                    const dutyTotal = zone === 'KR' && eurToKrw && eurToUsd
+                      ? items.reduce((sum, i) => {
+                          const d = calcDuty(i.product.price * i.qty, eurToKrw, eurToUsd, i.product.origin ?? '')
+                          return sum + d.total
+                        }, 0)
+                      : 0
+                    const res = await fetch('/api/orders', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        addressId: selectedAddressId,
+                        items: orderItems,
+                        totalEur: total,
+                        shippingFeeEur: shippingFee,
+                        dutyEur: dutyTotal,
+                        splitDelivery,
+                        splitFeeEur: splitFee,
+                        memo: null,
+                      }),
+                    })
+                    const data = await res.json()
+                    if (!res.ok) {
+                      setOrderError(data.error ?? '주문 처리 중 오류가 발생했습니다')
+                      return
+                    }
+                    clearCart()
+                    router.push(`/order/${data.orderId}`)
+                  } catch {
+                    setOrderError('주문 처리 중 오류가 발생했습니다')
+                  } finally {
+                    setOrderLoading(false)
+                  }
                 }}
-                className="w-full bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors"
+                className="w-full bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                확인했습니다 — 결제하기
+                {orderLoading ? '처리 중...' : '확인했습니다 — 결제하기'}
               </button>
               <button
                 onClick={() => setShowPaymentConfirm(false)}
