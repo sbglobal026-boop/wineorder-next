@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
-import { BlogCategory, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
+import { BlogCategory, BLOG_CATEGORIES, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 import RichTextEditor from '@/components/blog/RichTextEditor'
 
@@ -33,21 +33,50 @@ function CategoryButtons({
   const cls = (active: boolean) =>
     `${base} ${active ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'}`
 
+  // 현재 선택값의 부모 카테고리 (자식이 선택된 경우)
+  const selectedParent = value !== 'all'
+    ? BLOG_CATEGORIES.find(c => c.value === value)?.parent
+    : undefined
+
+  // 확장할 상위 카테고리: 자식이 선택되면 그 부모, 직접 선택이면 해당 카테고리
+  const expandedParent: BlogCategory | null =
+    selectedParent ?? (value !== 'all' ? value : null)
+
+  const expandedChildren = expandedParent ? childCategories(expandedParent) : []
+
   return (
     <div className="flex flex-col gap-2">
+      {/* 상위 카테고리 */}
       <div className="flex gap-2 flex-wrap">
         {allLabel && (
           <button type="button" onClick={() => onChange('all')} className={cls(value === 'all')}>{allLabel}</button>
         )}
         {topLevelCategories().map(c => (
-          <button key={c.value} type="button" onClick={() => onChange(c.value)} className={cls(value === c.value)}>{c.label}</button>
+          <button
+            key={c.value}
+            type="button"
+            onClick={() => onChange(c.value)}
+            className={cls(value === c.value || selectedParent === c.value)}
+          >
+            {c.label}
+            {childCategories(c.value).length > 0 && (
+              <span className="ml-1 opacity-50 text-[10px]">
+                {expandedParent === c.value ? '▲' : '▼'}
+              </span>
+            )}
+          </button>
         ))}
       </div>
-      <div className="flex gap-2 flex-wrap pl-5">
-        {childCategories('wine').map(v => (
-          <button key={v} type="button" onClick={() => onChange(v)} className={cls(value === v)}>└ {categoryLabel(v)}</button>
-        ))}
-      </div>
+      {/* 선택된 상위 카테고리의 하위 카테고리 */}
+      {expandedChildren.length > 0 && (
+        <div className="flex gap-2 flex-wrap pl-4 border-l-2 border-gray-200">
+          {expandedChildren.map(v => (
+            <button key={v} type="button" onClick={() => onChange(v)} className={cls(value === v)}>
+              {categoryLabel(v)}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
