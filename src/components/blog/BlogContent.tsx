@@ -82,7 +82,7 @@ export default function BlogContent({ html, className = '' }: { html: string; cl
       {embeds.map(({ embedUrl, placeName, rawUrl }, i) => (
         <div key={i} className="mt-6 border border-gray-200 overflow-hidden w-1/2">
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-4 py-3 bg-[#0e3719]">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#0e3719] font-[family-name:var(--font-lato)]">
             <div className="flex items-center gap-2">
               <span className="text-[#FBFAF7] text-sm">📍</span>
               <span className="text-[#FBFAF7] text-sm font-medium">{placeName}</span>
