@@ -11,6 +11,15 @@ interface OrderItem {
   price_eur: number
 }
 
+interface SplitDelivery {
+  id: string
+  shipment_number: string
+  product_name: string
+  status: string
+  scheduled_date: string | null
+  tracking_number: string | null
+}
+
 interface Order {
   id: string
   order_number: string | null
@@ -20,7 +29,9 @@ interface Order {
   shipping_fee_eur: number
   split_delivery: boolean
   split_delivery_fee_eur: number
+  tracking_number: string | null
   created_at: string
+  split_deliveries?: SplitDelivery[]
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -41,7 +52,7 @@ export default function OrderPage() {
     const supabase = createClient()
     supabase
       .from('orders')
-      .select('*')
+      .select('*, split_deliveries(id, shipment_number, product_name, status, scheduled_date, tracking_number)')
       .eq('id', id)
       .single()
       .then(({ data, error }) => {
@@ -122,10 +133,39 @@ export default function OrderPage() {
           </div>
         </div>
 
-        {/* 상태 */}
-        <div className="border border-gray-200 bg-white px-5 py-4 mb-10 flex justify-between items-center">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400">배송 상태</span>
-          <span className="text-sm font-bold text-[#2C5F2D]">{STATUS_LABEL[order.status] ?? order.status}</span>
+        {/* 상태 + 운송장 */}
+        <div className="border border-gray-200 bg-white mb-10 divide-y divide-gray-100">
+          <div className="px-5 py-4 flex justify-between items-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400">배송 상태</span>
+            <span className="text-sm font-bold text-[#2C5F2D]">{STATUS_LABEL[order.status] ?? order.status}</span>
+          </div>
+
+          {/* 분할배송 운송장 */}
+          {order.split_delivery && order.split_deliveries && order.split_deliveries.length > 0 ? (
+            [...order.split_deliveries]
+              .sort((a, b) => a.shipment_number.localeCompare(b.shipment_number))
+              .map(s => (
+                <div key={s.id} className="px-5 py-3 flex justify-between items-center">
+                  <div>
+                    <p className="text-xs font-mono font-bold text-gray-500">{s.shipment_number}</p>
+                    <p className="text-xs text-gray-400">{s.product_name} · {STATUS_LABEL[s.status] ?? s.status}</p>
+                  </div>
+                  {s.tracking_number
+                    ? <span className="text-xs font-mono font-bold text-gray-700">{s.tracking_number}</span>
+                    : <span className="text-xs text-gray-300">운송장 준비 중</span>
+                  }
+                </div>
+              ))
+          ) : (
+            /* 일반 주문 운송장 */
+            <div className="px-5 py-4 flex justify-between items-center">
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">운송장번호</span>
+              {order.tracking_number
+                ? <span className="text-xs font-mono font-bold text-gray-700">{order.tracking_number}</span>
+                : <span className="text-xs text-gray-300">운송장 준비 중</span>
+              }
+            </div>
+          )}
         </div>
 
         {/* 버튼 */}

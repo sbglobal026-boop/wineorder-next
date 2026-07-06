@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import * as XLSX from 'xlsx'
 
 const ZONE_LABELS: Record<string, { label: string; icon: string; desc: string }> = {
   DE: { label: '독일', icon: '🇩🇪', desc: '독일 내 배송 & VAT 적용' },
@@ -36,6 +37,7 @@ interface SplitDelivery {
   product_name: string
   status: string
   scheduled_date: string | null
+  tracking_number: string | null
 }
 
 interface Order {
@@ -47,6 +49,7 @@ interface Order {
   shipping_fee_eur: number
   split_delivery: boolean
   split_delivery_fee_eur: number
+  tracking_number: string | null
   created_at: string
   addresses?: {
     recipient_name: string
@@ -54,6 +57,7 @@ interface Order {
     city: string
     country: string
     postal_code: string | null
+    customs_code?: string | null
   } | null
   split_deliveries?: SplitDelivery[]
 }
@@ -80,6 +84,10 @@ export default function ShippingPanel() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [updatingShipmentId, setUpdatingShipmentId] = useState<string | null>(null)
+  const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({})
+  const [savingTracking, setSavingTracking] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState<{ success: number; notFound: number } | null>(null)
 
   const supabase = createClient()
 
@@ -163,6 +171,177 @@ export default function ShippingPanel() {
     setUpdatingShipmentId(null)
   }
 
+  const handleSaveTracking = async (orderId: string, key: string, isSplit: boolean) => {
+    const value = trackingInputs[key] ?? ''
+    setSavingTracking(key)
+    const url = isSplit ? `/api/admin/split-deliveries/${orderId}` : `/api/admin/orders/${orderId}`
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracking_number: value }),
+    })
+    if (res.ok) {
+      if (isSplit) {
+        setOrders(prev => prev.map(o => ({
+          ...o,
+          split_deliveries: o.split_deliveries?.map(s =>
+            s.id === orderId ? { ...s, tracking_number: value } : s
+          ),
+        })))
+      } else {
+        setOrders(prev => prev.map(o =>
+          o.id === orderId ? { ...o, tracking_number: value } : o
+        ))
+      }
+    }
+    setSavingTracking(null)
+  }
+
+  // 엑셀 업로드 — 주문번호 매칭 후 운송장번호 자동 입력
+  const handleUploadExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setUploading(true)
+    setUploadResult(null)
+
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf, { type: 'array' })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 }) as string[][]
+
+    // 헤더 행에서 주문번호/운송장번호 열 인덱스 찾기
+    const header = rows[0]?.map(h => String(h ?? '').trim()) ?? []
+    const orderNumIdx = header.findIndex(h => h === '주문번호')
+    const trackingIdx = header.findIndex(h => h === '운송장번호')
+
+    if (orderNumIdx === -1 || trackingIdx === -1) {
+      alert('엑셀 형식이 맞지 않습니다. 다운로드한 엑셀 파일을 사용해주세요.')
+      setUploading(false)
+      return
+    }
+
+    let success = 0
+    let notFound = 0
+
+    for (const row of rows.slice(1)) {
+      const orderNum = String(row[orderNumIdx] ?? '').trim()
+      const tracking = String(row[trackingIdx] ?? '').trim()
+      if (!orderNum || !tracking) continue
+
+      // 분할배송 하위 배송건인지 확인 (숫자-숫자-숫자 패턴)
+      const isSplit = /\d{8}-\d{6}-\d+/.test(orderNum)
+
+      if (isSplit) {
+        // split_deliveries에서 shipment_number로 찾기
+        const shipment = orders
+          .flatMap(o => o.split_deliveries ?? [])
+          .find(s => s.shipment_number === orderNum)
+        if (!shipment) { notFound++; continue }
+
+        const res = await fetch(`/api/admin/split-deliveries/${shipment.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tracking_number: tracking }),
+        })
+        if (res.ok) {
+          setOrders(prev => prev.map(o => ({
+            ...o,
+            split_deliveries: o.split_deliveries?.map(s =>
+              s.id === shipment.id ? { ...s, tracking_number: tracking } : s
+            ),
+          })))
+          success++
+        }
+      } else {
+        // orders에서 order_number로 찾기
+        const order = orders.find(o => o.order_number === orderNum)
+        if (!order) { notFound++; continue }
+
+        const res = await fetch(`/api/admin/orders/${order.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tracking_number: tracking }),
+        })
+        if (res.ok) {
+          setOrders(prev => prev.map(o =>
+            o.id === order.id ? { ...o, tracking_number: tracking } : o
+          ))
+          success++
+        }
+      }
+    }
+
+    setUploadResult({ success, notFound })
+    setUploading(false)
+  }
+
+  // 엑셀 다운로드 (분할배송은 하위 배송건별로 행 생성)
+  const handleExportExcel = () => {
+    const headers = ['주문번호', '주문일시', '수령인', '주소', '도시', '우편번호', '국가', '개인통관부호', '상품', '수량', '판매가(EUR)', '배송비(EUR)', '상태', '운송장번호']
+    const rows: (string | number)[][] = []
+
+    filteredOrders.forEach(o => {
+      const addr = o.addresses
+      const date = new Date(o.created_at).toLocaleString('ko-KR')
+      const statusLabel = STATUS_OPTIONS.find(s => s.value === o.status)?.label ?? o.status
+
+      if (o.split_delivery && o.split_deliveries && o.split_deliveries.length > 0) {
+        // 분할배송: 하위 배송건마다 한 행
+        [...o.split_deliveries]
+          .sort((a, b) => a.shipment_number.localeCompare(b.shipment_number))
+          .forEach(s => {
+            // 상품명으로 단가 찾기
+            const matchedItem = o.items.find(i => i.name === s.product_name)
+            const unitPrice = matchedItem?.price_eur ?? ''
+            rows.push([
+              s.shipment_number,
+              date,
+              addr?.recipient_name ?? '',
+              addr?.address ?? '',
+              addr?.city ?? '',
+              addr?.postal_code ?? '',
+              addr?.country ?? '',
+              addr?.customs_code ?? '',
+              s.product_name,
+              1,
+              unitPrice,
+              '',
+              STATUS_OPTIONS.find(opt => opt.value === s.status)?.label ?? s.status,
+              s.tracking_number ?? '',
+            ])
+          })
+      } else {
+        // 일반 주문: 한 행
+        const itemStr = o.items.map(i => i.name).join(' / ')
+        const totalQty = o.items.reduce((sum, i) => sum + i.qty, 0)
+        const subtotal = o.items.reduce((sum, i) => sum + i.price_eur * i.qty, 0)
+        rows.push([
+          o.order_number ?? o.id.slice(0, 8),
+          date,
+          addr?.recipient_name ?? '',
+          addr?.address ?? '',
+          addr?.city ?? '',
+          addr?.postal_code ?? '',
+          addr?.country ?? '',
+          addr?.customs_code ?? '',
+          itemStr,
+          totalQty,
+          subtotal,
+          o.shipping_fee_eur,
+          statusLabel,
+          o.tracking_number ?? '',
+        ])
+      }
+    })
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows])
+    ws['!cols'] = headers.map((_, i) => ({ wch: [12, 18, 10, 24, 10, 10, 6, 14, 24, 6, 10, 10, 10, 18][i] }))
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '주문목록')
+    XLSX.writeFile(wb, `주문목록_${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
+
   const filteredOrders = statusFilter === 'all'
     ? orders
     : orders.filter(o => o.status === statusFilter)
@@ -201,10 +380,39 @@ export default function ShippingPanel() {
       {/* 주문 목록 섹션 */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">
-            주문 목록
-            <span className="ml-2 text-sm font-normal text-gray-400">({orders.length}건)</span>
-          </h3>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h3 className="text-lg font-bold text-gray-900">
+              주문 목록
+              <span className="ml-2 text-sm font-normal text-gray-400">({orders.length}건)</span>
+            </h3>
+            <button
+              onClick={handleExportExcel}
+              disabled={filteredOrders.length === 0}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              엑셀 추출
+            </button>
+            <label className={`text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-colors ${
+              uploading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}>
+              {uploading ? '업로드 중...' : '송장 업로드'}
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                disabled={uploading}
+                onChange={handleUploadExcel}
+              />
+            </label>
+            {uploadResult && (
+              <span className="text-xs text-gray-500">
+                ✓ {uploadResult.success}건 반영
+                {uploadResult.notFound > 0 && ` · ${uploadResult.notFound}건 미매칭`}
+              </span>
+            )}
+          </div>
           {/* 상태 필터 */}
           <div className="flex gap-2 flex-wrap">
             <button
@@ -340,8 +548,48 @@ export default function ShippingPanel() {
                                   </button>
                                 ))}
                               </div>
+                              {/* 분할배송 송장번호 */}
+                              <div className="flex items-center gap-2 mt-2">
+                                <input
+                                  type="text"
+                                  placeholder="운송장번호 입력"
+                                  value={trackingInputs[shipment.id] ?? shipment.tracking_number ?? ''}
+                                  onChange={e => setTrackingInputs(prev => ({ ...prev, [shipment.id]: e.target.value }))}
+                                  className="text-xs border border-gray-200 rounded px-2 py-1 flex-1 focus:outline-none focus:border-gray-400 font-mono"
+                                />
+                                <button
+                                  onClick={() => handleSaveTracking(shipment.id, shipment.id, true)}
+                                  disabled={savingTracking === shipment.id}
+                                  className="text-xs font-semibold px-3 py-1 rounded bg-gray-900 hover:bg-gray-700 text-white transition-colors disabled:opacity-40"
+                                >
+                                  {savingTracking === shipment.id ? '저장 중' : '저장'}
+                                </button>
+                              </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 송장번호 (비분할 주문) */}
+                    {!order.split_delivery && (
+                      <div className="mb-4">
+                        <p className="text-xs font-semibold text-gray-500 mb-2">운송장번호</p>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="운송장번호 입력"
+                            value={trackingInputs[order.id] ?? order.tracking_number ?? ''}
+                            onChange={e => setTrackingInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
+                            className="text-xs border border-gray-200 rounded px-3 py-1.5 flex-1 focus:outline-none focus:border-gray-400 font-mono"
+                          />
+                          <button
+                            onClick={() => handleSaveTracking(order.id, order.id, false)}
+                            disabled={savingTracking === order.id}
+                            className="text-xs font-semibold px-4 py-1.5 rounded bg-gray-900 hover:bg-gray-700 text-white transition-colors disabled:opacity-40"
+                          >
+                            {savingTracking === order.id ? '저장 중' : '저장'}
+                          </button>
                         </div>
                       </div>
                     )}
