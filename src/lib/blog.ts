@@ -52,7 +52,7 @@ export async function createBlogPost(post: {
   return data as BlogPost
 }
 
-export async function updateBlogPost(id: number, post: Partial<Pick<BlogPost, 'title' | 'content' | 'images' | 'category'>>) {
+export async function updateBlogPost(id: number, post: Partial<Pick<BlogPost, 'title' | 'content' | 'images' | 'category' | 'author_name'>>) {
   const supabase = createClient()
   const { error } = await supabase.from('blog_posts').update(post).eq('id', id)
   if (error) throw error

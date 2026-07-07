@@ -9,8 +9,8 @@ import RichTextEditor from '@/components/blog/RichTextEditor'
 
 const MAX_IMAGES = 10
 
-type FormState = { title: string; content: string; images: string[]; category: BlogCategory }
-const emptyForm: FormState = { title: '', content: '', images: [], category: 'wine' }
+type FormState = { title: string; content: string; images: string[]; category: BlogCategory; author_name: string }
+const emptyForm: FormState = { title: '', content: '', images: [], category: 'wine', author_name: '' }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -139,7 +139,7 @@ export default function BlogPanel() {
       images: addForm.images,
       category: addForm.category,
       author_id: currentUser?.id ?? null,
-      author_name: currentUser?.name ?? '관리자',
+      author_name: addForm.author_name.trim() || '관리자',
     })
     setAddForm(emptyForm)
     setShowAdd(false)
@@ -148,13 +148,13 @@ export default function BlogPanel() {
 
   const startEdit = (post: BlogPost) => {
     setEditingId(post.id)
-    setEditForm({ title: post.title, content: post.content, images: post.images, category: post.category })
+    setEditForm({ title: post.title, content: post.content, images: post.images, category: post.category, author_name: post.author_name })
     setShowAdd(false)
   }
 
   const saveEdit = async () => {
     if (!editForm || editingId === null) return
-    await updateBlogPost(editingId, editForm)
+    await updateBlogPost(editingId, { ...editForm, author_name: editForm.author_name.trim() || '관리자' })
     setEditingId(null)
     setEditForm(null)
     loadPosts()
@@ -199,6 +199,16 @@ export default function BlogPanel() {
               <CategoryButtons
                 value={addForm.category}
                 onChange={(v) => { if (v !== 'all') setAddForm(f => ({ ...f, category: v })) }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">작성자 이름</label>
+              <input
+                value={addForm.author_name}
+                onChange={(e) => setAddForm(f => ({ ...f, author_name: e.target.value }))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                placeholder="비워두면 '관리자'로 표시됩니다"
               />
             </div>
 
@@ -286,6 +296,16 @@ export default function BlogPanel() {
                       <CategoryButtons
                         value={editForm.category}
                         onChange={(v) => { if (v !== 'all') setEditForm(f => f ? { ...f, category: v } : f) }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">작성자 이름</label>
+                      <input
+                        value={editForm.author_name}
+                        onChange={(e) => setEditForm(f => f ? { ...f, author_name: e.target.value } : f)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                        placeholder="비워두면 '관리자'로 표시됩니다"
                       />
                     </div>
 
