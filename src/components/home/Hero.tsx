@@ -11,7 +11,7 @@ const panelStyles = [
 ]
 
 export default function Hero() {
-  const { config } = useAppConfig()
+  const { config, bannerSlidesLoaded } = useAppConfig()
   const slides = config.bannerSlides
   const containerRef = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState(0)
@@ -39,6 +39,18 @@ export default function Hero() {
     }, AUTO_PLAY_MS)
     return () => clearInterval(timer)
   }, [page, pageCount, isPaused])
+
+  // 실제 배너 데이터가 도착하기 전까지는 임시 문구 대신 빈 배경만 표시 (깜빡임 방지)
+  if (!bannerSlidesLoaded) {
+    return (
+      <section className="max-w-[1640px] mx-auto px-[20px] pt-0">
+        <div className="grid md:grid-cols-2 w-full">
+          <div className="aspect-square bg-[#F9F4EE]" />
+          <div className="aspect-square bg-[#F9F4EE] hidden md:block" />
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="max-w-[1640px] mx-auto px-[20px] pt-0">
