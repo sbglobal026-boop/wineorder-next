@@ -4,6 +4,7 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { Product } from '@/data/products'
 import { uploadProductImage } from '@/lib/uploadImage'
 import { fetchAdminProducts, createProductRow, updateProductRow, deleteProductRow } from '@/lib/products'
+import { productsToCsv, parseProductsCsv, downloadCsv } from '@/lib/productsCsv'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -385,6 +386,9 @@ export default function ProductsPanel() {
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState<Omit<Product, 'id'>>(emptyProduct)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [csvUploading, setCsvUploading] = useState(false)
+  const [csvStatus, setCsvStatus] = useState<string | null>(null)
+  const csvInputRef = useRef<HTMLInputElement>(null)
 
   const [searchName, setSearchName] = useState('')
   const [filterOrigin, setFilterOrigin] = useState('')
@@ -452,20 +456,70 @@ export default function ProductsPanel() {
     }
   }
 
+  const handleCsvDownload = () => {
+    downloadCsv('products.csv', productsToCsv(products))
+  }
+
+  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const rows = parseProductsCsv(await file.text())
+    setCsvUploading(true)
+    setCsvStatus(null)
+    let created = 0
+    let updated = 0
+    for (const row of rows) {
+      const { id, ...rest } = row
+      const existing = id !== null ? products.find(p => p.id === id) : undefined
+      if (existing) {
+        await updateProductRow({ ...rest, id: existing.id })
+        updated++
+      } else {
+        await createProductRow(rest)
+        created++
+      }
+    }
+    const refreshed = await fetchAdminProducts()
+    setProducts(refreshed)
+    await refreshProducts()
+    setCsvUploading(false)
+    setCsvStatus(`${created}개 추가, ${updated}개 수정 완료`)
+    if (csvInputRef.current) csvInputRef.current.value = ''
+  }
+
   const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none'
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-2xl font-bold text-gray-900">상품 관리</h2>
-        <button
-          onClick={() => { setShowAdd(true); setEditingId(null) }}
-          className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-        >
-          + 새 상품 추가
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCsvDownload}
+            className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+          >
+            CSV 다운로드
+          </button>
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            disabled={csvUploading}
+            className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors disabled:opacity-50"
+          >
+            {csvUploading ? '업로드중...' : 'CSV 업로드'}
+          </button>
+          <input ref={csvInputRef} type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" />
+          <button
+            onClick={() => { setShowAdd(true); setEditingId(null) }}
+            className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+          >
+            + 새 상품 추가
+          </button>
+        </div>
       </div>
-      <p className="text-gray-500 text-sm mb-6">와인 및 식품 상품을 추가, 편집, 삭제할 수 있습니다</p>
+      <p className="text-gray-500 text-sm mb-6">
+        와인 및 식품 상품을 추가, 편집, 삭제할 수 있습니다
+        {csvStatus && <span className="text-green-600 ml-2">· {csvStatus}</span>}
+      </p>
 
       {showAdd && (
         <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-6">
@@ -545,6 +599,7 @@ export default function ProductsPanel() {
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b border-gray-100">
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[50px]">ID</th>
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[80px]">구분</th>
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2">상품명</th>
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">카테고리</th>
@@ -557,13 +612,13 @@ export default function ProductsPanel() {
         <tbody className="divide-y divide-gray-100">
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={7} className="text-sm text-gray-400 text-center py-10">검색 결과가 없습니다</td>
+              <td colSpan={8} className="text-sm text-gray-400 text-center py-10">검색 결과가 없습니다</td>
             </tr>
           )}
           {filtered.map((product) => (
             <tr key={product.id} className="hover:bg-gray-50 transition-colors">
               {editingId === product.id && editForm ? (
-                <td colSpan={7} className="py-4 px-3 bg-gray-50">
+                <td colSpan={8} className="py-4 px-3 bg-gray-50">
                   <p className="text-xs text-gray-400 font-medium mb-4">편집 중: {product.name}</p>
                   <ProductForm
                     data={editForm}
@@ -575,6 +630,7 @@ export default function ProductsPanel() {
                 </td>
               ) : (
                 <>
+                  <td className="px-3 py-1.5 text-xs text-gray-400 font-mono">{product.id}</td>
                   <td className="px-3 py-1.5">
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
                       product.type === 'wine'
