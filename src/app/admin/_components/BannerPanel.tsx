@@ -105,6 +105,15 @@ export default function BannerPanel() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">링크 URL</label>
+                  <input
+                    value={form.linkUrl ?? ''}
+                    onChange={(e) => setForm(prev => prev ? { ...prev, linkUrl: e.target.value } : prev)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                    placeholder="예: /events 또는 https://..."
+                  />
+                </div>
                 <div className="flex gap-2">
                   <button onClick={save} className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
                     저장
@@ -126,6 +135,7 @@ export default function BannerPanel() {
                     <p className="text-xs text-gray-400 mb-1">슬라이드 {slide.id}</p>
                     <p className="text-gray-900 font-semibold mb-1">{slide.title.replace('\n', ' / ')}</p>
                     <p className="text-gray-500 text-sm">{slide.subtitle}</p>
+                    {slide.linkUrl && <p className="text-gray-400 text-xs mt-1 truncate">🔗 {slide.linkUrl}</p>}
                   </div>
                 </div>
                 <button

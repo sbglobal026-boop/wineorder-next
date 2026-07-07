@@ -21,6 +21,7 @@ export type BannerSlide = {
   subtitle: string
   cta: string
   imageUrl?: string
+  linkUrl?: string
 }
 
 // 장바구니

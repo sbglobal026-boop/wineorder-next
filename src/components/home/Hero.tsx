@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 
 const AUTO_PLAY_MS = 10000
@@ -55,15 +56,12 @@ export default function Hero() {
             <div key={p} className="grid md:grid-cols-2 w-full shrink-0 snap-start">
               {slides.slice(p * 2, p * 2 + 2).map((slide, i) => {
                 const style = panelStyles[i] ?? panelStyles[0]
-                return (
-                  <div
-                    key={slide.id}
-                    className="relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
-                    style={slide.imageUrl
-                      ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                      : { background: style.bg }
-                    }
-                  >
+                const panelClassName = "relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
+                const panelStyle = slide.imageUrl
+                  ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                  : { background: style.bg }
+                const panelContent = (
+                  <>
                     {slide.imageUrl && <div className="absolute inset-0 bg-black/40" />}
 
                     {/* 슬라이드 진행 바 (왼쪽 패널에만 표시) */}
@@ -86,6 +84,16 @@ export default function Hero() {
                       </p>
                       <span className="text-[14px] md:text-lg font-normal font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
                     </div>
+                  </>
+                )
+
+                return slide.linkUrl ? (
+                  <Link key={slide.id} href={slide.linkUrl} className={panelClassName} style={panelStyle}>
+                    {panelContent}
+                  </Link>
+                ) : (
+                  <div key={slide.id} className={panelClassName} style={panelStyle}>
+                    {panelContent}
                   </div>
                 )
               })}
