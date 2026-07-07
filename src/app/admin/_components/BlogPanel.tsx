@@ -121,6 +121,16 @@ export default function BlogPanel() {
     else setEditForm(f => f ? { ...f, images: f.images.filter((_, i) => i !== idx) } : f)
   }
 
+  // 선택한 사진을 배열 맨 앞으로 이동시켜 대표 사진(썸네일)으로 지정
+  const setThumbnail = (idx: number, target: 'add' | 'edit') => {
+    const reorder = (images: string[]) => {
+      const picked = images[idx]
+      return [picked, ...images.filter((_, i) => i !== idx)]
+    }
+    if (target === 'add') setAddForm(f => ({ ...f, images: reorder(f.images) }))
+    else setEditForm(f => f ? { ...f, images: reorder(f.images) } : f)
+  }
+
   const handleAdd = async () => {
     if (!addForm.title.trim() || !stripHtml(addForm.content)) return
     await createBlogPost({
@@ -198,8 +208,16 @@ export default function BlogPanel() {
               </label>
               <div className="grid grid-cols-5 gap-3">
                 {addForm.images.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200">
+                  <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
                     <img src={src} alt="" className="w-full h-full object-cover" />
+                    {i === 0 ? (
+                      <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
+                    ) : (
+                      <button
+                        onClick={() => setThumbnail(i, 'add')}
+                        className="absolute bottom-1 left-1 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >대표로 지정</button>
+                    )}
                     <button
                       onClick={() => removeImage(i, 'add')}
                       className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs w-5 h-5 rounded-full"
@@ -277,8 +295,16 @@ export default function BlogPanel() {
                       </label>
                       <div className="grid grid-cols-5 gap-3">
                         {editForm.images.map((src, i) => (
-                          <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200">
+                          <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
                             <img src={src} alt="" className="w-full h-full object-cover" />
+                            {i === 0 ? (
+                              <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
+                            ) : (
+                              <button
+                                onClick={() => setThumbnail(i, 'edit')}
+                                className="absolute bottom-1 left-1 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              >대표로 지정</button>
+                            )}
                             <button
                               onClick={() => removeImage(i, 'edit')}
                               className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs w-5 h-5 rounded-full"
