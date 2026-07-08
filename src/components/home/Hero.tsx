@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 
-const AUTO_PLAY_MS = 10000
+const AUTO_PLAY_MS = 7000
 
 const panelStyles = [
   { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40' },
@@ -78,11 +78,11 @@ export default function Hero() {
 
                     {/* 슬라이드 진행 바 (왼쪽 패널에만 표시) */}
                     {i === 0 && (
-                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-[180px] h-[3px] bg-white/30 z-10">
+                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-[180px] h-[2px] bg-white/30 z-10">
                         {p === page && (
                           <div
                             key={page}
-                            className="h-full bg-white animate-[hero-progress_10000ms_linear_forwards]"
+                            className="h-full bg-white animate-[hero-progress_7000ms_linear_forwards]"
                             style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
                           />
                         )}
