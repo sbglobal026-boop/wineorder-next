@@ -38,7 +38,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-10 py-16">
+      <div className="max-w-[1640px] mx-auto px-5 md:px-10 py-16">
         <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
           ← {categoryLabel(category)}
         </Link>

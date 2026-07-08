@@ -9,8 +9,8 @@ import RichTextEditor from '@/components/blog/RichTextEditor'
 
 const MAX_IMAGES = 10
 
-type FormState = { title: string; content: string; images: string[]; category: BlogCategory }
-const emptyForm: FormState = { title: '', content: '', images: [], category: 'wine' }
+type FormState = { title: string; content: string; images: string[]; category: BlogCategory; author_name: string }
+const emptyForm: FormState = { title: '', content: '', images: [], category: 'wine', author_name: '' }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -121,6 +121,16 @@ export default function BlogPanel() {
     else setEditForm(f => f ? { ...f, images: f.images.filter((_, i) => i !== idx) } : f)
   }
 
+  // 선택한 사진을 배열 맨 앞으로 이동시켜 대표 사진(썸네일)으로 지정
+  const setThumbnail = (idx: number, target: 'add' | 'edit') => {
+    const reorder = (images: string[]) => {
+      const picked = images[idx]
+      return [picked, ...images.filter((_, i) => i !== idx)]
+    }
+    if (target === 'add') setAddForm(f => ({ ...f, images: reorder(f.images) }))
+    else setEditForm(f => f ? { ...f, images: reorder(f.images) } : f)
+  }
+
   const handleAdd = async () => {
     if (!addForm.title.trim() || !stripHtml(addForm.content)) return
     await createBlogPost({
@@ -129,7 +139,7 @@ export default function BlogPanel() {
       images: addForm.images,
       category: addForm.category,
       author_id: currentUser?.id ?? null,
-      author_name: currentUser?.name ?? '관리자',
+      author_name: addForm.author_name.trim() || '관리자',
     })
     setAddForm(emptyForm)
     setShowAdd(false)
@@ -138,13 +148,13 @@ export default function BlogPanel() {
 
   const startEdit = (post: BlogPost) => {
     setEditingId(post.id)
-    setEditForm({ title: post.title, content: post.content, images: post.images, category: post.category })
+    setEditForm({ title: post.title, content: post.content, images: post.images, category: post.category, author_name: post.author_name })
     setShowAdd(false)
   }
 
   const saveEdit = async () => {
     if (!editForm || editingId === null) return
-    await updateBlogPost(editingId, editForm)
+    await updateBlogPost(editingId, { ...editForm, author_name: editForm.author_name.trim() || '관리자' })
     setEditingId(null)
     setEditForm(null)
     loadPosts()
@@ -193,13 +203,31 @@ export default function BlogPanel() {
             </div>
 
             <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">작성자 이름</label>
+              <input
+                value={addForm.author_name}
+                onChange={(e) => setAddForm(f => ({ ...f, author_name: e.target.value }))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                placeholder="비워두면 '관리자'로 표시됩니다"
+              />
+            </div>
+
+            <div>
               <label className="block text-xs font-semibold text-gray-600 mb-2">
                 사진 ({addForm.images.length}/{MAX_IMAGES})
               </label>
               <div className="grid grid-cols-5 gap-3">
                 {addForm.images.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200">
+                  <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
                     <img src={src} alt="" className="w-full h-full object-cover" />
+                    {i === 0 ? (
+                      <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
+                    ) : (
+                      <button
+                        onClick={() => setThumbnail(i, 'add')}
+                        className="absolute bottom-1 left-1 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >대표로 지정</button>
+                    )}
                     <button
                       onClick={() => removeImage(i, 'add')}
                       className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs w-5 h-5 rounded-full"
@@ -272,13 +300,31 @@ export default function BlogPanel() {
                     </div>
 
                     <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">작성자 이름</label>
+                      <input
+                        value={editForm.author_name}
+                        onChange={(e) => setEditForm(f => f ? { ...f, author_name: e.target.value } : f)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                        placeholder="비워두면 '관리자'로 표시됩니다"
+                      />
+                    </div>
+
+                    <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-2">
                         사진 ({editForm.images.length}/{MAX_IMAGES})
                       </label>
                       <div className="grid grid-cols-5 gap-3">
                         {editForm.images.map((src, i) => (
-                          <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200">
+                          <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
                             <img src={src} alt="" className="w-full h-full object-cover" />
+                            {i === 0 ? (
+                              <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
+                            ) : (
+                              <button
+                                onClick={() => setThumbnail(i, 'edit')}
+                                className="absolute bottom-1 left-1 bg-black/60 hover:bg-black/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              >대표로 지정</button>
+                            )}
                             <button
                               onClick={() => removeImage(i, 'edit')}
                               className="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs w-5 h-5 rounded-full"

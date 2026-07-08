@@ -26,6 +26,7 @@ const navItems = [
     children: childCategories('food-drink').map(c => ({ label: categoryLabel(c), href: `/blog/${c}` })),
   },
   { label: 'Travel', href: '/blog/travel' },
+  { label: 'Monthly Table', href: '/blog/monthly-table' },
 ]
 
 export default function Header() {

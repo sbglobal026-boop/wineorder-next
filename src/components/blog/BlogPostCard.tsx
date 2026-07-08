@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Heart, Share2, MessageCircle } from 'lucide-react'
 import { categoryLabel } from '@/lib/blogCategories'
 import BlogContent from './BlogContent'
 import {
@@ -32,6 +33,7 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
   useEffect(() => {
     fetchLikeCount(post.id).then(setLikeCount)
     if (currentUser) fetchUserLiked(post.id, currentUser.id).then(setLiked)
+    fetchComments(post.id).then(setComments)
   }, [post.id, currentUser])
 
   const handleLike = async () => {
@@ -101,17 +103,18 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
 
         {/* 액션 바 */}
         <div className="flex items-center gap-5 border-t border-gray-100 pt-4">
-          <button onClick={handleLike} className="flex items-center gap-1.5 text-sm font-medium">
-            <span>{liked ? '❤️' : '🤍'}</span>
-            <span className={liked ? 'text-red-500' : 'text-gray-500'}>{likeCount}</span>
+          <button onClick={handleLike} className={`group flex items-center gap-1.5 text-sm font-medium transition-colors ${liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}>
+            <Heart size={18} strokeWidth={1.75} className={`transition-transform group-hover:scale-110 ${liked ? 'fill-red-500 text-red-500' : ''}`} />
+            <span>{likeCount}</span>
           </button>
 
-          <button className="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
-            🔗 공유하기
+          <button className="group flex items-center gap-1.5 text-sm text-gray-500 font-medium transition-colors hover:text-gray-900">
+            <Share2 size={18} strokeWidth={1.75} className="transition-transform group-hover:scale-110" />
           </button>
 
-          <button onClick={handleToggleComments} className="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
-            💬 댓글{comments.length > 0 ? ` ${comments.length}` : ''}
+          <button onClick={handleToggleComments} className="group flex items-center gap-1.5 text-sm text-gray-500 font-medium transition-colors hover:text-gray-900">
+            <MessageCircle size={18} strokeWidth={1.75} className="transition-transform group-hover:scale-110" />
+            <span>{comments.length}</span>
           </button>
         </div>
 

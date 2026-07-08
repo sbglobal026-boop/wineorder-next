@@ -21,6 +21,7 @@ export type BannerSlide = {
   subtitle: string
   cta: string
   imageUrl?: string
+  linkUrl?: string
 }
 
 // 장바구니
@@ -40,6 +41,7 @@ export type AppConfig = {
 
 type AppConfigContextType = {
   config: AppConfig
+  bannerSlidesLoaded: boolean
   setFeaturedWine: (id: number) => void
   updateBannerSlide: (slide: BannerSlide) => void
   approveWriter: (email: string) => void
@@ -78,6 +80,7 @@ const AppConfigContext = createContext<AppConfigContextType | null>(null)
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [bannerSlidesLoaded, setBannerSlidesLoaded] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { currentUser } = useAuth()
 
@@ -107,6 +110,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     })
     fetchBannerSlides().then(bannerSlides => {
       if (bannerSlides.length > 0) setConfig(prev => ({ ...prev, bannerSlides }))
+      setBannerSlidesLoaded(true)
     })
   }, [])
 
@@ -249,7 +253,7 @@ const clearCart = () => {
 
   return (
     <AppConfigContext.Provider value={{
-      config, setFeaturedWine,
+      config, bannerSlidesLoaded, setFeaturedWine,
       updateBannerSlide,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,
