@@ -152,10 +152,10 @@ export default function CartPage() {
       {recommended.length > 0 && (
         <div className="max-w-[1640px] mx-auto px-[40px] pb-16">
           <section className="mt-24 md:mt-[140px]">
-            <h2 className="text-[13px] font-medium tracking-wide border-t border-gray-900 pt-2.5 mb-9">
-              함께 보면 좋은 와인.
-            </h2>
-            <div className="flex items-baseline justify-end mb-6 -mt-6">
+            <div className="flex items-baseline justify-between border-t border-gray-900 pt-2.5 mb-9">
+              <h2 className="text-[18px] font-bold tracking-wide font-[family-name:var(--font-playfair-display)]">
+                Top Drop Archive.
+              </h2>
               <Link href="/events/wines" className="text-sm font-medium text-gray-900 no-underline inline-flex gap-1.5 items-center">
                 전체보기 →
               </Link>
