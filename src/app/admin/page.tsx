@@ -7,13 +7,17 @@ import SectionsPanel from './_components/SectionsPanel'
 import BlogPanel from './_components/BlogPanel'
 import WritersPanel from './_components/WritersPanel'
 import ShippingPanel from './_components/ShippingPanel'
+import CsBoardPanel from './_components/CsBoardPanel'
+import NoticesPanel from './_components/NoticesPanel'
 
-type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping'
+type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping' | 'cs-board' | 'notices'
 
 const navItems: { id: Panel; label: string; icon: string }[] = [
   { id: 'products', label: '상품 관리', icon: '🍷' },
   { id: 'shipping', label: '배송 관리', icon: '🚚' },
   { id: 'blog', label: '블로그 관리', icon: '✍️' },
+  { id: 'cs-board', label: 'CS 게시판', icon: '💬' },
+  { id: 'notices', label: '공지사항 관리', icon: '📢' },
   { id: 'writers', label: '작성자 관리', icon: '👥' },
   { id: 'banner', label: '배너 관리', icon: '🖼️' },
   { id: 'sections', label: '섹션 설정', icon: '⚙️' },
@@ -71,6 +75,8 @@ export default function AdminPage() {
         {activePanel === 'products' && <ProductsPanel />}
         {activePanel === 'shipping' && <ShippingPanel />}
         {activePanel === 'blog' && <BlogPanel />}
+        {activePanel === 'cs-board' && <CsBoardPanel />}
+        {activePanel === 'notices' && <NoticesPanel />}
         {activePanel === 'writers' && <WritersPanel />}
         {activePanel === 'banner' && <BannerPanel />}
         {activePanel === 'sections' && <SectionsPanel />}
