@@ -92,6 +92,7 @@ export default function BlogPanel() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [uploading, setUploading] = useState(false)
   const [filter, setFilter] = useState<BlogCategory | 'all'>('all')
+  const [formError, setFormError] = useState<string | null>(null)
   const addFileRef = useRef<HTMLInputElement>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
 
@@ -132,18 +133,26 @@ export default function BlogPanel() {
   }
 
   const handleAdd = async () => {
-    if (!addForm.title.trim() || !stripHtml(addForm.content)) return
-    await createBlogPost({
-      title: addForm.title,
-      content: addForm.content,
-      images: addForm.images,
-      category: addForm.category,
-      author_id: currentUser?.id ?? null,
-      author_name: addForm.author_name.trim() || '관리자',
-    })
-    setAddForm(emptyForm)
-    setShowAdd(false)
-    loadPosts()
+    setFormError(null)
+    if (!addForm.title.trim()) { setFormError('제목을 입력하세요'); return }
+    if (!stripHtml(addForm.content)) { setFormError('내용을 입력하세요'); return }
+    try {
+      await createBlogPost({
+        title: addForm.title,
+        content: addForm.content,
+        images: addForm.images,
+        category: addForm.category,
+        author_id: currentUser?.id ?? null,
+        author_name: addForm.author_name.trim() || '관리자',
+      })
+      setAddForm(emptyForm)
+      setShowAdd(false)
+      loadPosts()
+    } catch (err) {
+      const message = (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message) : '발행에 실패했습니다'
+      setFormError(message)
+      console.error('블로그 발행 실패:', err)
+    }
   }
 
   const startEdit = (post: BlogPost) => {
@@ -264,11 +273,12 @@ export default function BlogPanel() {
               />
             </div>
 
+            {formError && <p className="text-sm text-red-600">{formError}</p>}
             <div className="flex gap-2">
               <button onClick={handleAdd} className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
                 발행
               </button>
-              <button onClick={() => { setShowAdd(false); setAddForm(emptyForm) }} className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-6 py-2 rounded-full transition-colors">
+              <button onClick={() => { setShowAdd(false); setAddForm(emptyForm); setFormError(null) }} className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-6 py-2 rounded-full transition-colors">
                 취소
               </button>
             </div>
