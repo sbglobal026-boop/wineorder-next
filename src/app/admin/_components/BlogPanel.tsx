@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { uploadBlogImages } from '@/lib/uploadImage'
+import { uploadBlogImages, uploadBlogVideo, isVideoUrl } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
 import { BlogCategory, BLOG_CATEGORIES, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
@@ -95,6 +95,9 @@ export default function BlogPanel() {
   const [formError, setFormError] = useState<string | null>(null)
   const addFileRef = useRef<HTMLInputElement>(null)
   const editFileRef = useRef<HTMLInputElement>(null)
+  const addVideoRef = useRef<HTMLInputElement>(null)
+  const editVideoRef = useRef<HTMLInputElement>(null)
+  const [videoError, setVideoError] = useState<string | null>(null)
 
   const loadPosts = () => {
     setLoading(true)
@@ -120,6 +123,24 @@ export default function BlogPanel() {
   const removeImage = (idx: number, target: 'add' | 'edit') => {
     if (target === 'add') setAddForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))
     else setEditForm(f => f ? { ...f, images: f.images.filter((_, i) => i !== idx) } : f)
+  }
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'add' | 'edit') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setVideoError(null)
+    setUploading(true)
+    try {
+      const uploaded = await uploadBlogVideo(file, currentUser?.id ?? null)
+      if (target === 'add') setAddForm(f => ({ ...f, images: [...f.images, uploaded] }))
+      else setEditForm(f => f ? { ...f, images: [...f.images, uploaded] } : f)
+    } catch (err) {
+      const message = (err && typeof err === 'object' && 'message' in err) ? String((err as { message: unknown }).message) : '동영상 업로드에 실패했습니다'
+      setVideoError(message)
+    }
+    setUploading(false)
+    if (target === 'add' && addVideoRef.current) addVideoRef.current.value = ''
+    if (target === 'edit' && editVideoRef.current) editVideoRef.current.value = ''
   }
 
   // 선택한 사진을 배열 맨 앞으로 이동시켜 대표 사진(썸네일)으로 지정
@@ -227,9 +248,14 @@ export default function BlogPanel() {
               </label>
               <div className="grid grid-cols-5 gap-3">
                 {addForm.images.map((src, i) => (
-                  <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
-                    <img src={src} alt="" className="w-full h-full object-cover" />
-                    {i === 0 ? (
+                  <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-black">
+                    {isVideoUrl(src)
+                      ? <video src={src} muted className="w-full h-full object-cover" />
+                      : <img src={src} alt="" className="w-full h-full object-cover" />
+                    }
+                    {isVideoUrl(src) ? (
+                      <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">🎬 동영상</span>
+                    ) : i === 0 ? (
                       <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
                     ) : (
                       <button
@@ -251,6 +277,15 @@ export default function BlogPanel() {
                   >{uploading ? <span className="text-xs">업로드중</span> : '+'}</button>
                 )}
               </div>
+              <button
+                onClick={() => addVideoRef.current?.click()}
+                disabled={uploading || addForm.images.length >= MAX_IMAGES}
+                className="mt-2 text-xs text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-full px-3 py-1.5 transition-colors disabled:opacity-40"
+              >
+                🎬 동영상 추가 (최대 50MB)
+              </button>
+              <input ref={addVideoRef} type="file" accept="video/*" onChange={(e) => handleVideoUpload(e, 'add')} className="hidden" />
+              {videoError && <p className="text-xs text-red-600 mt-1">{videoError}</p>}
               <input ref={addFileRef} type="file" accept="image/*" multiple onChange={(e) => handleImageUpload(e, 'add')} className="hidden" />
             </div>
 
@@ -325,9 +360,14 @@ export default function BlogPanel() {
                       </label>
                       <div className="grid grid-cols-5 gap-3">
                         {editForm.images.map((src, i) => (
-                          <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
-                            <img src={src} alt="" className="w-full h-full object-cover" />
-                            {i === 0 ? (
+                          <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-black">
+                            {isVideoUrl(src)
+                              ? <video src={src} muted className="w-full h-full object-cover" />
+                              : <img src={src} alt="" className="w-full h-full object-cover" />
+                            }
+                            {isVideoUrl(src) ? (
+                              <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">🎬 동영상</span>
+                            ) : i === 0 ? (
                               <span className="absolute bottom-1 left-1 bg-gray-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">대표</span>
                             ) : (
                               <button
@@ -350,6 +390,15 @@ export default function BlogPanel() {
                         )}
                       </div>
                       <input ref={editFileRef} type="file" accept="image/*" multiple onChange={(e) => handleImageUpload(e, 'edit')} className="hidden" />
+                      <button
+                        onClick={() => editVideoRef.current?.click()}
+                        disabled={uploading || editForm.images.length >= MAX_IMAGES}
+                        className="mt-2 text-xs text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-full px-3 py-1.5 transition-colors disabled:opacity-40"
+                      >
+                        🎬 동영상 추가 (최대 50MB)
+                      </button>
+                      <input ref={editVideoRef} type="file" accept="video/*" onChange={(e) => handleVideoUpload(e, 'edit')} className="hidden" />
+                      {videoError && <p className="text-xs text-red-600 mt-1">{videoError}</p>}
                     </div>
 
                     <div>
@@ -378,7 +427,9 @@ export default function BlogPanel() {
               ) : (
                 <div className="flex items-center gap-4 px-2 py-4 hover:bg-gray-50 transition-colors rounded-xl">
                   {post.images[0] ? (
-                    <img src={post.images[0]} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                    isVideoUrl(post.images[0])
+                      ? <video src={post.images[0]} muted className="w-16 h-16 rounded-xl object-cover shrink-0 bg-black" />
+                      : <img src={post.images[0]} alt="" className="w-16 h-16 rounded-xl object-cover shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-xl bg-[#fef9e4] flex items-center justify-center shrink-0">
                       <span className="text-2xl">🍷</span>

@@ -61,6 +61,38 @@ export async function uploadBannerImage(file: File): Promise<string> {
   return uploadImage(file, 'banner-images', 'banners')
 }
 
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
+
+// 동영상은 이미지처럼 캔버스로 압축할 수 없어 용량만 제한하고 원본 그대로 업로드
+export async function uploadVideo(file: File, bucket: string, folder: string): Promise<string> {
+  if (file.size > MAX_VIDEO_SIZE) throw new Error('동영상 용량은 50MB 이하만 업로드할 수 있습니다')
+
+  const supabase = createClient()
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4'
+  const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const { error } = await supabase.storage.from(bucket).upload(filename, file, {
+    contentType: file.type || 'video/mp4',
+    cacheControl: '31536000',
+  })
+  if (error) throw error
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filename)
+  return data.publicUrl
+}
+
+export async function uploadBlogVideo(file: File, ownerId: string | null): Promise<string> {
+  return uploadVideo(file, 'blog-images', ownerId ?? 'admin')
+}
+
+export async function uploadBannerVideo(file: File): Promise<string> {
+  return uploadVideo(file, 'banner-images', 'banners')
+}
+
+export function isVideoUrl(url: string): boolean {
+  return /\.(mp4|webm|mov|ogg)(\?|$)/i.test(url)
+}
+
 function extractStoragePath(url: string, bucket: string): string | null {
   const marker = `/object/public/${bucket}/`
   const idx = url.indexOf(marker)

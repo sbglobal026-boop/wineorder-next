@@ -21,6 +21,7 @@ export type BannerSlide = {
   subtitle: string
   cta: string
   imageUrl?: string
+  videoUrl?: string
   linkUrl?: string
 }
 

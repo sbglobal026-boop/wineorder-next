@@ -7,6 +7,7 @@ type BannerSlideRow = {
   subtitle: string
   cta: string
   image_url: string | null
+  video_url: string | null
   link_url: string | null
   sort_order: number
 }
@@ -18,6 +19,7 @@ function rowToSlide(row: BannerSlideRow): BannerSlide {
     subtitle: row.subtitle,
     cta: row.cta,
     imageUrl: row.image_url ?? undefined,
+    videoUrl: row.video_url ?? undefined,
     linkUrl: row.link_url ?? undefined,
   }
 }
@@ -38,6 +40,7 @@ export async function updateBannerSlideRow(slide: BannerSlide): Promise<void> {
       subtitle: slide.subtitle,
       cta: slide.cta,
       image_url: slide.imageUrl ?? null,
+      video_url: slide.videoUrl ?? null,
       link_url: slide.linkUrl ?? null,
     })
     .eq('id', slide.id)

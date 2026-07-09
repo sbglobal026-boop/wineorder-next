@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import { isVideoUrl } from '@/lib/uploadImage'
 
 export default function ImageCarousel({ images }: { images: string[] }) {
   const [index, setIndex] = useState(0)
@@ -33,10 +34,16 @@ export default function ImageCarousel({ images }: { images: string[] }) {
         className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar aspect-[1240/775]"
       >
         {images.map((src, i) => (
-          <div key={i} className="relative w-full h-full shrink-0 snap-center overflow-hidden">
-            {/* 사진 톤에 맞춘 블러 배경 (여백을 사진 색감으로 자연스럽게 채움) */}
-            <img src={src} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl brightness-75" />
-            <img src={src} alt="" className="relative w-full h-full object-contain" />
+          <div key={i} className="relative w-full h-full shrink-0 snap-center overflow-hidden bg-black">
+            {isVideoUrl(src) ? (
+              <video src={src} controls className="relative w-full h-full object-contain" />
+            ) : (
+              <>
+                {/* 사진 톤에 맞춘 블러 배경 (여백을 사진 색감으로 자연스럽게 채움) */}
+                <img src={src} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl brightness-75" />
+                <img src={src} alt="" className="relative w-full h-full object-contain" />
+              </>
+            )}
           </div>
         ))}
       </div>

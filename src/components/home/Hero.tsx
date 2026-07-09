@@ -69,12 +69,24 @@ export default function Hero() {
               {slides.slice(p * 2, p * 2 + 2).map((slide, i) => {
                 const style = panelStyles[i] ?? panelStyles[0]
                 const panelClassName = "relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
-                const panelStyle = slide.imageUrl
-                  ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                  : { background: style.bg }
+                const panelStyle = slide.videoUrl
+                  ? { background: style.bg }
+                  : slide.imageUrl
+                    ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: style.bg }
                 const panelContent = (
                   <>
-                    {slide.imageUrl && <div className="absolute inset-0 bg-black/40" />}
+                    {slide.videoUrl && (
+                      <video
+                        src={slide.videoUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+                    {(slide.videoUrl || slide.imageUrl) && <div className="absolute inset-0 bg-black/40" />}
 
                     {/* 슬라이드 진행 바 (왼쪽 패널에만 표시) */}
                     {i === 0 && (

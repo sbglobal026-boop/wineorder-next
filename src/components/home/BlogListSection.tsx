@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
 import { categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
+import { isVideoUrl } from '@/lib/uploadImage'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -69,11 +70,19 @@ export default function BlogListSection() {
                   {/* 이미지 영역 */}
                   <div className="relative w-[320px] h-[380px] shrink-0 rounded-sm overflow-hidden bg-[#e6e0d4]">
                     {post.images[0] ? (
-                      <img
-                        src={post.images[0]}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                      isVideoUrl(post.images[0]) ? (
+                        <video
+                          src={post.images[0]}
+                          muted
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <img
+                          src={post.images[0]}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )
                     ) : (
                       <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
                     )}
