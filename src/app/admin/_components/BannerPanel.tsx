@@ -156,15 +156,17 @@ export default function BannerPanel() {
                     onChange={(e) => setForm(prev => prev ? { ...prev, title: e.target.value } : prev)}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
                     rows={2}
-                    placeholder="줄바꿈은 \n 으로 입력"
+                    placeholder="Enter로 줄바꿈"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">부제목</label>
-                  <input
+                  <textarea
                     value={form.subtitle}
                     onChange={(e) => setForm(prev => prev ? { ...prev, subtitle: e.target.value } : prev)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
+                    rows={2}
+                    placeholder="Enter로 줄바꿈"
                   />
                 </div>
                 <div>

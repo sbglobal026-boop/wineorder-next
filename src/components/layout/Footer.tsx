@@ -24,6 +24,7 @@ export default function Footer() {
                 { label: '배송 안내', href: '/shipping-guide' },
                 { label: '교환 / 반품', href: '/returns' },
                 { label: '공지사항', href: '/notices' },
+                { label: 'QnA', href: '/qna' },
               ].map(item => (
                 <li key={item.label}><Link href={item.href} className="hover:opacity-100 transition-opacity">{item.label}</Link></li>
               ))}

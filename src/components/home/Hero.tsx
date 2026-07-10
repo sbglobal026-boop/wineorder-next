@@ -106,7 +106,7 @@ export default function Hero() {
                       <p className="max-w-md text-[25px] md:text-[30px] leading-snug font-bold whitespace-pre-line mb-6 font-[family-name:var(--font-playfair-display)]">
                         {slide.title}
                       </p>
-                      <span className="text-[14px] md:text-lg font-normal font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
+                      <span className="block text-[14px] md:text-lg font-normal whitespace-pre-line font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
                     </div>
                   </>
                 )
