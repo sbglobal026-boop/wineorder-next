@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { uploadBlogImages, uploadBlogVideo, isVideoUrl } from '@/lib/uploadImage'
 import { fetchBlogPosts, createBlogPost, updateBlogPost, deleteBlogPost, BlogPost } from '@/lib/blog'
 import { BlogCategory, BLOG_CATEGORIES, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
-import { stripHtml } from '@/lib/sanitizeHtml'
+import { stripHtml, hasBlogContent } from '@/lib/sanitizeHtml'
 import RichTextEditor from '@/components/blog/RichTextEditor'
 
 const MAX_IMAGES = 10
@@ -156,7 +156,7 @@ export default function BlogPanel() {
   const handleAdd = async () => {
     setFormError(null)
     if (!addForm.title.trim()) { setFormError('제목을 입력하세요'); return }
-    if (!stripHtml(addForm.content)) { setFormError('내용을 입력하세요'); return }
+    if (!hasBlogContent(addForm.content)) { setFormError('내용을 입력하세요'); return }
     try {
       await createBlogPost({
         title: addForm.title,
@@ -305,6 +305,7 @@ export default function BlogPanel() {
                 value={addForm.content}
                 onChange={(html) => setAddForm(f => ({ ...f, content: html }))}
                 placeholder="글 내용을 입력하세요"
+                onUploadImages={(files) => uploadBlogImages(files, currentUser?.id ?? null)}
               />
             </div>
 
@@ -415,6 +416,7 @@ export default function BlogPanel() {
                       <RichTextEditor
                         value={editForm.content}
                         onChange={(html) => setEditForm(f => f ? { ...f, content: html } : f)}
+                        onUploadImages={(files) => uploadBlogImages(files, currentUser?.id ?? null)}
                       />
                     </div>
 

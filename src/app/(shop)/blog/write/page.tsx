@@ -5,7 +5,7 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { uploadBlogImages } from '@/lib/uploadImage'
 import { createBlogPost } from '@/lib/blog'
 import { BlogCategory, isBlogCategory, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
-import { stripHtml } from '@/lib/sanitizeHtml'
+import { hasBlogContent } from '@/lib/sanitizeHtml'
 import RichTextEditor from '@/components/blog/RichTextEditor'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -59,7 +59,7 @@ function BlogWriteForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim() || !stripHtml(content) || !currentUser) return
+    if (!title.trim() || !hasBlogContent(content) || !currentUser) return
     setSubmitting(true)
     await createBlogPost({
       title, content, images, category,
@@ -190,7 +190,12 @@ function BlogWriteForm() {
           {/* 내용 */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">내용 *</label>
-            <RichTextEditor value={content} onChange={setContent} placeholder="내용을 입력하세요" />
+            <RichTextEditor
+              value={content}
+              onChange={setContent}
+              placeholder="내용을 입력하세요"
+              onUploadImages={(files) => uploadBlogImages(files, currentUser.id)}
+            />
           </div>
 
           <div className="flex gap-3">
