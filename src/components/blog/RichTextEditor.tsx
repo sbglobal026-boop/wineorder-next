@@ -1,8 +1,8 @@
 'use client'
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import {
   Bold, Italic, Underline, Quote, TextQuote,
-  SeparatorHorizontal, List, AlignLeft, AlignCenter, AlignRight, ImagePlus,
+  SeparatorHorizontal, List, AlignLeft, AlignCenter, AlignRight, ImagePlus, ChevronDown,
 } from 'lucide-react'
 import { useEditor, EditorContent, Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -62,7 +62,7 @@ function ToolbarButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+      className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
         active ? 'bg-[#1C1A17] text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
       }`}
     >
@@ -71,29 +71,81 @@ function ToolbarButton({
   )
 }
 
+// 툴바용 커스텀 드롭다운 (커버 카테고리 드롭다운과 같은 흰색 패널 스타일)
 function ToolbarSelect({
   label,
   value,
   onChange,
   options,
+  styleOption,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   options: { label: string; value: string }[]
+  styleOption?: (value: string) => React.CSSProperties // 옵션별 미리보기 스타일 (폰트 등)
 }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // 바깥 클릭 / ESC 로 닫기
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const current = options.find(o => o.value === value)
+
   return (
-    <select
-      aria-label={label}
-      className="h-8 text-xs rounded-lg border-none bg-transparent px-2 text-gray-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition-colors cursor-pointer"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">{label}</option>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </select>
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        aria-label={label}
+        onClick={() => setOpen(o => !o)}
+        className={`h-10 flex items-center gap-1 text-[13px] rounded-lg px-2.5 transition-colors ${
+          open ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
+      >
+        {current?.label ?? label}
+        <ChevronDown size={13} strokeWidth={2.5} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-max min-w-24 max-w-56 max-h-72 overflow-y-auto bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 z-30">
+          <button
+            type="button"
+            onClick={() => { onChange(''); setOpen(false) }}
+            className={`w-full text-left px-3.5 py-2 text-[13px] transition-colors ${
+              !current ? 'text-gray-900 bg-gray-100 font-semibold' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            기본
+          </button>
+          {options.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false) }}
+              style={styleOption?.(o.value)}
+              className={`w-full text-left px-3.5 py-2 text-[13px] transition-colors ${
+                o.value === value ? 'text-gray-900 bg-gray-100 font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -132,13 +184,13 @@ function Toolbar({
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-100 px-2 py-1.5 bg-[#FBFAF7] rounded-t-xl">
       <ToolbarButton label="굵게" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
-        <Bold size={15} strokeWidth={2} />
+        <Bold size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="기울임" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
-        <Italic size={15} strokeWidth={2} />
+        <Italic size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="밑줄" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}>
-        <Underline size={15} strokeWidth={2} />
+        <Underline size={18} strokeWidth={2} />
       </ToolbarButton>
 
       <span className="w-px h-6 bg-gray-200 mx-1" />
@@ -148,54 +200,56 @@ function Toolbar({
         value={editor.getAttributes('textStyle').fontSize || ''}
         onChange={(v) => v ? editor.chain().focus().setFontSize(v).run() : editor.chain().focus().unsetFontSize().run()}
         options={FONT_SIZES}
+        styleOption={(v) => ({ fontSize: `${Math.min(parseInt(v), 20)}px` })}
       />
       <ToolbarSelect
         label="폰트"
         value={editor.getAttributes('textStyle').fontFamily || ''}
         onChange={(v) => v ? editor.chain().focus().setFontFamily(v).run() : editor.chain().focus().unsetFontFamily().run()}
         options={FONT_FAMILIES}
+        styleOption={(v) => ({ fontFamily: v })}
       />
       <ToolbarSelect
         label="줄간격"
-        value={editor.getAttributes('paragraph').lineSpacing || editor.getAttributes('heading').lineSpacing || '0.1em'}
+        value={editor.getAttributes('paragraph').lineSpacing || editor.getAttributes('heading').lineSpacing || ''}
         onChange={(v) => v ? editor.chain().focus().setLineSpacing(v).run() : editor.chain().focus().unsetLineSpacing().run()}
         options={LINE_SPACINGS}
       />
 
       <span className="w-px h-6 bg-gray-200 mx-1" />
       <ToolbarButton label="인용구 (라인)" active={activeQuoteStyle === 'line'} onClick={() => setQuoteStyle('line')}>
-        <TextQuote size={15} strokeWidth={2} />
+        <TextQuote size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="인용구 (따옴표)" active={activeQuoteStyle === 'quote'} onClick={() => setQuoteStyle('quote')}>
-        <Quote size={15} strokeWidth={2} />
+        <Quote size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="구분선" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-        <SeparatorHorizontal size={15} strokeWidth={2} />
+        <SeparatorHorizontal size={18} strokeWidth={2} />
       </ToolbarButton>
 
       <span className="w-px h-6 bg-gray-200 mx-1" />
 
       <ToolbarButton label="글머리표" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
-        <List size={15} strokeWidth={2} />
+        <List size={18} strokeWidth={2} />
       </ToolbarButton>
 
       <span className="w-px h-6 bg-gray-200 mx-1" />
 
       <ToolbarButton label="왼쪽 정렬" active={editor.isActive({ textAlign: 'left' })} onClick={() => editor.chain().focus().setTextAlign('left').run()}>
-        <AlignLeft size={15} strokeWidth={2} />
+        <AlignLeft size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="가운데 정렬" active={editor.isActive({ textAlign: 'center' })} onClick={() => editor.chain().focus().setTextAlign('center').run()}>
-        <AlignCenter size={15} strokeWidth={2} />
+        <AlignCenter size={18} strokeWidth={2} />
       </ToolbarButton>
       <ToolbarButton label="오른쪽 정렬" active={editor.isActive({ textAlign: 'right' })} onClick={() => editor.chain().focus().setTextAlign('right').run()}>
-        <AlignRight size={15} strokeWidth={2} />
+        <AlignRight size={18} strokeWidth={2} />
       </ToolbarButton>
 
       {onUploadImages && (
         <>
           <span className="w-px h-6 bg-gray-200 mx-1" />
           <ToolbarButton label="사진 콜라주" onClick={() => collageInputRef.current?.click()}>
-            <ImagePlus size={15} strokeWidth={2} />
+            <ImagePlus size={18} strokeWidth={2} />
           </ToolbarButton>
           <input
             ref={collageInputRef}
@@ -239,7 +293,8 @@ export default function RichTextEditor({
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'blog-rich-content min-h-[220px] p-4 text-sm text-gray-800 focus:outline-none',
+        // 상세페이지 BlogContent와 같은 클래스/크기 → 편집 중 보이는 그대로 발행됨
+        class: 'blog-rich-content min-h-[320px] p-5 text-lg text-gray-700 focus:outline-none',
       },
     },
   })

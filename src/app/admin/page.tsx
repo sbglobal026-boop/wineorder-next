@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import BannerPanel from './_components/BannerPanel'
 import ProductsPanel from './_components/ProductsPanel'
@@ -26,7 +27,19 @@ const navItems: { id: Panel; label: string; icon: string }[] = [
 ]
 
 export default function AdminPage() {
-  const [activePanel, setActivePanel] = useState<Panel>('products')
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <AdminDashboard />
+    </Suspense>
+  )
+}
+
+function AdminDashboard() {
+  // 에디터 등 하위 페이지에서 돌아올 때 ?panel=blog 형태로 초기 탭 지정 가능
+  const searchParams = useSearchParams()
+  const initialPanel = searchParams.get('panel')
+  const isPanel = (v: string | null): v is Panel => !!v && navItems.some(item => item.id === v)
+  const [activePanel, setActivePanel] = useState<Panel>(isPanel(initialPanel) ? initialPanel : 'products')
 
   return (
     <div className="flex min-h-screen bg-gray-50">
