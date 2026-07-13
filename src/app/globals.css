@@ -57,6 +57,15 @@ body {
 .blog-rich-content h2 { font-size: 1.4em; }
 .blog-rich-content h3 { font-size: 1.15em; }
 .blog-rich-content p { margin-bottom: 0.1em; }
+/* 에디터에서 엔터로 만든 빈 문단(<p></p>)이 발행 페이지에서도 한 줄 높이를 차지하게 함
+   (에디터 안에서는 ProseMirror가 <br>을 넣어주므로 :empty에 걸리지 않음 — 발행 화면에만 적용됨) */
+.blog-rich-content p:empty::after { content: '\00a0'; }
+/* Safari 우회: 사진 삽입 후 클릭 좌표/호버 위치가 어긋나는 렌더링 버그 방지.
+   에디터(contenteditable)를 독립 컴포지팅 레이어로 승격시켜 항상 최신 상태로 다시 그리게 함 */
+.blog-rich-content[contenteditable='true'] {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
 .blog-rich-content ul { list-style: disc; padding-left: 1.25em; margin-bottom: 0.85em; }
 .blog-rich-content ol { list-style: decimal; padding-left: 1.25em; margin-bottom: 0.85em; }
 .blog-rich-content strong { font-weight: 700; }

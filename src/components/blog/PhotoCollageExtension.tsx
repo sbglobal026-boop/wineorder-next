@@ -44,17 +44,27 @@ function cellClass(count: number, i: number): string {
   return ''
 }
 
-function CollageView({ node, deleteNode, updateAttributes }: NodeViewProps) {
+function CollageView({ node, deleteNode, updateAttributes, editor }: NodeViewProps) {
   const images: string[] = node.attrs.images || []
   const size: CollageSize = node.attrs.size || 'lg'
   const align: CollageAlign = node.attrs.textAlign || 'left'
+
+  // 이미지 로드로 문서 높이가 바뀐 뒤 클릭 좌표 계산이 어긋나지 않도록
+  // 빈 트랜잭션으로 ProseMirror 재측정 + 레이어 토글로 강제 리페인트 (Safari 렌더링 버그 우회)
+  const handleImgLoad = () => {
+    editor.view.dispatch(editor.state.tr)
+    const dom = editor.view.dom as HTMLElement
+    dom.style.transform = 'translateZ(0.01px)'
+    void dom.offsetHeight // 리플로우 강제
+    dom.style.transform = ''
+  }
 
   return (
     <NodeViewWrapper className={`my-4 group relative ${SIZE_CLASS[size]} ${ALIGN_CLASS[align]}`}>
       <div className={`${gridClass(images.length)} gap-1.5`}>
         {images.map((src, i) => (
           <div key={i} className={`${cellClass(images.length, i)} aspect-square overflow-hidden rounded-lg bg-gray-100`}>
-            <img src={src} alt="" className="w-full h-full object-cover" />
+            <img src={src} alt="" onLoad={handleImgLoad} className="w-full h-full object-cover" />
           </div>
         ))}
       </div>
@@ -147,7 +157,12 @@ export const PhotoCollage = Node.create({
       setPhotoCollage:
         (images: string[]) =>
         ({ commands }) => {
-          return commands.insertContent({ type: this.name, attrs: { images } })
+          // 콜라주 뒤에 빈 문단을 함께 삽입 → 커서가 그 문단으로 이동해
+          // 사진 삽입 직후 클릭/입력 위치가 어긋나는 문제를 방지
+          return commands.insertContent([
+            { type: this.name, attrs: { images } },
+            { type: 'paragraph' },
+          ])
         },
     }
   },

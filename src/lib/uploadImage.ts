@@ -28,11 +28,23 @@ function compressToBlob(file: File, maxWidth = 1080, quality = 0.75): Promise<Bl
 
 export async function uploadImage(file: File, bucket: string, folder: string): Promise<string> {
   const supabase = createClient()
-  const blob = await compressToBlob(file)
-  const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+
+  // 압축 실패(브라우저가 해석 못 하는 포맷 등) 시 원본 그대로 업로드해서 조용한 실패를 막음
+  let blob: Blob = file
+  let contentType = file.type || 'image/jpeg'
+  let ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  try {
+    blob = await compressToBlob(file)
+    contentType = 'image/jpeg'
+    ext = 'jpg'
+  } catch {
+    // 원본 업로드로 폴백
+  }
+
+  const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
   const { error } = await supabase.storage.from(bucket).upload(filename, blob, {
-    contentType: 'image/jpeg',
+    contentType,
     cacheControl: '31536000',
   })
   if (error) throw error
@@ -45,12 +57,9 @@ export async function uploadBlogImage(file: File, ownerId: string | null): Promi
   return uploadImage(file, 'blog-images', ownerId ?? 'admin')
 }
 
+// 여러 장은 동시에 업로드 (순차 업로드는 장수만큼 시간이 배로 걸림)
 export async function uploadBlogImages(files: File[], ownerId: string | null): Promise<string[]> {
-  const results: string[] = []
-  for (const file of files) {
-    results.push(await uploadBlogImage(file, ownerId))
-  }
-  return results
+  return Promise.all(files.map(file => uploadBlogImage(file, ownerId)))
 }
 
 export async function uploadProductImage(file: File): Promise<string> {

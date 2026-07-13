@@ -191,7 +191,9 @@ export default function BlogEditor({
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
       {/* 상단 바: 뒤로가기 / 발행 */}
-      <div className="sticky top-0 z-20 bg-[#F9F4EE]/90 backdrop-blur border-b border-[#DAD4CD]/60">
+      {/* backdrop-blur 금지: 스티키 요소에 블러가 있으면 아래 콘텐츠의 클릭 좌표/페인트가
+          갱신되지 않는 브라우저 버그(커서 위치 어긋남)를 유발함 → 불투명 배경 사용 */}
+      <div className="sticky top-0 z-20 bg-[#F9F4EE] border-b border-[#DAD4CD]/60">
         <div className="max-w-[1640px] mx-auto px-5 md:px-10 h-14 flex items-center justify-between">
           <Link href={backHref} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">
             ← 돌아가기
@@ -292,16 +294,14 @@ export default function BlogEditor({
           </div>
         </div>
 
-        {/* 본문: 상세페이지와 같은 1240 박스 전체 폭에서 편집 */}
+        {/* 본문: 상세페이지와 같은 1240 박스 전체 폭에서 편집 (흰 박스는 RichTextEditor가 자체 렌더링) */}
         <div className="max-w-[1240px] mx-auto">
-        <div className="w-full bg-white border border-gray-100">
-          <RichTextEditor
-            value={content}
-            onChange={setContent}
-            placeholder="내용을 입력하세요"
-            onUploadImages={(files) => uploadBlogImages(files, authorId)}
-          />
-        </div>
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+          placeholder="내용을 입력하세요"
+          onUploadImages={(files) => uploadBlogImages(files, authorId)}
+        />
 
         {/* 옛 글의 하단 갤러리 사진 — 삭제만 가능 (신규 추가는 본문 에디터 사용) */}
         {legacyImages.length > 0 && (
