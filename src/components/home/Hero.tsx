@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
 
-const AUTO_PLAY_MS = 10000
+const AUTO_PLAY_MS = 7000
 
 const panelStyles = [
   { bg: 'linear-gradient(180deg,rgba(28,26,23,.15),rgba(28,26,23,.62)),repeating-linear-gradient(135deg,#46403525 0 14px,#3a342b25 14px 28px),#564d40' },
@@ -69,20 +69,32 @@ export default function Hero() {
               {slides.slice(p * 2, p * 2 + 2).map((slide, i) => {
                 const style = panelStyles[i] ?? panelStyles[0]
                 const panelClassName = "relative aspect-square flex flex-col justify-end p-10 md:p-14 text-[#F4EFE6] overflow-hidden"
-                const panelStyle = slide.imageUrl
-                  ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                  : { background: style.bg }
+                const panelStyle = slide.videoUrl
+                  ? { background: style.bg }
+                  : slide.imageUrl
+                    ? { backgroundImage: `url(${slide.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : { background: style.bg }
                 const panelContent = (
                   <>
-                    {slide.imageUrl && <div className="absolute inset-0 bg-black/40" />}
+                    {slide.videoUrl && (
+                      <video
+                        src={slide.videoUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+                    {(slide.videoUrl || slide.imageUrl) && <div className="absolute inset-0 bg-black/40" />}
 
                     {/* 슬라이드 진행 바 (왼쪽 패널에만 표시) */}
                     {i === 0 && (
-                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-[180px] h-[3px] bg-white/30 z-10">
+                      <div className="absolute bottom-4 md:bottom-6 left-10 md:left-14 w-[180px] h-[2px] bg-white/30 z-10">
                         {p === page && (
                           <div
                             key={page}
-                            className="h-full bg-white animate-[hero-progress_10000ms_linear_forwards]"
+                            className="h-full bg-white animate-[hero-progress_7000ms_linear_forwards]"
                             style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
                           />
                         )}
@@ -94,7 +106,7 @@ export default function Hero() {
                       <p className="max-w-md text-[25px] md:text-[30px] leading-snug font-bold whitespace-pre-line mb-6 font-[family-name:var(--font-playfair-display)]">
                         {slide.title}
                       </p>
-                      <span className="text-[14px] md:text-lg font-normal font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
+                      <span className="block text-[14px] md:text-lg font-normal whitespace-pre-line font-[family-name:var(--font-lato)]">{slide.subtitle}</span>
                     </div>
                   </>
                 )

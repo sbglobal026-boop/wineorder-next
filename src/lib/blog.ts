@@ -108,6 +108,17 @@ export async function fetchComments(postId: number): Promise<BlogComment[]> {
   return data ?? []
 }
 
+// 본인 댓글 삭제 — user_id 조건을 함께 걸어 다른 사람 댓글은 지워지지 않게 함 (RLS 정책과 이중 안전장치)
+export async function deleteComment(commentId: number, userId: string) {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('blog_comments')
+    .delete()
+    .eq('id', commentId)
+    .eq('user_id', userId)
+  if (error) throw error
+}
+
 export async function addComment(postId: number, userId: string, authorName: string, content: string) {
   const supabase = createClient()
   const { data, error } = await supabase

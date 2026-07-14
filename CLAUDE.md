@@ -12,15 +12,22 @@
 ## 데이터 저장 위치
 | 데이터 | 위치 |
 |---|---|
-| 상품(products) | Supabase `products` 테이블 (`src/lib/products.ts`) |
+| 상품(products) | Supabase — 읽기는 `products_public` 뷰, 쓰기는 `/api/admin/products` API 라우트 경유 (`src/lib/products.ts`) |
 | 블로그 글/좋아요/댓글 | Supabase `blog_posts`, `blog_likes`, `blog_comments` (`src/lib/blog.ts`) |
 | 추천(Top Drop) 상품 ID | Supabase `app_config` 테이블 (key: `featuredProductId`) |
+| 배너 슬라이드 | Supabase `banner_slides` 테이블 (`src/lib/banners.ts`) |
+| 공지사항 / CS 게시판 / QnA | Supabase `notices`, `cs_posts`, `qna_posts` (`src/lib/notices.ts`, `csBoard.ts`, `qna.ts`) |
+| 상품 리뷰 | Supabase `product_reviews` (`src/lib/reviews.ts`) |
+| 고정비 | Supabase `fixed_costs` (`src/lib/fixedCosts.ts`) |
+| 배송비 요율 | Supabase `shipping_rates` (`/api/admin/shipping-rates`) |
+| 주문 / 분할배송 | API 라우트 `/api/orders`, `/api/admin/orders`, `/api/admin/split-deliveries` |
 | 회원 인증 | Supabase Auth (`src/context/AuthContext.tsx`) |
 | 이미지 파일 | Supabase Storage 버킷 `blog-images`, `product-images` (`src/lib/uploadImage.ts`) — base64로 DB에 저장하지 않음 |
-| 배너 슬라이드, 광고문구, 섹션 on/off, 승인된 작성자 목록 | 브라우저 `localStorage` (`src/context/AppConfigContext.tsx`) — 아직 서버 미이전 |
+| 승인된 작성자 목록, 장바구니(사용자별) | 브라우저 `localStorage` (`src/context/AppConfigContext.tsx`) — 작성자 목록만 서버 미이전 |
 
 ## Admin
-- `/admin` — 상품/블로그/작성자/배너/섹션 관리. **로그인 보호 없음** (URL만 알면 접근 가능, 추후 보강 필요)
+- `/admin` — 상품/블로그/작성자/배너/섹션/주문·배송/공지/CS/QnA 관리 (`src/app/admin/_components/`)
+- **로그인 보호 적용됨**: `src/app/admin/layout.tsx`에서 Supabase 로그인 확인 후, `.env`의 `ADMIN_EMAILS` 목록에 있는 이메일만 통과 (`src/lib/admin-auth.ts`). admin 전용 쓰기 작업은 `/api/admin/*` 라우트를 경유
 - 블로그/상품 글쓰기·수정·삭제 시 연결된 Storage 이미지도 함께 정리됨 (`removeStorageFiles`)
 
 ## 디자인 톤 ("table code" 브랜드)

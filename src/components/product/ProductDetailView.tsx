@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
@@ -54,6 +55,7 @@ export default function ProductDetailView({
 }) {
   const { config, addToCart, openCart } = useAppConfig()
   const { currentUser } = useAuth()
+  const router = useRouter()
   const recommended = config.products.filter(p => p.id !== product.id).slice(0, 4)
   const foodGuide = config.products.find(p => p.type === 'food')
 
@@ -114,6 +116,11 @@ export default function ProductDetailView({
   const handleAdd = () => {
     for (let i = 0; i < qty; i++) addToCart(product.id)
     openCart()
+  }
+
+  const handleBuyNow = () => {
+    for (let i = 0; i < qty; i++) addToCart(product.id)
+    router.push('/cart')
   }
 
   const avgRating = reviews.length > 0
@@ -331,15 +338,22 @@ export default function ProductDetailView({
             <button
               onClick={isSoldOut ? undefined : handleAdd}
               disabled={isSoldOut}
-              className={`flex-1 flex items-center justify-between px-5 h-[54px] text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center px-5 h-[54px] text-sm font-medium transition-colors ${
                 isSoldOut
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#DAD4CD] hover:bg-[#2C5F2D] text-white cursor-pointer'
+                  : 'border-[1.5px] border-[#0e3719] text-[#0e3719] hover:bg-[#0e3719]/10 cursor-pointer'
               }`}
             >
               <span>{isSoldOut ? '품절' : '장바구니 담기'}</span>
-              <span className="opacity-85">{fmt(product.price)}</span>
             </button>
+            {!isSoldOut && (
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 flex items-center justify-center px-5 h-[54px] text-sm font-medium transition-colors bg-[#0e3719] hover:bg-[#0a2b13] text-[#F4EFE6] cursor-pointer"
+              >
+                구매하기
+              </button>
+            )}
           </div>
 
           <div className="pt-4.5 border-t border-gray-200">
@@ -362,8 +376,9 @@ export default function ProductDetailView({
       </div>
 
       {/* 추천상품 헤더 */}
-      <div className="max-w-[1640px] mx-auto px-5 mt-24 md:mt-[140px]">
-        <h2 className="text-[13px] font-medium tracking-wide border-t border-gray-900 pt-2.5">함께 보면 좋은 와인.</h2>
+      <div className="max-w-[1640px] mx-auto px-5 mt-24 md:mt-[140px] flex items-baseline justify-between border-t border-gray-900 pt-2.5">
+        <h2 className="text-[18px] font-bold tracking-wide font-[family-name:var(--font-playfair-display)]">Top Drop Archive.</h2>
+        <Link href="/events/wines" className="text-sm font-medium text-gray-900 no-underline inline-flex gap-1.5 items-center">전체보기 →</Link>
       </div>
 
       {/* 푸드 페어링 배너 */}
@@ -395,10 +410,7 @@ export default function ProductDetailView({
 
       {/* 추천상품 그리드 */}
       {recommended.length > 0 && (
-        <section className="max-w-[1640px] mx-auto px-5 mt-0 pb-32">
-          <div className="flex items-baseline justify-end mb-9">
-            <Link href="/events/wines" className="text-sm font-medium text-gray-900 no-underline inline-flex gap-1.5 items-center">전체보기 →</Link>
-          </div>
+        <section className="max-w-[1640px] mx-auto px-5 mt-9 pb-32">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {recommended.map(rec => (
               <ProductGridCard key={rec.id} product={rec} />
@@ -423,7 +435,7 @@ export default function ProductDetailView({
               className={`flex items-center gap-7 px-5 h-12 text-sm font-medium transition-colors ${
                 isSoldOut
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#8B4513] hover:bg-[#2C5F2D] text-white cursor-pointer'
+                  : 'bg-[#0e3719] hover:bg-[#0a2b13] text-[#F4EFE6] cursor-pointer'
               }`}
             >
               <span>{isSoldOut ? '품절' : '장바구니 담기'}</span>

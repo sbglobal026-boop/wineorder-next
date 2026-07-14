@@ -36,7 +36,10 @@ export default function ProductGridCard({ product }: { product: Product }) {
         )}
       </Link>
       <Link href={href} className="no-underline text-gray-900">
-        <p className="text-[17px] font-medium mt-3.5 mb-3 tracking-tight truncate">{product.name}</p>
+        <p className={`text-[17px] font-bold mt-3.5 tracking-tight truncate ${product.grapeVariety ? '' : 'mb-3'}`}>{product.name}</p>
+        {product.grapeVariety && (
+          <p className="text-xs text-gray-400 mt-0.5 mb-3 truncate">{product.grapeVariety}</p>
+        )}
       </Link>
       <div className="flex gap-7 mb-3.5">
         <div>
@@ -53,16 +56,16 @@ export default function ProductGridCard({ product }: { product: Product }) {
           disabled
           className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-gray-50 text-[13px] font-medium text-gray-300 cursor-not-allowed"
         >
-          <span>품절</span>
           <span className="inline-flex items-center gap-2.5">{fmt(product.price)}</span>
+          <span>품절</span>
         </button>
       ) : (
         <button
           onClick={() => { addToCart(product.id); openCart() }}
-          className="mt-auto flex items-center justify-between px-3.5 py-3 border border-gray-200 bg-white text-[13px] font-medium cursor-pointer hover:border-gray-900 transition-colors"
+          className="mt-auto flex items-center justify-between px-3.5 py-3 border border-[#0e3719] bg-[#0e3719] text-[13px] font-medium text-[#F4EFE6] cursor-pointer hover:bg-[#0a2b13] transition-colors"
         >
-          <span>장바구니 담기</span>
-          <span className="inline-flex items-center gap-2.5 text-gray-400">{fmt(product.price)} <span className="text-base text-gray-900">+</span></span>
+          <span className="text-[18px] font-bold text-[#DAD4CD]">{fmt(product.price)}</span>
+          <span className="inline-flex items-center gap-2.5">장바구니 담기 <span className="text-base text-[#F4EFE6]">+</span></span>
         </button>
       )}
     </div>

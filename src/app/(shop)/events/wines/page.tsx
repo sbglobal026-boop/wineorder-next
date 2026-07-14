@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import ProductGridCard from '@/components/product/ProductGridCard'
 
@@ -62,6 +63,59 @@ function PriceRangeSlider({
   )
 }
 
+function FilterSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const selectedLabel = options.find(o => o.value === value)?.label ?? options[0]?.label
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 border border-gray-200 rounded-full pl-4 pr-3 py-2 text-xs text-gray-600 bg-white hover:border-gray-400 transition-colors"
+      >
+        {selectedLabel}
+        <ChevronDown size={14} strokeWidth={2} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-20 mt-2 min-w-full w-max rounded-xl border border-gray-200 bg-white shadow-lg py-1.5 overflow-hidden">
+          {options.map(o => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false) }}
+              className={`block w-full text-left px-4 py-2 text-xs whitespace-nowrap transition-colors ${
+                o.value === value ? 'text-[#0e3719] font-semibold bg-[#0e3719]/5' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function WinesPage() {
   const { config } = useAppConfig()
   const [active, setActive] = useState<Category | 'all'>('all')
@@ -69,6 +123,7 @@ export default function WinesPage() {
   const [grapeFilter, setGrapeFilter] = useState('')
   const [hideOutOfStock, setHideOutOfStock] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null)
+  const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
 
   const allWines = config.products.filter(p => p.type === 'wine')
 
@@ -80,7 +135,7 @@ export default function WinesPage() {
   const priceBounds = { min: prices.length ? Math.min(...prices) : 0, max: prices.length ? Math.max(...prices) : 0 }
   const [priceMin, priceMax] = priceRange ?? [priceBounds.min, priceBounds.max]
 
-  const wines = allWines.filter(p => {
+  let wines = allWines.filter(p => {
     if (active !== 'all' && p.category !== active) return false
     if (search.trim() && !p.name.toLowerCase().includes(search.trim().toLowerCase())) return false
     if (p.price < priceMin || p.price > priceMax) return false
@@ -88,6 +143,19 @@ export default function WinesPage() {
     if (hideOutOfStock && (p.stock ?? 0) === 0) return false
     return true
   })
+  if (sortPrice === 'asc') wines = [...wines].sort((a, b) => a.price - b.price)
+  else if (sortPrice === 'desc') wines = [...wines].sort((a, b) => b.price - a.price)
+
+  const isFiltered = active !== 'all' || search.trim() || grapeFilter || hideOutOfStock || sortPrice !== 'none' || priceRange !== null
+
+  const resetFilters = () => {
+    setActive('all')
+    setSearch('')
+    setGrapeFilter('')
+    setHideOutOfStock(false)
+    setPriceRange(null)
+    setSortPrice('none')
+  }
 
   return (
     <div className="bg-[#F9F4EE] min-h-screen">
@@ -136,16 +204,11 @@ export default function WinesPage() {
               <PriceRangeSlider bounds={priceBounds} value={[priceMin, priceMax]} onChange={setPriceRange} />
             )}
             {grapeVarieties.length > 0 && (
-              <select
+              <FilterSelect
                 value={grapeFilter}
-                onChange={(e) => setGrapeFilter(e.target.value)}
-                className="border border-gray-200 rounded-full px-4 py-2 text-xs focus:outline-none focus:border-gray-400 text-gray-600"
-              >
-                <option value="">전체 품종</option>
-                {grapeVarieties.map(v => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
+                onChange={setGrapeFilter}
+                options={[{ value: '', label: '전체 품종' }, ...grapeVarieties.map(v => ({ value: v, label: v }))]}
+              />
             )}
             <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
               <input
@@ -156,8 +219,27 @@ export default function WinesPage() {
               />
               품절 상품 제외
             </label>
+            <FilterSelect
+              value={sortPrice}
+              onChange={(v) => setSortPrice(v as 'none' | 'asc' | 'desc')}
+              options={[
+                { value: 'none', label: '기본 정렬' },
+                { value: 'asc', label: '가격 낮은순' },
+                { value: 'desc', label: '가격 높은순' },
+              ]}
+            />
+            {isFiltered && (
+              <button
+                onClick={resetFilters}
+                className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-full px-4 py-2 transition-colors"
+              >
+                초기화
+              </button>
+            )}
           </div>
         </div>
+
+        <p className="text-xs text-gray-400 mb-4">{wines.length}개 상품</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {wines.length === 0 ? (
