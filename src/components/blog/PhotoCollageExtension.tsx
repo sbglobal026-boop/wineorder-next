@@ -44,6 +44,16 @@ function cellClass(count: number, i: number): string {
   return ''
 }
 
+// 1장: 원본 비율 그대로 / 2장 이상: 정사각형 그리드(콜라주)로 통일
+function cellFrameClass(count: number, i: number): string {
+  if (count === 1) return 'overflow-hidden rounded-lg bg-gray-100'
+  return `${cellClass(count, i)} aspect-square overflow-hidden rounded-lg bg-gray-100`.trim()
+}
+
+function imgClass(count: number): string {
+  return count === 1 ? 'block w-full h-auto' : 'w-full h-full object-cover'
+}
+
 function CollageView({ node, deleteNode, updateAttributes, editor }: NodeViewProps) {
   const images: string[] = node.attrs.images || []
   const size: CollageSize = node.attrs.size || 'lg'
@@ -63,8 +73,8 @@ function CollageView({ node, deleteNode, updateAttributes, editor }: NodeViewPro
     <NodeViewWrapper className={`my-4 group relative ${SIZE_CLASS[size]} ${ALIGN_CLASS[align]}`}>
       <div className={`${gridClass(images.length)} gap-1.5`}>
         {images.map((src, i) => (
-          <div key={i} className={`${cellClass(images.length, i)} aspect-square overflow-hidden rounded-lg bg-gray-100`}>
-            <img src={src} alt="" onLoad={handleImgLoad} className="w-full h-full object-cover" />
+          <div key={i} className={cellFrameClass(images.length, i)}>
+            <img src={src} alt="" onLoad={handleImgLoad} className={imgClass(images.length)} />
           </div>
         ))}
       </div>
@@ -141,8 +151,8 @@ export const PhotoCollage = Node.create({
         { class: `${gridClass(images.length)} gap-1.5` },
         ...images.map((src, i) => [
           'div',
-          { class: `${cellClass(images.length, i)} aspect-square overflow-hidden rounded-lg bg-gray-100` },
-          ['img', { src, alt: '', class: 'w-full h-full object-cover' }],
+          { class: cellFrameClass(images.length, i) },
+          ['img', { src, alt: '', class: imgClass(images.length) }],
         ]),
       ],
     ]
