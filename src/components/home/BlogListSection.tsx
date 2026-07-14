@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
-import { categoryLabel } from '@/lib/blogCategories'
+import { BlogCategory, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 import { isVideoUrl } from '@/lib/uploadImage'
 
@@ -12,14 +12,25 @@ function formatDate(iso: string) {
 
 const CARD_WIDTH = 340 // 320px 카드 + 20px gap
 
-export default function BlogListSection() {
+// title/categories를 바꿔 같은 슬라이드를 여러 섹션(Recent/Wine/Food & Drink)에 재사용
+export default function BlogListSection({
+  title = 'Recent Posts',
+  categories,
+  titleHref,
+}: {
+  title?: string
+  categories?: BlogCategory[] // 없으면 전체 글
+  titleHref?: string          // 제목 클릭 시 이동할 카테고리 페이지
+} = {}) {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetchBlogPosts().then(data => setPosts(data.slice(0, 5)))
+    fetchBlogPosts(categories).then(data => setPosts(data.slice(0, 5)))
+    // categories는 페이지에서 리터럴로 내려오는 고정값이라 최초 1회만 로드
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateArrows = () => {
@@ -40,7 +51,14 @@ export default function BlogListSection() {
       <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] text-[#1C1A17] pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]">
         <div className="max-w-[1600px] mx-auto border-t border-[#1C1A17] my-[10px]" />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
-          <h2 className="text-[30px] font-bold tracking-tight shrink-0 font-[family-name:var(--font-playfair-display)]">Recent Posts</h2>
+          {/* 제목 폭을 고정해서 제목 길이와 무관하게 카드 시작 위치가 세 섹션 모두 동일하게 함 */}
+          {titleHref ? (
+            <Link href={titleHref} className="shrink-0 md:w-[200px] group/title">
+              <h2 className="text-[30px] font-bold tracking-tight font-[family-name:var(--font-playfair-display)] group-hover/title:opacity-70 transition-opacity">{title}</h2>
+            </Link>
+          ) : (
+            <h2 className="text-[30px] font-bold tracking-tight shrink-0 md:w-[200px] font-[family-name:var(--font-playfair-display)]">{title}</h2>
+          )}
 
           {/* 스크롤 영역 + 화살표 */}
           <div className="relative w-full min-w-0">
