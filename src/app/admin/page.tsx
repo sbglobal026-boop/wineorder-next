@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import BannerPanel from './_components/BannerPanel'
 import ProductsPanel from './_components/ProductsPanel'
 import SectionsPanel from './_components/SectionsPanel'
@@ -10,17 +11,26 @@ import ShippingPanel from './_components/ShippingPanel'
 
 type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping'
 
+const VALID_PANELS: Panel[] = ['products', 'shipping', 'blog', 'writers', 'banner', 'sections']
+
 const navItems: { id: Panel; label: string; icon: string }[] = [
   { id: 'products', label: '상품 관리', icon: '🍷' },
-  { id: 'shipping', label: '배송 관리', icon: '🚚' },
+  { id: 'shipping', label: '주문·배송 관리', icon: '🚚' },
   { id: 'blog', label: '블로그 관리', icon: '✍️' },
   { id: 'writers', label: '작성자 관리', icon: '👥' },
   { id: 'banner', label: '배너 관리', icon: '🖼️' },
   { id: 'sections', label: '섹션 설정', icon: '⚙️' },
 ]
 
-export default function AdminPage() {
-  const [activePanel, setActivePanel] = useState<Panel>('products')
+function AdminContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const panelParam = searchParams.get('panel') as Panel | null
+  const activePanel: Panel = panelParam && VALID_PANELS.includes(panelParam) ? panelParam : 'products'
+
+  const setActivePanel = (panel: Panel) => {
+    router.replace(`/admin?panel=${panel}`)
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -76,5 +86,13 @@ export default function AdminPage() {
         {activePanel === 'sections' && <SectionsPanel />}
       </main>
     </div>
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense>
+      <AdminContent />
+    </Suspense>
   )
 }

@@ -2,15 +2,21 @@ import { NextResponse } from 'next/server'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET() {
+export async function POST(request: Request) {
   const admin = await getAdminUser()
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { order_id, product_name, reason } = await request.json()
+  if (!order_id || !product_name || !reason) {
+    return NextResponse.json({ error: '필수 항목이 누락되었습니다' }, { status: 400 })
+  }
+
   const supabase = createAdminClient()
   const { data, error } = await supabase
-    .from('orders')
-    .select('*, addresses(recipient_name, address, city, country, postal_code, customs_code), split_deliveries(id, shipment_number, product_name, status, scheduled_date, tracking_number), cs_requests(id, product_name, reason, status, tracking_number, created_at)')
-    .order('created_at', { ascending: false })
+    .from('cs_requests')
+    .insert({ order_id, product_name, reason, status: 'pending' })
+    .select()
+    .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

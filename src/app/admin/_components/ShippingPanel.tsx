@@ -40,6 +40,15 @@ interface SplitDelivery {
   tracking_number: string | null
 }
 
+interface CsRequest {
+  id: string
+  product_name: string
+  reason: string
+  status: string
+  tracking_number: string | null
+  created_at: string
+}
+
 interface Order {
   id: string
   order_number: string | null
@@ -60,6 +69,7 @@ interface Order {
     customs_code?: string | null
   } | null
   split_deliveries?: SplitDelivery[]
+  cs_requests?: CsRequest[]
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -80,7 +90,11 @@ export default function ShippingPanel() {
 
   const [orders, setOrders] = useState<Order[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
+  const [zoneFilter, setZoneFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchName, setSearchName] = useState<string>('')
+  const [searchOrderNum, setSearchOrderNum] = useState<string>('')
+  const [searchWine, setSearchWine] = useState<string>('')
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [updatingShipmentId, setUpdatingShipmentId] = useState<string | null>(null)
@@ -88,6 +102,12 @@ export default function ShippingPanel() {
   const [savingTracking, setSavingTracking] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<{ success: number; notFound: number } | null>(null)
+  const [csFormOrderId, setCsFormOrderId] = useState<string | null>(null)
+  const [csFormProduct, setCsFormProduct] = useState<string>('')
+  const [csFormReason, setCsFormReason] = useState<string>('')
+  const [csSubmitting, setCsSubmitting] = useState(false)
+  const [csTrackingInputs, setCsTrackingInputs] = useState<Record<string, string>>({})
+  const [savingCsTracking, setSavingCsTracking] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -178,23 +198,81 @@ export default function ShippingPanel() {
     const res = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tracking_number: value }),
+      body: JSON.stringify({ tracking_number: value, status: 'shipped' }),
     })
     if (res.ok) {
       if (isSplit) {
         setOrders(prev => prev.map(o => ({
           ...o,
           split_deliveries: o.split_deliveries?.map(s =>
-            s.id === orderId ? { ...s, tracking_number: value } : s
+            s.id === orderId ? { ...s, tracking_number: value, status: 'shipped' } : s
           ),
         })))
       } else {
         setOrders(prev => prev.map(o =>
-          o.id === orderId ? { ...o, tracking_number: value } : o
+          o.id === orderId ? { ...o, tracking_number: value, status: 'shipped' } : o
         ))
       }
     }
     setSavingTracking(null)
+  }
+
+  // CS 등록
+  const handleCsSubmit = async (orderId: string) => {
+    if (!csFormProduct || !csFormReason.trim()) return
+    setCsSubmitting(true)
+    const res = await fetch('/api/admin/cs-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId, product_name: csFormProduct, reason: csFormReason.trim() }),
+    })
+    if (res.ok) {
+      const newCs: CsRequest = await res.json()
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
+          ? { ...o, cs_requests: [...(o.cs_requests ?? []), newCs] }
+          : o
+      ))
+      setCsFormOrderId(null)
+      setCsFormProduct('')
+      setCsFormReason('')
+    }
+    setCsSubmitting(false)
+  }
+
+  // CS 상태 변경
+  const handleCsStatusUpdate = async (orderId: string, csId: string, status: string) => {
+    const res = await fetch(`/api/admin/cs-requests/${csId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    if (res.ok) {
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
+          ? { ...o, cs_requests: o.cs_requests?.map(c => c.id === csId ? { ...c, status } : c) }
+          : o
+      ))
+    }
+  }
+
+  // CS 재배송 송장번호 저장
+  const handleCsTrackingSave = async (orderId: string, csId: string) => {
+    const value = csTrackingInputs[csId] ?? ''
+    setSavingCsTracking(csId)
+    const res = await fetch(`/api/admin/cs-requests/${csId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tracking_number: value, status: 'reshipped' }),
+    })
+    if (res.ok) {
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
+          ? { ...o, cs_requests: o.cs_requests?.map(c => c.id === csId ? { ...c, tracking_number: value, status: 'reshipped' } : c) }
+          : o
+      ))
+    }
+    setSavingCsTracking(null)
   }
 
   // 엑셀 업로드 — 주문번호 매칭 후 운송장번호 자동 입력
@@ -223,6 +301,7 @@ export default function ShippingPanel() {
 
     let success = 0
     let notFound = 0
+    const newTrackingInputs: Record<string, string> = {}
 
     for (const row of rows.slice(1)) {
       const orderNum = String(row[orderNumIdx] ?? '').trim()
@@ -242,15 +321,16 @@ export default function ShippingPanel() {
         const res = await fetch(`/api/admin/split-deliveries/${shipment.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tracking_number: tracking }),
+          body: JSON.stringify({ tracking_number: tracking, status: 'shipped' }),
         })
         if (res.ok) {
           setOrders(prev => prev.map(o => ({
             ...o,
             split_deliveries: o.split_deliveries?.map(s =>
-              s.id === shipment.id ? { ...s, tracking_number: tracking } : s
+              s.id === shipment.id ? { ...s, tracking_number: tracking, status: 'shipped' } : s
             ),
           })))
+          newTrackingInputs[shipment.id] = tracking
           success++
         }
       } else {
@@ -261,15 +341,21 @@ export default function ShippingPanel() {
         const res = await fetch(`/api/admin/orders/${order.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tracking_number: tracking }),
+          body: JSON.stringify({ tracking_number: tracking, status: 'shipped' }),
         })
         if (res.ok) {
           setOrders(prev => prev.map(o =>
-            o.id === order.id ? { ...o, tracking_number: tracking } : o
+            o.id === order.id ? { ...o, tracking_number: tracking, status: 'shipped' } : o
           ))
+          newTrackingInputs[order.id] = tracking
           success++
         }
       }
+    }
+
+    // 업로드된 송장번호를 입력 필드에 반영
+    if (Object.keys(newTrackingInputs).length > 0) {
+      setTrackingInputs(prev => ({ ...prev, ...newTrackingInputs }))
     }
 
     setUploadResult({ success, notFound })
@@ -342,9 +428,22 @@ export default function ShippingPanel() {
     XLSX.writeFile(wb, `주문목록_${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
-  const filteredOrders = statusFilter === 'all'
-    ? orders
-    : orders.filter(o => o.status === statusFilter)
+  const EU_COUNTRIES = ['FR','IT','ES','NL','BE','AT','PT','PL','SE','DK','FI','IE','GR','CZ','HU','RO','SK','BG','HR','SI','LT','LV','EE','LU','MT','CY']
+
+  const getOrderZone = (o: Order) => {
+    const country = o.addresses?.country ?? ''
+    if (country === 'KR') return 'KR'
+    if (country === 'DE') return 'DE'
+    if (EU_COUNTRIES.includes(country)) return 'EU'
+    return 'EU'
+  }
+
+  const filteredOrders = orders
+    .filter(o => zoneFilter === 'all' || getOrderZone(o) === zoneFilter)
+    .filter(o => statusFilter === 'all' || o.status === statusFilter)
+    .filter(o => !searchName.trim() || (o.addresses?.recipient_name ?? '').toLowerCase().includes(searchName.trim().toLowerCase()))
+    .filter(o => !searchOrderNum.trim() || (o.order_number ?? '').toLowerCase().includes(searchOrderNum.trim().toLowerCase()) || (o.split_deliveries ?? []).some(s => s.shipment_number.toLowerCase().includes(searchOrderNum.trim().toLowerCase())))
+    .filter(o => !searchWine.trim() || o.items.some(i => i.name.toLowerCase().includes(searchWine.trim().toLowerCase())))
 
   if (loading) {
     return <p className="text-sm text-gray-400">불러오는 중...</p>
@@ -379,25 +478,82 @@ export default function ShippingPanel() {
 
       {/* 주문 목록 섹션 */}
       <div>
+        {/* 구역 탭 */}
+        <div className="flex gap-1 mb-4 border-b border-gray-200">
+          {[
+            { key: 'all', label: '전체', icon: '🌍' },
+            { key: 'KR',  label: '한국 배송', icon: '🇰🇷' },
+            { key: 'DE',  label: '독일 배송', icon: '🇩🇪' },
+            { key: 'EU',  label: 'EU 배송',   icon: '🇪🇺' },
+          ].map(tab => {
+            const count = tab.key === 'all'
+              ? orders.length
+              : orders.filter(o => getOrderZone(o) === tab.key).length
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setZoneFilter(tab.key)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold border-b-2 transition-colors -mb-px ${
+                  zoneFilter === tab.key
+                    ? 'border-gray-900 text-gray-900'
+                    : 'border-transparent text-gray-400 hover:text-gray-700'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                {tab.label}
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  zoneFilter === tab.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>{count}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* 검색 */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {[
+            { label: '주문자명', value: searchName, set: setSearchName},
+            { label: '주문번호', value: searchOrderNum, set: setSearchOrderNum},
+            { label: '와인 이름', value: searchWine, set: setSearchWine},
+          ].map(({ label, value, set, placeholder }) => (
+            <div key={label} className="relative">
+              <label className="block text-xs font-semibold text-gray-400 mb-1">{label}</label>
+              <input
+                type="text"
+                placeholder={placeholder}
+                value={value}
+                onChange={e => set(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 pr-7 text-sm focus:outline-none focus:border-gray-400"
+              />
+              {value && (
+                <button
+                  onClick={() => set('')}
+                  className="absolute right-2 bottom-2 text-gray-300 hover:text-gray-600 text-xs"
+                >✕</button>
+              )}
+            </div>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3 flex-wrap">
             <h3 className="text-lg font-bold text-gray-900">
               주문 목록
-              <span className="ml-2 text-sm font-normal text-gray-400">({orders.length}건)</span>
+              <span className="ml-2 text-sm font-normal text-gray-400">({filteredOrders.length}건)</span>
             </h3>
             <button
               onClick={handleExportExcel}
               disabled={filteredOrders.length === 0}
               className="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              엑셀 추출
+              엑셀 다운로드
             </button>
             <label className={`text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-colors ${
               uploading
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}>
-              {uploading ? '업로드 중...' : '송장 업로드'}
+              {uploading ? '업로드 중...' : '엑셀 업로드'}
               <input
                 type="file"
                 accept=".xlsx,.xls"
@@ -593,6 +749,123 @@ export default function ShippingPanel() {
                         </div>
                       </div>
                     )}
+
+                    {/* CS 관리 */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold text-gray-500">CS 관리</p>
+                        {csFormOrderId !== order.id && (
+                          <button
+                            onClick={() => {
+                              setCsFormOrderId(order.id)
+                              setCsFormProduct(order.items[0]?.name ?? '')
+                              setCsFormReason('')
+                            }}
+                            className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors"
+                          >
+                            + CS 등록
+                          </button>
+                        )}
+                      </div>
+
+                      {/* CS 등록 폼 */}
+                      {csFormOrderId === order.id && (
+                        <div className="border border-orange-200 rounded-lg p-3 bg-orange-50 mb-2">
+                          <div className="flex flex-col gap-2">
+                            <select
+                              value={csFormProduct}
+                              onChange={e => setCsFormProduct(e.target.value)}
+                              className="text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-gray-400 bg-white"
+                            >
+                              {order.items.map(item => (
+                                <option key={item.productId} value={item.name}>{item.name}</option>
+                              ))}
+                            </select>
+                            <textarea
+                              placeholder="CS 사유 입력"
+                              value={csFormReason}
+                              onChange={e => setCsFormReason(e.target.value)}
+                              rows={2}
+                              className="text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:border-gray-400 resize-none"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleCsSubmit(order.id)}
+                                disabled={csSubmitting || !csFormReason.trim()}
+                                className="text-xs font-semibold px-3 py-1 rounded bg-orange-600 hover:bg-orange-700 text-white transition-colors disabled:opacity-40"
+                              >
+                                {csSubmitting ? '등록 중...' : '등록'}
+                              </button>
+                              <button
+                                onClick={() => setCsFormOrderId(null)}
+                                className="text-xs font-semibold px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors"
+                              >
+                                취소
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* CS 목록 */}
+                      {(order.cs_requests ?? []).length > 0 && (
+                        <div className="flex flex-col gap-2">
+                          {[...(order.cs_requests ?? [])]
+                            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                            .map(cs => {
+                              const csStatusOpts = [
+                                { value: 'pending',   label: 'CS 접수',   color: 'bg-orange-100 text-orange-700' },
+                                { value: 'reshipped', label: '재배송 중', color: 'bg-purple-100 text-purple-700' },
+                                { value: 'resolved',  label: '완료',      color: 'bg-green-100 text-green-700' },
+                              ]
+                              const csOpt = csStatusOpts.find(o => o.value === cs.status)
+                              return (
+                                <div key={cs.id} className="border border-gray-200 rounded-lg p-3 bg-white">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold text-gray-700">{cs.product_name}</span>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${csOpt?.color ?? 'bg-gray-100 text-gray-600'}`}>
+                                      {csOpt?.label ?? cs.status}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 mb-2">{cs.reason}</p>
+                                  {/* 재배송 송장번호 */}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <input
+                                      type="text"
+                                      placeholder="재배송 운송장번호"
+                                      value={csTrackingInputs[cs.id] ?? cs.tracking_number ?? ''}
+                                      onChange={e => setCsTrackingInputs(prev => ({ ...prev, [cs.id]: e.target.value }))}
+                                      className="text-xs border border-gray-200 rounded px-2 py-1 flex-1 focus:outline-none focus:border-gray-400 font-mono"
+                                    />
+                                    <button
+                                      onClick={() => handleCsTrackingSave(order.id, cs.id)}
+                                      disabled={savingCsTracking === cs.id}
+                                      className="text-xs font-semibold px-3 py-1 rounded bg-gray-900 hover:bg-gray-700 text-white transition-colors disabled:opacity-40"
+                                    >
+                                      {savingCsTracking === cs.id ? '저장 중' : '저장'}
+                                    </button>
+                                  </div>
+                                  {/* 상태 버튼 */}
+                                  <div className="flex gap-1.5">
+                                    {csStatusOpts.map(opt => (
+                                      <button
+                                        key={opt.value}
+                                        disabled={cs.status === opt.value}
+                                        onClick={() => handleCsStatusUpdate(order.id, cs.id, opt.value)}
+                                        className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                                          cs.status === opt.value ? opt.color : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                        </div>
+                      )}
+                    </div>
 
                     {/* 상태 변경 */}
                     <div>
