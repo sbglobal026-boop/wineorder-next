@@ -24,12 +24,15 @@ function extractPlaceName(url: string): string {
 
 function makeEmbedUrl(url: string): string | null {
   const placeMatch = url.match(/\/maps\/place\/([^/@?]+)/)
+  const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+),(\d+)/)
+  // 좌표가 있으면 좌표에 핀을 찍고 장소 이름을 라벨로 표시.
+  // 이름만으로 검색하면(q=장소명) 동명의 장소가 많을 때 특정하지 못해 축소된 지도가 나옴
+  if (coordMatch) {
+    const label = placeMatch ? `(${placeMatch[1]})` : ''
+    return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}${label}&z=${coordMatch[3]}&output=embed`
+  }
   if (placeMatch) {
     return `https://maps.google.com/maps?q=${placeMatch[1]}&output=embed`
-  }
-  const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+),(\d+)/)
-  if (coordMatch) {
-    return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&z=${coordMatch[3]}&output=embed`
   }
   const qMatch = url.match(/[?&]q=([^&]+)/)
   if (qMatch) {
