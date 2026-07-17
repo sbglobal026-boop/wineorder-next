@@ -78,8 +78,9 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(pageUrl)}`
 
   return (
-    <div className="w-full border border-gray-100 overflow-hidden mb-8">
-      <div className="p-5">
+    // 모바일: 테두리/좌우 패딩 없이 커버 사진과 같은 라인에 텍스트 정렬, 데스크톱: 기존 카드 형태
+    <div className="w-full md:border md:border-gray-100 overflow-hidden mb-8">
+      <div className="py-5 md:p-5">
         {/* 브레드크럼: 하위 카테고리 글은 상위 카테고리도 함께 표시 (Home › Wine › Tasting › 제목) */}
         <nav className="text-sm text-gray-400 mb-5 flex items-center gap-1.5 flex-wrap">
           <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
