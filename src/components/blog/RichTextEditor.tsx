@@ -336,8 +336,8 @@ export default function RichTextEditor({
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        // 상세페이지 BlogContent와 같은 클래스/크기 → 편집 중 보이는 그대로 발행됨
-        class: 'blog-rich-content min-h-[320px] p-5 text-lg text-gray-700 focus:outline-none',
+        // 상세페이지 BlogContent와 같은 클래스/크기 → 편집 중 보이는 그대로 발행됨 (모바일 16px / 데스크톱 18px)
+        class: 'blog-rich-content min-h-[320px] p-5 text-base md:text-lg text-gray-700 focus:outline-none',
       },
     },
   })

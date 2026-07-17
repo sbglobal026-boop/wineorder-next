@@ -106,7 +106,8 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
         </div>
 
         {/* 제목/카테고리/작성자·날짜는 상단 커버 히어로(BlogHero)에 표시됨 */}
-        <BlogContent html={post.content} className="text-lg text-gray-700 mb-4" />
+        {/* 본문 기본 크기: 모바일 16px / 데스크톱 18px (h2·h3 등 상대값은 자동으로 따라감) */}
+        <BlogContent html={post.content} className="text-base md:text-lg text-gray-700 mb-4" />
 
         {/* 대표 사진을 제외한 나머지 업로드 사진 (본문 하단 갤러리) */}
         <BlogGallery images={post.images.slice(1)} />
