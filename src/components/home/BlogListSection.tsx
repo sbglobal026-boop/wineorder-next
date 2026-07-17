@@ -17,11 +17,14 @@ export default function BlogListSection({
   title = 'Recent Posts',
   categories,
   titleHref,
+  variant = 'default',
 }: {
   title?: string
   categories?: BlogCategory[] // 없으면 전체 글
   titleHref?: string          // 제목 클릭 시 이동할 카테고리 페이지
+  variant?: 'default' | 'green' // green: 헤더 초록 배경 + 베이지 폰트
 } = {}) {
+  const green = variant === 'green'
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [canLeft, setCanLeft] = useState(false)
   const [canRight, setCanRight] = useState(true)
@@ -48,8 +51,8 @@ export default function BlogListSection({
 
   return (
     <section>
-      <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] text-[#1C1A17] pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]">
-        <div className="max-w-[1600px] mx-auto border-t border-[#1C1A17] my-[10px]" />
+      <div className={`max-w-[1640px] mx-auto ${green ? 'bg-[#0e3719] text-[#DAD4CD]' : 'bg-[#F9F4EE] text-[#1C1A17]'} pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]`}>
+        <div className={`max-w-[1600px] mx-auto border-t ${green ? 'border-[#DAD4CD]' : 'border-[#1C1A17]'} my-[10px]`} />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
           {/* 제목 폭을 고정해서 제목 길이와 무관하게 카드 시작 위치가 세 섹션 모두 동일하게 함 */}
           {titleHref ? (
@@ -105,7 +108,7 @@ export default function BlogListSection({
                       <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
                     )}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                      <p className="bg-[#F9F4EE] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                      <p className="bg-[#F9F4EE] text-[#1C1A17] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
                         {categoryLabel(post.category)}
                       </p>
                       {post.images.length > 1 && (
@@ -118,9 +121,9 @@ export default function BlogListSection({
 
                   {/* 하단 정보 */}
                   <p className="text-[17px] font-semibold leading-normal mt-3.5 truncate">{post.title}</p>
-                  <div className="border-t border-[#1C1A17] mt-2" />
+                  <div className={`border-t ${green ? 'border-[#DAD4CD]' : 'border-[#1C1A17]'} mt-2`} />
                   <p className="text-sm leading-normal opacity-70 line-clamp-2 mt-2">{stripHtml(post.content)}</p>
-                  <div className="border-t border-[#1C1A17]/10 mt-2" />
+                  <div className={`border-t ${green ? 'border-[#DAD4CD]/20' : 'border-[#1C1A17]/10'} mt-2`} />
                   <div className="flex items-center justify-between gap-3 mt-2">
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <p className="text-[11px] uppercase tracking-widest opacity-50">작성자.</p>
@@ -131,7 +134,9 @@ export default function BlogListSection({
                       <p className="text-xs">{formatDate(post.created_at)}</p>
                     </div>
                   </div>
-                  <span className="block mt-2 text-xs font-medium uppercase tracking-widest text-[#1C1A17]/60 group-hover:text-[#1C1A17] transition-colors">
+                  <span className={`block mt-2 text-xs font-medium uppercase tracking-widest transition-colors ${
+                    green ? 'text-[#DAD4CD]/60 group-hover:text-[#DAD4CD]' : 'text-[#1C1A17]/60 group-hover:text-[#1C1A17]'
+                  }`}>
                     View →
                   </span>
                 </Link>

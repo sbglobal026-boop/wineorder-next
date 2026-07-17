@@ -20,6 +20,7 @@ export default function Home() {
         title="Wine"
         titleHref="/blog/wine"
         categories={['wine', ...childCategories('wine')]}
+        variant="green"
       />
       <BlogListSection
         title="Food & Drink"
