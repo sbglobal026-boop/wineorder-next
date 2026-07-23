@@ -1,18 +1,10 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import CartDrawer from "@/components/cart/CartDrawer";
+import ShopChrome from "@/components/layout/ShopChrome";
 
 export default function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-      <CartDrawer />
-    </div>
-  );
+  // 헤더/푸터 표시 여부는 경로에 따라 ShopChrome(클라이언트)에서 결정 — 홈에서는 숨김
+  return <ShopChrome>{children}</ShopChrome>;
 }

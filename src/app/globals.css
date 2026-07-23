@@ -48,6 +48,23 @@ body {
   to { transform: translateY(0); }
 }
 
+/* 홈 카테고리 카드(CategoryCards): 호버 시 살포시 떠오르고 blob이 회전·확대 */
+.cutecard {
+  transition: transform .32s cubic-bezier(.34,1.56,.64,1), box-shadow .32s ease;
+  will-change: transform;
+}
+.cutecard:hover {
+  transform: translateY(-14px) scale(1.015);
+  box-shadow: 0 26px 44px -18px rgba(80,58,20,.34), 0 8px 16px -10px rgba(80,58,20,.22);
+}
+.cutecard .blob { transition: transform .5s cubic-bezier(.34,1.56,.64,1); }
+.cutecard:hover .blob { transform: scale(1.12) rotate(-4deg); }
+/* 모바일에서는 떠오름 효과 축소 (터치라 hover 잔상 방지) */
+@media (max-width: 767px) {
+  .cutecard:hover { transform: none; box-shadow: none; }
+  .cutecard:hover .blob { transform: none; }
+}
+
 .blog-rich-content :is(h2, h3) {
   font-weight: 700;
   color: #1C1A17;
