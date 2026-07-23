@@ -4,6 +4,8 @@ export type BlogCategory =
   | 'tasting'
   | 'winery'
   | 'vinotheken'
+  | 'journal'
+  | 'weekly-tasting'
   | 'food-drink'
   | 'restaurant'
   | 'winebar'
@@ -18,6 +20,8 @@ export const BLOG_CATEGORIES: { value: BlogCategory; label: string; eyebrow: str
   { value: 'tasting', label: 'Tasting', eyebrow: 'Tasting', parent: 'wine' },
   { value: 'winery', label: 'Winery', eyebrow: 'Winery', parent: 'wine' },
   { value: 'vinotheken', label: 'Vinotheken', eyebrow: 'Vinotheken', parent: 'wine' },
+  { value: 'journal', label: 'Journal', eyebrow: 'Journal', parent: 'wine' },
+  { value: 'weekly-tasting', label: 'Weekly Tasting', eyebrow: 'Weekly Tasting', parent: 'wine' },
   { value: 'food-drink', label: 'Food & Drink', eyebrow: 'Food & Drink Story' },
   { value: 'restaurant', label: 'Restaurant', eyebrow: 'Restaurant', parent: 'food-drink' },
   { value: 'winebar', label: 'Wine Bar', eyebrow: 'Wine Bar', parent: 'food-drink' },
