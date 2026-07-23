@@ -130,16 +130,27 @@ export default function Header() {
         {/* 아이콘 — 카드 톤의 둥근 알약 버튼 */}
         <div className="flex items-center gap-2.5 text-[12px] font-medium text-[#1C1A17] pt-4 font-[family-name:var(--font-lato)]">
           {isHome ? (
-            /* 홈: 로그인 버튼만 (카트/햄버거 숨김, 모바일·데스크톱 모두 노출) */
-            currentUser ? (
-              <button onClick={logout} className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-4 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors cursor-pointer">
-                Logout
+            /* 홈: 데스크톱은 로그인 알약, 모바일은 햄버거(메뉴+로그인은 그 안으로). 카트 없음 */
+            <>
+              <div className="hidden md:flex items-center gap-2.5">
+                {currentUser ? (
+                  <button onClick={logout} className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-4 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors cursor-pointer">
+                    Logout
+                  </button>
+                ) : (
+                  <Link href="/login" className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-4 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors">
+                    Login
+                  </Link>
+                )}
+              </div>
+              <button
+                className="md:hidden text-[#7d5411] p-1 cursor-pointer"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
+              >
+                {mobileOpen ? <X size={24} strokeWidth={1.75} /> : <Menu size={24} strokeWidth={1.75} />}
               </button>
-            ) : (
-              <Link href="/login" className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-4 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors">
-                Login
-              </Link>
-            )
+            </>
           ) : (
             <>
               <div className="hidden md:flex items-center gap-2.5">
@@ -202,12 +213,14 @@ export default function Header() {
               </div>
             ))}
 
-            {/* 모바일 전용: 로그인/카트/어드민 (데스크톱 알약 버튼 대체) */}
+            {/* 모바일 전용: 로그인/카트/어드민 (데스크톱 알약 버튼 대체). 홈에선 카트 숨김 */}
             <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-[#eae7e7]">
-              <Link href="/cart" onClick={() => setMobileOpen(false)}
-                className="text-[15px] font-medium text-[#7d5411] hover:opacity-80 transition-opacity">
-                Cart [{cartCount}]
-              </Link>
+              {!isHome && (
+                <Link href="/cart" onClick={() => setMobileOpen(false)}
+                  className="text-[15px] font-medium text-[#7d5411] hover:opacity-80 transition-opacity">
+                  Cart [{cartCount}]
+                </Link>
+              )}
               {currentUser ? (
                 <>
                   {isAdmin && (
