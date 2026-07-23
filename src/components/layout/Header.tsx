@@ -25,7 +25,11 @@ const navItems = [
     href: '/blog/food-drink',
     children: childCategories('food-drink').map(c => ({ label: categoryLabel(c), href: `/blog/${c}` })),
   },
-  { label: 'Travel', href: '/blog/travel' },
+  {
+    label: 'Travel',
+    href: '/blog/travel',
+    children: childCategories('travel').map(c => ({ label: categoryLabel(c), href: `/blog/${c}` })),
+  },
   { label: 'Monthly Table', href: '/blog/monthly-table' },
 ]
 

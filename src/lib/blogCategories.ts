@@ -12,6 +12,10 @@ export type BlogCategory =
   | 'caffe'
   | 'etc'
   | 'travel'
+  | 'germany'
+  | 'france'
+  | 'italy'
+  | 'travel-etc'
   | 'monthly-table'
 
 export const BLOG_CATEGORIES: { value: BlogCategory; label: string; eyebrow: string; parent?: BlogCategory }[] = [
@@ -28,6 +32,10 @@ export const BLOG_CATEGORIES: { value: BlogCategory; label: string; eyebrow: str
   { value: 'caffe', label: 'Café', eyebrow: 'Café', parent: 'food-drink' },
   { value: 'etc', label: 'Etc.', eyebrow: 'Etc.', parent: 'food-drink' },
   { value: 'travel', label: 'Travel', eyebrow: 'Travel Story' },
+  { value: 'germany', label: 'Germany', eyebrow: 'Germany', parent: 'travel' },
+  { value: 'france', label: 'France', eyebrow: 'France', parent: 'travel' },
+  { value: 'italy', label: 'Italy', eyebrow: 'Italy', parent: 'travel' },
+  { value: 'travel-etc', label: 'Etc.', eyebrow: 'Etc.', parent: 'travel' },
   { value: 'monthly-table', label: 'Monthly Table', eyebrow: 'Monthly Table' },
 ]
 
