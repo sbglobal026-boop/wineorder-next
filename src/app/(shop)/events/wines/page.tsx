@@ -30,8 +30,8 @@ function PriceRangeSlider({
   const thumbClass =
     'range-slider-thumb pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent ' +
     '[&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent ' +
-    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#0e3719] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#FBFAF7] [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110 ' +
-    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#0e3719] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#FBFAF7] [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-pointer'
+    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7d5411] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#FBFAF7] [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110 ' +
+    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7d5411] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#FBFAF7] [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-pointer'
 
   return (
     <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ function PriceRangeSlider({
       <div className="relative h-3.5 w-40 flex items-center">
         <div className="absolute h-[3px] w-full rounded-full bg-[#DAD4CD]" />
         <div
-          className="absolute h-[3px] rounded-full bg-[#0e3719]"
+          className="absolute h-[3px] rounded-full bg-[#7d5411]"
           style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
         />
         <input
@@ -104,7 +104,7 @@ function FilterSelect({
               type="button"
               onClick={() => { onChange(o.value); setOpen(false) }}
               className={`block w-full text-left px-4 py-2 text-xs whitespace-nowrap transition-colors ${
-                o.value === value ? 'text-[#0e3719] font-semibold bg-[#0e3719]/5' : 'text-gray-600 hover:bg-gray-50'
+                o.value === value ? 'text-[#7d5411] font-semibold bg-[#7d5411]/5' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {o.label}
@@ -157,25 +157,33 @@ export default function WinesPage() {
     setSortPrice('none')
   }
 
-  return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      {/* 히어로 섹션 */}
-      <div className="max-w-[1640px] mx-auto">
-        <div className="bg-[#1C1A17] flex items-center px-5 h-12">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
-            Top Drop Archive
-          </h1>
-        </div>
-      </div>
+  // 신상 배지용 placeholder: 최신 등록(id 큰 순) 상위 3개 — 추후 등록일 필드로 교체
+  const newestIds = new Set([...allWines].sort((a, b) => b.id - a.id).slice(0, 3).map(p => p.id))
 
-      <div className="max-w-[1640px] mx-auto px-5 py-12">
+  return (
+    <div
+      className="min-h-screen"
+      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}
+    >
+      {/* 히어로 헤딩 */}
+      <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-10">
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Top Drop Archive</p>
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
+          오늘의 와인 셀렉션
+        </h1>
+        <p className="text-[15px] md:text-[16px] leading-[1.7] text-[#605d5d]">
+          취향대로 골라 담는 둥근 카드 리스트. 마우스를 올리면 살포시 떠올라요.
+        </p>
+      </header>
+
+      <div className="max-w-[1640px] mx-auto px-[20px] pb-16">
         {/* 카테고리 필터 + 세부 필터 */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-10">
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setActive('all')}
               className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                active === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                active === 'all' ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
               }`}
             >
               All
@@ -185,7 +193,7 @@ export default function WinesPage() {
                 key={c}
                 onClick={() => setActive(c)}
                 className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                  active === c ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                  active === c ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
                 }`}
               >
                 {CATEGORY_LABEL[c]}
@@ -241,12 +249,12 @@ export default function WinesPage() {
 
         <p className="text-xs text-gray-400 mb-4">{wines.length}개 상품</p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {wines.length === 0 ? (
-            <p className="col-span-4 text-sm text-gray-400 text-center py-24">해당 카테고리 상품이 없습니다</p>
+            <p className="col-span-2 md:col-span-4 text-sm text-gray-400 text-center py-24">해당 카테고리 상품이 없습니다</p>
           ) : (
             wines.map((product) => (
-              <ProductGridCard key={product.id} product={product} />
+              <ProductGridCard key={product.id} product={product} isNew={newestIds.has(product.id)} />
             ))
           )}
         </div>
