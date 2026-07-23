@@ -42,7 +42,7 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
       {/* 이미지 영역 */}
       <Link href={href} className="relative block aspect-square no-underline" style={{ background: meta.bg }}>
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-contain p-5 group-hover:scale-105 transition-transform duration-300" />
+          <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
           <span className="absolute inset-0 flex items-center justify-center text-5xl select-none">
             {product.type === 'wine' ? '🍷' : '🧀'}

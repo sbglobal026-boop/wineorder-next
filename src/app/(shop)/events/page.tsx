@@ -8,16 +8,6 @@ export default function TopDropPage() {
 
   if (!product) return null
 
-  return (
-    <>
-      <div className="max-w-[1640px] mx-auto">
-        <div className="bg-[#1C1A17] flex items-center px-5 h-12">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
-            Top Drop
-          </h1>
-        </div>
-      </div>
-      <ProductDetailView product={product} showDuty={product.type === 'wine'} />
-    </>
-  )
+  // 검은 상단 바 제거 + Top Drop 전용 인트로 밴드(topDrop) 표시
+  return <ProductDetailView product={product} eyebrow="Top Drop" topDrop showDuty={product.type === 'wine'} />
 }

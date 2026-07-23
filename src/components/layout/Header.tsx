@@ -7,7 +7,9 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { Menu, X } from 'lucide-react'
 import { childCategories, categoryLabel } from '@/lib/blogCategories'
 
-const navItems = [
+type NavItem = { label: string; href: string; children?: { label: string; href: string }[] }
+
+const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: '소개', href: '/about' },
   { label: 'FAQ', href: '/faq' },
@@ -37,6 +39,14 @@ const navItems = [
   { label: 'Monthly Table', href: '/blog/monthly-table' },
 ]
 
+// /events 계열 페이지 전용 평탄화 메뉴 (Top Drop 하위메뉴를 상단으로 올림, 나머지 숨김)
+const eventsNav: NavItem[] = [
+  { label: 'Home', href: '/' },
+  { label: 'Top Drop', href: '/events' },
+  { label: 'Wine', href: '/events/wines' },
+  { label: 'Food', href: '/events/food' },
+]
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { currentUser, logout } = useAuth()
@@ -47,8 +57,13 @@ export default function Header() {
   const pathname = usePathname()
   // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
   const isHome = pathname === '/'
+  const isEvents = pathname.startsWith('/events')
   const HOME_NAV = ['/', '/about', '/faq']
-  const navToShow = isHome ? navItems.filter(i => HOME_NAV.includes(i.href)) : navItems
+  const navToShow = isHome
+    ? navItems.filter(i => HOME_NAV.includes(i.href))
+    : isEvents
+      ? eventsNav
+      : navItems
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40)

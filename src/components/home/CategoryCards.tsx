@@ -18,7 +18,7 @@ type Card = {
 
 const CARDS: Card[] = [
   {
-    href: '/events/wines',
+    href: '/events',
     label: 'Shop',
     title: 'Wine',
     desc: '엄선한 프리미엄 와인을 만나보세요.',
