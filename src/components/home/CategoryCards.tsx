@@ -61,8 +61,8 @@ export default function CategoryCards() {
       {/* 히어로 헤딩 */}
       <header className="text-center max-w-[760px] mx-auto mb-14 md:mb-20">
         <p className="text-[13px] tracking-[0.32em] uppercase text-[#7d5411] mb-3.5">Table code</p>
-        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[40px] md:text-[56px] leading-[1.05] text-[#1C1A17] mb-4">
-          오늘, 무엇을 <em className="italic">만들어</em> 볼까요
+        <h1 className="font-[family-name:var(--font-nanum-square)] font-extrabold text-[36px] md:text-[52px] leading-[1.15] text-[#1C1A17] mb-4">
+          오늘 <em className="not-italic text-[#7d5411]">어디를</em> 가고 싶으세요?
         </h1>
         <p className="text-[15px] md:text-[17px] leading-[1.65] text-[#605d5d]">
           마음이 가는 카드를 골라보세요. 마우스를 올리면 카드가 살포시 떠오릅니다.

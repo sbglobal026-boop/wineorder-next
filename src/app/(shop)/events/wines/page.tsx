@@ -1,8 +1,8 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import ProductGridCard from '@/components/product/ProductGridCard'
+import { PriceRangeSlider, FilterSelect } from '@/components/product/ProductFilters'
 
 const CATEGORIES = ['레드', '화이트', '로제', '스파클링'] as const
 type Category = typeof CATEGORIES[number]
@@ -12,108 +12,6 @@ const CATEGORY_LABEL: Record<Category, string> = {
   '화이트': 'White',
   '로제': 'Rosé',
   '스파클링': 'Sparkling',
-}
-
-function PriceRangeSlider({
-  bounds,
-  value,
-  onChange,
-}: {
-  bounds: { min: number; max: number }
-  value: [number, number]
-  onChange: (v: [number, number]) => void
-}) {
-  const [minVal, maxVal] = value
-  const span = bounds.max - bounds.min || 1
-  const leftPct = ((minVal - bounds.min) / span) * 100
-  const rightPct = ((maxVal - bounds.min) / span) * 100
-  const thumbClass =
-    'range-slider-thumb pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent ' +
-    '[&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent ' +
-    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7d5411] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#FBFAF7] [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110 ' +
-    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7d5411] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#FBFAF7] [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-pointer'
-
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 whitespace-nowrap font-[family-name:var(--font-lato)]">€{minVal.toLocaleString()} ~ €{maxVal.toLocaleString()}</span>
-      <div className="relative h-3.5 w-40 flex items-center">
-        <div className="absolute h-[3px] w-full rounded-full bg-[#DAD4CD]" />
-        <div
-          className="absolute h-[3px] rounded-full bg-[#7d5411]"
-          style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
-        />
-        <input
-          type="range"
-          min={bounds.min}
-          max={bounds.max}
-          value={minVal}
-          onChange={(e) => onChange([Math.min(Number(e.target.value), maxVal), maxVal])}
-          className={thumbClass}
-        />
-        <input
-          type="range"
-          min={bounds.min}
-          max={bounds.max}
-          value={maxVal}
-          onChange={(e) => onChange([minVal, Math.max(Number(e.target.value), minVal)])}
-          className={thumbClass}
-        />
-      </div>
-    </div>
-  )
-}
-
-function FilterSelect({
-  value,
-  onChange,
-  options,
-}: {
-  value: string
-  onChange: (v: string) => void
-  options: { value: string; label: string }[]
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  const selectedLabel = options.find(o => o.value === value)?.label ?? options[0]?.label
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 border border-gray-200 rounded-full pl-4 pr-3 py-2 text-xs text-gray-600 bg-white hover:border-gray-400 transition-colors"
-      >
-        {selectedLabel}
-        <ChevronDown size={14} strokeWidth={2} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="absolute z-20 mt-2 min-w-full w-max rounded-xl border border-gray-200 bg-white shadow-lg py-1.5 overflow-hidden">
-          {options.map(o => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => { onChange(o.value); setOpen(false) }}
-              className={`block w-full text-left px-4 py-2 text-xs whitespace-nowrap transition-colors ${
-                o.value === value ? 'text-[#7d5411] font-semibold bg-[#7d5411]/5' : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
 }
 
 export default function WinesPage() {
@@ -169,7 +67,7 @@ export default function WinesPage() {
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-10">
         <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Top Drop Archive</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
-          오늘의 와인 셀렉션
+          Our Wine Selection So Far
         </h1>
         <p className="text-[15px] md:text-[16px] leading-[1.7] text-[#605d5d]">
           취향대로 골라 담는 둥근 카드 리스트. 마우스를 올리면 살포시 떠올라요.
