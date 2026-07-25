@@ -60,16 +60,21 @@ export default function Header() {
   const isHome = pathname === '/'
   const isEvents = pathname.startsWith('/events')
   const isBlog = pathname.startsWith('/blog')
+  const isJournal = pathname.startsWith('/journal')
   const HOME_NAV = ['/', '/about', '/faq']
   // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
   const BLOG_NAV = ['/', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
+  // 저널 페이지: Home + Journal만, 나머지 숨김
+  const JOURNAL_NAV = ['/', '/journal']
   const navToShow = isHome
     ? navItems.filter(i => HOME_NAV.includes(i.href))
     : isEvents
       ? eventsNav
       : isBlog
         ? navItems.filter(i => BLOG_NAV.includes(i.href))
-        : navItems
+        : isJournal
+          ? navItems.filter(i => JOURNAL_NAV.includes(i.href))
+          : navItems
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40)
