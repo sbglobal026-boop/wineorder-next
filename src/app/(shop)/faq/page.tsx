@@ -1,4 +1,4 @@
-import LegalPageLayout from '@/components/legal/LegalPageLayout'
+import InfoPageLayout from '@/components/legal/InfoPageLayout'
 
 const FAQS: { q: string; a: string }[] = [
   {
@@ -25,14 +25,16 @@ const FAQS: { q: string; a: string }[] = [
 
 export default function FaqPage() {
   return (
-    <LegalPageLayout title="FAQ">
-      <p className="mb-8">자주 묻는 질문을 모았습니다. 원하는 답을 찾지 못하셨다면 언제든 문의해주세요.</p>
-
+    <InfoPageLayout
+      eyebrow="FAQ"
+      title="자주 묻는 질문"
+      subtitle="원하는 답을 찾지 못하셨다면 언제든 문의해주세요."
+    >
       <div className="space-y-6">
         {FAQS.map((item, i) => (
-          <div key={i} className="border-b border-gray-200 pb-6">
-            <h2 className="text-base font-bold text-gray-900 mb-2">Q. {item.q}</h2>
-            <p className="text-gray-600">{item.a}</p>
+          <div key={i} className="border-b border-[#eae7e7] pb-6">
+            <h2 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">Q. {item.q}</h2>
+            <p className="text-[#605d5d]">{item.a}</p>
           </div>
         ))}
       </div>
@@ -40,6 +42,6 @@ export default function FaqPage() {
       <p className="mt-8 text-xs text-gray-400">
         ※ 본 내용은 예시 문구이며, 실제 정책에 맞게 교체할 수 있습니다.
       </p>
-    </LegalPageLayout>
+    </InfoPageLayout>
   )
 }

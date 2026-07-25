@@ -44,7 +44,7 @@ export default function CategoryCards() {
             >
               {/* 상단(모바일: 왼쪽) 이미지/컬러 영역 */}
               <div
-                className="relative shrink-0 overflow-hidden flex items-center justify-center w-[74px] h-[74px] md:w-full md:h-auto md:aspect-square rounded-[20px] md:rounded-none"
+                className="relative shrink-0 overflow-hidden flex items-center justify-center w-[74px] h-[74px] md:w-full md:h-auto md:aspect-[2/1] rounded-[20px] md:rounded-none"
                 style={{ background: s.bg }}
               >
                 {c.imageUrl ? (

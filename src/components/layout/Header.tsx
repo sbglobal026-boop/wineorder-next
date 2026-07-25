@@ -61,12 +61,13 @@ export default function Header() {
   const isEvents = pathname.startsWith('/events')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
+  const isInfo = pathname.startsWith('/about') || pathname.startsWith('/faq')
   const HOME_NAV = ['/', '/about', '/faq']
   // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
   const BLOG_NAV = ['/', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
   // 저널 페이지: Home + Journal만, 나머지 숨김
   const JOURNAL_NAV = ['/', '/journal']
-  const navToShow = isHome
+  const navToShow = isHome || isInfo
     ? navItems.filter(i => HOME_NAV.includes(i.href))
     : isEvents
       ? eventsNav
