@@ -37,6 +37,7 @@ const navItems: NavItem[] = [
     children: childCategories('travel').map(c => ({ label: categoryLabel(c), href: `/blog/${c}` })),
   },
   { label: 'Monthly Table', href: '/blog/monthly-table' },
+  { label: 'Journal', href: '/journal' },
 ]
 
 // /events 계열 페이지 전용 평탄화 메뉴 (Top Drop 하위메뉴를 상단으로 올림, 나머지 숨김)
@@ -58,12 +59,17 @@ export default function Header() {
   // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
   const isHome = pathname === '/'
   const isEvents = pathname.startsWith('/events')
+  const isBlog = pathname.startsWith('/blog')
   const HOME_NAV = ['/', '/about', '/faq']
+  // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
+  const BLOG_NAV = ['/', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
   const navToShow = isHome
     ? navItems.filter(i => HOME_NAV.includes(i.href))
     : isEvents
       ? eventsNav
-      : navItems
+      : isBlog
+        ? navItems.filter(i => BLOG_NAV.includes(i.href))
+        : navItems
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40)

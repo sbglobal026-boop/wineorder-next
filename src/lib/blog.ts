@@ -67,6 +67,46 @@ export async function deleteBlogPost(id: number, images: string[] = []) {
   if (error) throw error
 }
 
+// 대표글 ID들 — app_config 테이블에 저장 (Top Drop featuredProductId와 동일 방식)
+// slot: 'main'(Editor's Pick 전체) 또는 카테고리 값('wine' 등)별 대표글
+export type FeaturedSlot = 'main' | BlogCategory
+
+function featuredKey(slot: FeaturedSlot): string {
+  return slot === 'main' ? 'featuredBlogPostId' : `featuredBlog_${slot}`
+}
+
+// 전체 대표글 슬롯을 한 번에 조회 → { main: id, wine: id, ... }
+export async function fetchFeaturedBlogPosts(): Promise<Record<string, number>> {
+  const supabase = createClient()
+  const { data } = await supabase.from('app_config').select('key, value').like('key', 'featuredBlog%')
+  const result: Record<string, number> = {}
+  for (const row of data ?? []) {
+    const n = Number(row.value)
+    if (!Number.isFinite(n)) continue
+    // key → slot 역변환
+    const slot = row.key === 'featuredBlogPostId' ? 'main' : row.key.replace('featuredBlog_', '')
+    result[slot] = n
+  }
+  return result
+}
+
+// 하위 호환: 전체 Editor's Pick 단일 조회
+export async function fetchFeaturedBlogPostId(): Promise<number | null> {
+  const map = await fetchFeaturedBlogPosts()
+  return map['main'] ?? null
+}
+
+export async function setFeaturedBlogPost(slot: FeaturedSlot, id: number): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('app_config').upsert({ key: featuredKey(slot), value: String(id) })
+}
+
+// 대표글 지정 해제
+export async function clearFeaturedBlogPost(slot: FeaturedSlot): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('app_config').delete().eq('key', featuredKey(slot))
+}
+
 export async function fetchLikeCount(postId: number): Promise<number> {
   const supabase = createClient()
   const { count } = await supabase

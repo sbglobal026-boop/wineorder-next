@@ -29,7 +29,7 @@ const CARDS: Card[] = [
     shape: '42% 58% 60% 40% / 45% 45% 55% 55%',
   },
   {
-    href: '/blog/wine',
+    href: '/blog',
     label: 'Story',
     title: 'Blog',
     desc: '와인과 사람, 그리고 이야기.',
@@ -40,7 +40,7 @@ const CARDS: Card[] = [
     shape: '58% 42% 45% 55% / 55% 48% 52% 45%',
   },
   {
-    href: '/blog/journal',
+    href: '/journal',
     label: 'Journal',
     title: 'Journal',
     desc: '테이블 코드가 기록하는 순간들.',

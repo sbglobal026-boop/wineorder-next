@@ -1,16 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, notFound } from 'next/navigation'
+import { useParams, notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchBlogPosts, BlogPost } from '@/lib/blog'
-import { isBlogCategory, BLOG_CATEGORIES, BlogCategory, childCategories, categoryEyebrow, categoryLabel } from '@/lib/blogCategories'
-import { stripHtml } from '@/lib/sanitizeHtml'
-import Link from 'next/link'
+import { isBlogCategory, BlogCategory, childCategories, categoryLabel, categoryHero } from '@/lib/blogCategories'
+import { BlogCard } from '@/components/blog/BlogCard'
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-}
+const PER_PAGE = 9
 
 export default function BlogCategoryPage() {
   const { category } = useParams<{ category: string }>()
@@ -19,96 +18,108 @@ export default function BlogCategoryPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [subFilter, setSubFilter] = useState<BlogCategory | 'all'>('all')
+  const [page, setPage] = useState(1)
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
 
   if (!isBlogCategory(category)) notFound()
-  const meta = BLOG_CATEGORIES.find(c => c.value === category)!
+  // Journal은 독립 페이지로 이동
+  if (category === 'journal') redirect('/journal')
   const children = childCategories(category)
+  const hero = categoryHero(category)
 
   useEffect(() => {
     if (!isBlogCategory(category)) return
     setSubFilter('all')
+    setPage(1)
     const childCats = childCategories(category)
     const target = childCats.length > 0 ? [category, ...childCats] : category
     fetchBlogPosts(target).then(data => { setPosts(data); setLoading(false) })
   }, [category])
 
-  const visiblePosts = subFilter === 'all' ? posts : posts.filter(p => p.category === subFilter)
+  const filtered = subFilter === 'all' ? posts : posts.filter(p => p.category === subFilter)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
+  const pagePosts = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+      {/* 히어로 */}
+      <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-8">
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">{categoryLabel(category)}</p>
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
+          {hero.title}
+        </h1>
+        {hero.subtitle && (
+          <p className="text-[15px] md:text-[16px] leading-[1.7] text-[#605d5d]">{hero.subtitle}</p>
+        )}
+      </header>
 
-      {/* 히어로 섹션 */}
-      <div className="max-w-[1640px] mx-auto">
-        <div className="relative bg-[#1C1A17] flex items-center justify-between px-5 h-12">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
-            {meta.label}
-          </h1>
+      <div className="max-w-[1240px] mx-auto px-5 pb-20">
+        {/* 상위 블로그로 + 하위 카테고리 칩 */}
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-10">
+          <div className="flex gap-2 flex-wrap items-center">
+            <Link href="/blog" className="text-xs font-semibold px-4 py-2 rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411] transition-colors no-underline">
+              ← 전체
+            </Link>
+            {children.length > 0 && (
+              <>
+                <span className="w-px h-5 bg-[#d7d3d3] mx-1" />
+                <button
+                  onClick={() => { setSubFilter('all'); setPage(1) }}
+                  className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
+                    subFilter === 'all' ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
+                  }`}
+                >{categoryLabel(category)}</button>
+                {children.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setSubFilter(c); setPage(1) }}
+                    className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
+                      subFilter === c ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
+                    }`}
+                  >{categoryLabel(c)}</button>
+                ))}
+              </>
+            )}
+          </div>
           {isApproved && (
-            <Link
-              href={`/blog/write?category=${category}`}
-              className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-5 py-2 rounded-full transition-colors shrink-0"
-            >
+            <Link href={`/blog/write?category=${category}`} className="text-xs font-semibold px-4 py-2 rounded-full bg-[#7d5411] text-white hover:bg-[#5a3b0a] transition-colors no-underline">
               + 글쓰기
             </Link>
           )}
         </div>
-      </div>
-
-      <div className="max-w-[1640px] mx-auto px-5 py-12">
-
-        {children.length > 0 && (
-          <div className="flex gap-2 flex-wrap mb-10">
-            <button
-              onClick={() => setSubFilter('all')}
-              className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                subFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-              }`}
-            >전체</button>
-            {children.map((c) => (
-              <button
-                key={c}
-                onClick={() => setSubFilter(c)}
-                className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                  subFilter === c ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                }`}
-              >{categoryLabel(c)}</button>
-            ))}
-          </div>
-        )}
 
         {loading ? (
-          <p className="text-gray-400 text-sm text-center py-24">불러오는 중...</p>
-        ) : visiblePosts.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-24">아직 작성된 글이 없습니다</p>
+          <p className="text-[#9b9797] text-sm text-center py-24">불러오는 중...</p>
+        ) : pagePosts.length === 0 ? (
+          <p className="text-[#9b9797] text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
-            {visiblePosts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.category}/${post.id}`} className="group block">
-                <div className="relative w-full pb-[118.75%] mb-4 bg-[#fef9e4] overflow-hidden">
-                  {post.images[0] ? (
-                    <img
-                      src={post.images[0]}
-                      alt={post.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-5xl">🍷</span>
-                    </div>
-                  )}
-                </div>
-                <p className="text-gray-900 text-xs font-bold tracking-widest uppercase mb-2">
-                  {categoryEyebrow(post.category)}
-                </p>
-                <h2 className="text-lg font-bold text-gray-900 uppercase leading-tight mb-3 line-clamp-3 group-hover:text-[#8B4513] transition-colors">
-                  {post.title}
-                </h2>
-                <p className="text-sm text-gray-700 line-clamp-2 mb-3">{stripHtml(post.content)}</p>
-                <p className="text-xs text-gray-500 italic">{post.author_name} · {formatDate(post.created_at)}</p>
-              </Link>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {pagePosts.map(post => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-14">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#b68235] hover:text-[#7d5411] transition-colors disabled:opacity-30">
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`w-9 h-9 rounded-full border flex items-center justify-center text-sm transition-colors ${
+                      n === page ? 'border-[#b68235] text-[#7d5411] font-semibold bg-[#7d5411]/5' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411]'
+                    }`}
+                  >{n}</button>
+                ))}
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#b68235] hover:text-[#7d5411] transition-colors disabled:opacity-30">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
