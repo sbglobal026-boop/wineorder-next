@@ -59,7 +59,9 @@ export function BlogCard({ post }: { post: BlogPost }) {
           {post.title}
         </h4>
         <p className="text-[13.5px] leading-[1.65] text-[#605d5d] line-clamp-2 mb-4">{stripHtml(post.content)}</p>
-        <div className="text-[12px] text-[#9b9797]">{formatDate(post.created_at)} · {readingMinutes(post.content)}분 읽기</div>
+        <div className="text-[12px] text-[#9b9797]">
+          <span className="text-[#605d5d]">{post.author_name}</span> · {formatDate(post.created_at)} · {readingMinutes(post.content)}분 읽기
+        </div>
       </div>
     </Link>
   )
