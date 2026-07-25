@@ -5,17 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
-
-const EU_COUNTRIES = ['FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'PL', 'SE', 'DK', 'FI', 'IE', 'GR', 'CZ', 'HU', 'RO', 'SK', 'BG', 'HR', 'SI', 'LT', 'LV', 'EE', 'LU', 'MT', 'CY']
-
-type CountryZone = 'DE' | 'KR' | 'EU'
-
-function getZone(country: string): CountryZone {
-  if (country === 'DE') return 'DE'
-  if (country === 'KR') return 'KR'
-  if (EU_COUNTRIES.includes(country)) return 'EU'
-  return 'EU'
-}
+import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
 
 interface Address {
   id: string
@@ -48,23 +38,6 @@ const COUNTRY_OPTIONS = [
   { code: 'SE', label: '🇸🇪 스웨덴' },
   { code: 'PL', label: '🇵🇱 폴란드' },
 ]
-
-// 관세 계산
-function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
-  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈'] 
-  const isFTA = ftaOrigins.some(o => origin.includes(o))
-
-  const priceUsd = price * eurToUsd
-  const priceKrw = price * eurToKrw
-
-  if (priceUsd <= 150) {
-    const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)
-    return { total }
-  } else {
-    const total = Math.round(isFTA ? priceKrw * 0.463 : priceKrw * 0.683)
-    return { total }
-  }
-}
 
 export default function CheckoutPage() {
   const { config, clearCart } = useAppConfig()
@@ -110,14 +83,10 @@ export default function CheckoutPage() {
   const selectedAddress = addresses.find(a => a.id === selectedAddressId)
   const zone = selectedAddress ? getZone(selectedAddress.country) : null
 
-  // 배송비 데이터베이스에서
-  const rateInfo = shippingRates.find(r => r.zone === zone)
+  // 배송비 데이터베이스에서 (서버의 /api/orders 도 동일 로직으로 재계산함 — src/lib/orderPricing.ts)
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
-  // 한국 배송은 병수만큼 배송비 곱하기, 그 외는 고정 배송비
-  const shippingFee = rateInfo ? (zone === 'KR' ? rateInfo.fee * totalQty : rateInfo.fee) : 0
-  const splitFee = splitDelivery ? totalQty * 1 : 0
-  const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
-  const total = subtotal + shippingFee + splitFee + vat
+  const rateInfo = shippingRates.find(r => r.zone === zone)
+  const { shippingFee, splitFee, vat, total } = calcOrderTotals({ zone, subtotal, totalQty, splitDelivery, shippingRates })
 
   useEffect(() => {
     // 배송지 불러오기

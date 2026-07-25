@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
+import { fetchExchangeRates } from '@/lib/exchangeRate'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -8,7 +10,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { addressId, items, totalEur, shippingFeeEur, dutyEur, splitDelivery, splitFeeEur, memo } = body
+  const { addressId, items, splitDelivery, memo } = body
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: '주문 상품이 없습니다' }, { status: 400 })
@@ -16,20 +18,59 @@ export async function POST(request: Request) {
 
   const adminSupabase = createAdminClient()
 
-  // 재고 확인
-  for (const item of items) {
-    const { data: product, error } = await adminSupabase
-      .from('products')
-      .select('stock, name')
-      .eq('id', item.productId)
+  // 배송지는 본인 것만 사용 가능 + 국가로 배송존 결정
+  let zone: ReturnType<typeof getZone> | null = null
+  if (addressId) {
+    const { data: address } = await adminSupabase
+      .from('addresses')
+      .select('country')
+      .eq('id', addressId)
+      .eq('user_id', user.id)
       .single()
+    if (!address) return NextResponse.json({ error: '잘못된 배송지입니다' }, { status: 400 })
+    zone = getZone(address.country)
+  }
 
-    if (error || !product) {
+  // 상품 정보(가격·재고·원산지)는 클라이언트 값이 아니라 DB에서 직접 조회 — 가격 조작 방지
+  const productIds = [...new Set(items.map((i: { productId: number }) => i.productId))]
+  const { data: products } = await adminSupabase
+    .from('products')
+    .select('id, name, price, origin, stock')
+    .in('id', productIds)
+  const productMap = new Map((products ?? []).map(p => [p.id, p]))
+
+  for (const item of items) {
+    const product = productMap.get(item.productId)
+    if (!product) {
       return NextResponse.json({ error: `상품 정보를 찾을 수 없습니다 (id: ${item.productId})` }, { status: 400 })
     }
     if ((product.stock ?? 0) < item.qty) {
       return NextResponse.json({ error: `${product.name} 재고가 부족합니다 (남은 재고: ${product.stock ?? 0}병)` }, { status: 400 })
     }
+  }
+
+  // 서버에서 신뢰할 수 있는 값(DB 가격)으로 주문 항목·금액을 다시 계산
+  const trustedItems: { productId: number; name: string; qty: number; price_eur: number }[] = items.map(
+    (item: { productId: number; qty: number }) => {
+      const product = productMap.get(item.productId)!
+      return { productId: item.productId, name: product.name, qty: item.qty, price_eur: product.price }
+    }
+  )
+  const subtotal = trustedItems.reduce((sum, i) => sum + i.price_eur * i.qty, 0)
+  const totalQty = trustedItems.reduce((sum, i) => sum + i.qty, 0)
+
+  const { data: shippingRates } = await adminSupabase.from('shipping_rates').select('zone, fee, vat_rate')
+  const { shippingFee, splitFee, vat, total } = calcOrderTotals({
+    zone, subtotal, totalQty, splitDelivery: !!splitDelivery, shippingRates: shippingRates ?? [],
+  })
+
+  let dutyEur = 0
+  if (zone === 'KR') {
+    const { krw, usd } = await fetchExchangeRates()
+    dutyEur = trustedItems.reduce((sum, i) => {
+      const product = productMap.get(i.productId)!
+      return sum + calcDuty(i.price_eur * i.qty, krw, usd, product.origin ?? '').total
+    }, 0)
   }
 
   // 주문 생성
@@ -38,13 +79,13 @@ export async function POST(request: Request) {
     .insert({
       user_id: user.id,
       address_id: addressId ?? null,
-      items,
+      items: trustedItems,
       status: 'pending',
-      total_eur: totalEur,
-      shipping_fee_eur: shippingFeeEur ?? 0,
-      duty_eur: dutyEur ?? 0,
-      split_delivery: splitDelivery ?? false,
-      split_delivery_fee_eur: splitFeeEur ?? 0,
+      total_eur: total,
+      shipping_fee_eur: shippingFee,
+      duty_eur: dutyEur,
+      split_delivery: !!splitDelivery,
+      split_delivery_fee_eur: splitFee,
       memo: memo ?? null,
     })
     .select()
@@ -72,7 +113,7 @@ export async function POST(request: Request) {
   if (splitDelivery && order.order_number) {
     const shipments = []
     let index = 1
-    for (const item of items) {
+    for (const item of trustedItems) {
       for (let i = 0; i < item.qty; i++) {
         shipments.push({
           order_id: order.id,

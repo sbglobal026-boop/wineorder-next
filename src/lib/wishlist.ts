@@ -4,11 +4,12 @@ import { createClient } from '@/lib/supabase/client'
 
 export async function fetchWishlist(userId: string): Promise<number[]> {
   const supabase = createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('wishlist')
     .select('product_id')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+  if (error) throw error
   return (data ?? []).map(r => r.product_id as number)
 }
 

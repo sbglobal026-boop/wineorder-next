@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
-import { fetchReviews, addReview, ProductReview } from '@/lib/reviews'
+import { fetchReviews, addReview, deleteReview, ProductReview } from '@/lib/reviews'
 import { fetchWishlist, addToWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
 
@@ -68,7 +68,7 @@ export default function ProductDetailView({
   const [wished, setWished] = useState(false)
   useEffect(() => {
     if (!currentUser) { setWished(false); return }
-    fetchWishlist(currentUser.id).then(ids => setWished(ids.includes(product.id)))
+    fetchWishlist(currentUser.id).then(ids => setWished(ids.includes(product.id))).catch(err => console.error('위시리스트 조회 실패', err))
   }, [currentUser, product.id])
 
   const toggleWish = async () => {
@@ -100,7 +100,7 @@ export default function ProductDetailView({
   }, [product.id])
 
   useEffect(() => {
-    fetchReviews(product.id).then(setReviews)
+    fetchReviews(product.id).then(setReviews).catch(err => console.error('리뷰 조회 실패', err))
   }, [product.id])
 
   // 환율 API 연동 (와인 상품 상세에서만 필요)
@@ -174,6 +174,17 @@ export default function ProductDetailView({
       setReviewError(message || '리뷰 등록에 실패했습니다')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!currentUser) return
+    setReviewError(null)
+    try {
+      await deleteReview(reviewId, currentUser.id)
+      setReviews(prev => prev.filter(r => r.id !== reviewId))
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : '리뷰 삭제에 실패했습니다')
     }
   }
 
@@ -283,34 +294,46 @@ export default function ProductDetailView({
             </button>
           </div>
 
-          {/* 리뷰 패널 — 토글 버튼 바로 아래 */}
+          {/* 리뷰 모달 — 토글을 눌러도 레이아웃이 밀리지 않도록 팝업으로 표시 */}
           {reviewOpen && (
-            <div className="mb-5 p-4 bg-white/70 border border-[#eae7e7] rounded-2xl flex flex-col gap-4">
-              {reviews.length === 0 && <p className="text-[13px] text-[#9b9797]">아직 등록된 리뷰가 없습니다.</p>}
-              {reviews.map(r => (
-                <div key={r.id} className="flex flex-col gap-1 pb-3 border-b border-[#eae7e7] last:border-b-0 last:pb-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-medium text-[#1C1A17]">{r.author_name}</span>
-                    <span className="text-xs text-[#9b9797]">{new Date(r.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <span className="text-[#b68235] text-xs">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                  <p className="text-[13px] text-[#605d5d] leading-relaxed">{r.comment}</p>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/50" onClick={() => setReviewOpen(false)} />
+              <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-y-auto p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[15px] font-semibold text-[#1C1A17]">고객 리뷰 {reviews.length}개</h3>
+                  <button onClick={() => setReviewOpen(false)} aria-label="닫기" className="text-[#9b9797] hover:text-[#1C1A17] text-xl leading-none cursor-pointer">×</button>
                 </div>
-              ))}
-              {currentUser ? (
-                <div className="flex flex-col gap-2 pt-2 border-t border-[#eae7e7]">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <button key={n} onClick={() => setNewRating(n)} className="text-lg cursor-pointer leading-none text-[#b68235]">{n <= newRating ? '★' : '☆'}</button>
-                    ))}
+                {reviews.length === 0 && <p className="text-[13px] text-[#9b9797]">아직 등록된 리뷰가 없습니다.</p>}
+                {reviews.map(r => (
+                  <div key={r.id} className="flex flex-col gap-1 pb-3 border-b border-[#eae7e7] last:border-b-0 last:pb-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-medium text-[#1C1A17]">{r.author_name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#9b9797]">{new Date(r.created_at).toLocaleDateString()}</span>
+                        {currentUser?.id === r.user_id && (
+                          <button onClick={() => handleDeleteReview(r.id)} className="text-xs text-red-500 hover:text-red-600 transition-colors cursor-pointer">삭제</button>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[#b68235] text-xs">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                    <p className="text-[13px] text-[#605d5d] leading-relaxed">{r.comment}</p>
                   </div>
-                  <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="이 상품에 대한 리뷰를 남겨주세요" className="w-full text-[13px] p-2.5 border border-[#eae7e7] rounded-lg bg-white resize-none" rows={2} />
-                  {reviewError && <p className="text-[12px] text-red-600">{reviewError}</p>}
-                  <button onClick={handleSubmitReview} disabled={!newComment.trim() || submitting} className="self-end px-4 py-2 rounded-full bg-[#7d5411] text-white text-xs font-medium disabled:opacity-40 cursor-pointer">리뷰 등록</button>
-                </div>
-              ) : (
-                <p className="text-[13px] text-[#9b9797] pt-2 border-t border-[#eae7e7]">리뷰를 남기려면 로그인이 필요합니다.</p>
-              )}
+                ))}
+                {currentUser ? (
+                  <div className="flex flex-col gap-2 pt-2 border-t border-[#eae7e7]">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} onClick={() => setNewRating(n)} className="text-lg cursor-pointer leading-none text-[#b68235]">{n <= newRating ? '★' : '☆'}</button>
+                      ))}
+                    </div>
+                    <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="이 상품에 대한 리뷰를 남겨주세요" className="w-full text-[13px] p-2.5 border border-[#eae7e7] rounded-lg bg-white resize-none" rows={2} />
+                    {reviewError && <p className="text-[12px] text-red-600">{reviewError}</p>}
+                    <button onClick={handleSubmitReview} disabled={!newComment.trim() || submitting} className="self-end px-4 py-2 rounded-full bg-[#7d5411] text-white text-xs font-medium disabled:opacity-40 cursor-pointer">리뷰 등록</button>
+                  </div>
+                ) : (
+                  <p className="text-[13px] text-[#9b9797] pt-2 border-t border-[#eae7e7]">리뷰를 남기려면 로그인이 필요합니다.</p>
+                )}
+              </div>
             </div>
           )}
 

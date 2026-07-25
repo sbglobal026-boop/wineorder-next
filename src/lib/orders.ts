@@ -22,10 +22,11 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
 // 내 주문 목록 (RLS로 본인 주문만 조회됨)
 export async function fetchMyOrders(userId: string): Promise<MyOrder[]> {
   const supabase = createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('orders')
     .select('id, order_number, status, items, total_eur, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+  if (error) throw error
   return (data ?? []) as MyOrder[]
 }

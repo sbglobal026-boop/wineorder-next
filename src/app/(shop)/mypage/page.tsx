@@ -29,13 +29,13 @@ function formatDate(iso: string) {
 const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#fffefb] p-6'
 
 export default function MyPage() {
-  const { currentUser, logout } = useAuth()
+  const { currentUser, loading, logout } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('orders')
 
   useEffect(() => {
-    if (currentUser === null) router.replace('/login?redirect=/mypage')
-  }, [currentUser, router])
+    if (!loading && currentUser === null) router.replace('/login?redirect=/mypage')
+  }, [loading, currentUser, router])
 
   if (!currentUser) return <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }} />
 
@@ -93,10 +93,17 @@ export default function MyPage() {
 function OrdersPanel({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<MyOrder[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => { fetchMyOrders(userId).then(d => { setOrders(d); setLoading(false) }) }, [userId])
+  useEffect(() => {
+    fetchMyOrders(userId)
+      .then(d => setOrders(d))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [userId])
 
   if (loading) return <p className="text-sm text-[#9b9797] py-16 text-center">불러오는 중...</p>
+  if (error) return <p className="text-sm text-red-500 py-16 text-center">주문 내역을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
   if (orders.length === 0) return (
     <div className={`${cardCls} text-center py-16`}>
       <p className="text-4xl mb-3">🍷</p>
@@ -133,8 +140,14 @@ function WishlistPanel({ userId }: { userId: string }) {
   const { config } = useAppConfig()
   const [ids, setIds] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => { fetchWishlist(userId).then(d => { setIds(d); setLoading(false) }) }, [userId])
+  useEffect(() => {
+    fetchWishlist(userId)
+      .then(d => setIds(d))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [userId])
 
   const products = ids.map(id => config.products.find(p => p.id === id)).filter(Boolean) as typeof config.products
   // config.products가 아직 로드 안됐을 수 있으니 로딩 판단은 ids 기준
@@ -145,6 +158,7 @@ function WishlistPanel({ userId }: { userId: string }) {
   }
 
   if (loading) return <p className="text-sm text-[#9b9797] py-16 text-center">불러오는 중...</p>
+  if (error) return <p className="text-sm text-red-500 py-16 text-center">위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
   if (ids.length === 0) return (
     <div className={`${cardCls} text-center py-16`}>
       <p className="text-4xl mb-3">🤍</p>
@@ -174,17 +188,30 @@ function ReviewsPanel({ userId }: { userId: string }) {
   const { config } = useAppConfig()
   const [reviews, setReviews] = useState<ProductReview[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
-  useEffect(() => { fetchMyReviews(userId).then(d => { setReviews(d); setLoading(false) }) }, [userId])
+  useEffect(() => {
+    fetchMyReviews(userId)
+      .then(d => setReviews(d))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [userId])
 
   const productName = (id: number) => config.products.find(p => p.id === id)?.name ?? `상품 #${id}`
 
   const handleDelete = async (id: number) => {
-    await deleteReview(id, userId)
-    setReviews(prev => prev.filter(r => r.id !== id))
+    setDeleteError('')
+    try {
+      await deleteReview(id, userId)
+      setReviews(prev => prev.filter(r => r.id !== id))
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : '리뷰 삭제에 실패했습니다')
+    }
   }
 
   if (loading) return <p className="text-sm text-[#9b9797] py-16 text-center">불러오는 중...</p>
+  if (error) return <p className="text-sm text-red-500 py-16 text-center">리뷰를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
   if (reviews.length === 0) return (
     <div className={`${cardCls} text-center py-16`}>
       <p className="text-sm text-[#9b9797]">작성한 리뷰가 없습니다</p>
@@ -193,6 +220,7 @@ function ReviewsPanel({ userId }: { userId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {deleteError && <p className="text-xs text-red-500">{deleteError}</p>}
       {reviews.map(r => (
         <div key={r.id} className={cardCls}>
           <div className="flex items-start justify-between gap-3 mb-1.5">

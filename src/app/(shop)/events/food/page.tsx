@@ -5,7 +5,7 @@ import ProductGridCard from '@/components/product/ProductGridCard'
 import { PriceRangeSlider, FilterSelect } from '@/components/product/ProductFilters'
 
 export default function FoodPage() {
-  const { config } = useAppConfig()
+  const { config, productsLoaded } = useAppConfig()
   const [search, setSearch] = useState('')
   const [hideOutOfStock, setHideOutOfStock] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null)
@@ -91,17 +91,26 @@ export default function FoodPage() {
           )}
         </div>
 
-        <p className="text-xs text-gray-400 mb-4">{foods.length}개 상품</p>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {foods.length === 0 ? (
-            <p className="col-span-2 md:col-span-4 text-sm text-gray-400 text-center py-24">등록된 식품이 없습니다</p>
-          ) : (
-            foods.map((product) => (
-              <ProductGridCard key={product.id} product={product} isNew={newestIds.has(product.id)} />
-            ))
-          )}
-        </div>
+        {!productsLoaded ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4.2] rounded-[24px] border border-[#eae7e7] bg-[#eae7e7]/40 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-gray-400 mb-4">{foods.length}개 상품</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {foods.length === 0 ? (
+                <p className="col-span-2 md:col-span-4 text-sm text-gray-400 text-center py-24">등록된 식품이 없습니다</p>
+              ) : (
+                foods.map((product) => (
+                  <ProductGridCard key={product.id} product={product} isNew={newestIds.has(product.id)} />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

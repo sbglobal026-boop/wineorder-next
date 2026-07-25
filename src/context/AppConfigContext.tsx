@@ -42,6 +42,7 @@ export type AppConfig = {
 
 type AppConfigContextType = {
   config: AppConfig
+  productsLoaded: boolean
   bannerSlidesLoaded: boolean
   setFeaturedWine: (id: number) => void
   updateBannerSlide: (slide: BannerSlide) => void
@@ -82,6 +83,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig>(defaultConfig)
   const [isLoaded, setIsLoaded] = useState(false)
   const [bannerSlidesLoaded, setBannerSlidesLoaded] = useState(false)
+  const [productsLoaded, setProductsLoaded] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { currentUser } = useAuth()
 
@@ -105,7 +107,10 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
 
   // 상품 / 추천상품 ID / 배너 슬라이드는 Supabase에서 로드
   useEffect(() => {
-    fetchProducts().then(products => setConfig(prev => ({ ...prev, products })))
+    fetchProducts().then(products => {
+      setConfig(prev => ({ ...prev, products }))
+      setProductsLoaded(true)
+    })
     fetchFeaturedProductId().then(id => {
       if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
     })
@@ -254,7 +259,7 @@ const clearCart = () => {
 
   return (
     <AppConfigContext.Provider value={{
-      config, bannerSlidesLoaded, setFeaturedWine,
+      config, productsLoaded, bannerSlidesLoaded, setFeaturedWine,
       updateBannerSlide,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,
