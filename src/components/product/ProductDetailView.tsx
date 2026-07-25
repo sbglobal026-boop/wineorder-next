@@ -188,8 +188,8 @@ export default function ProductDetailView({
     { k: '품종', v: product.grapeVariety || '—' },
     { k: '빈티지', v: extractVintage(product.name) },
     { k: '평가', v: criticRatings.length > 0 ? criticRatings.join(', ') : '—' },
-    { k: '용량', v: '—' },
-    { k: '알코올', v: '—' },
+    { k: '용량', v: product.volume ? `${product.volume}ml` : '—' },
+    { k: '알코올', v: product.alcohol ? `${product.alcohol}%` : '—' },
   ]
   const hashtags = [`#${product.category}`, product.type === 'wine' ? '#와인' : '#식품', '#선물추천']
 

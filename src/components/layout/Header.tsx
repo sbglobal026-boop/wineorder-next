@@ -59,7 +59,7 @@ export default function Header() {
   // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
   const isHome = pathname === '/'
   // 쇼핑 플로우(상품·장바구니·결제)는 와인 페이지와 동일한 메뉴바(eventsNav) 사용
-  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/order')
+  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/order') || pathname.startsWith('/mypage')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
   // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
@@ -176,7 +176,9 @@ export default function Header() {
                         Admin
                       </Link>
                     )}
-                    <Link href="/mypage" className="text-[#605d5d] hover:text-[#7d5411] transition-colors">{currentUser.name}</Link>
+                    <Link href="/mypage" className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-4 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors">
+                      My Page
+                    </Link>
                     <button onClick={logout} className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-3 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors cursor-pointer">
                       Logout
                     </button>
