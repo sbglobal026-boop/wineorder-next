@@ -20,6 +20,23 @@ export async function fetchReviews(productId: number): Promise<ProductReview[]> 
   return data ?? []
 }
 
+// 내가 쓴 리뷰 모아보기 (마이페이지)
+export async function fetchMyReviews(userId: string): Promise<ProductReview[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('product_reviews')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  return data ?? []
+}
+
+export async function deleteReview(id: number, userId: string): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase.from('product_reviews').delete().eq('id', id).eq('user_id', userId)
+  if (error) throw error
+}
+
 export async function addReview(review: {
   productId: number
   userId: string

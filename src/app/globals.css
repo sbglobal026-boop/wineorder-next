@@ -48,6 +48,14 @@ body {
   to { transform: translateY(0); }
 }
 
+/* 주문완료 체크 아이콘 팝 애니메이션 */
+@keyframes pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.check { animation: pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+
 /* 홈 카테고리 카드(CategoryCards): 호버 시 살포시 떠오르고 blob이 회전·확대 */
 .cutecard {
   transition: transform .32s cubic-bezier(.34,1.56,.64,1), box-shadow .32s ease;

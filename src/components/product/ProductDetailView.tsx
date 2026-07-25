@@ -7,6 +7,7 @@ import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchReviews, addReview, ProductReview } from '@/lib/reviews'
+import { fetchWishlist, addToWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
 
 // 카테고리별 상단 카드 그라데이션 (카드 컨셉)
@@ -62,6 +63,21 @@ export default function ProductDetailView({
   const router = useRouter()
   const recommended = config.products.filter(p => p.id !== product.id).slice(0, 8)
   const foodGuide = config.products.find(p => p.type === 'food')
+
+  // 위시리스트
+  const [wished, setWished] = useState(false)
+  useEffect(() => {
+    if (!currentUser) { setWished(false); return }
+    fetchWishlist(currentUser.id).then(ids => setWished(ids.includes(product.id)))
+  }, [currentUser, product.id])
+
+  const toggleWish = async () => {
+    if (!currentUser) { router.push('/login'); return }
+    const next = !wished
+    setWished(next)
+    if (next) await addToWishlist(currentUser.id, product.id)
+    else await removeFromWishlist(currentUser.id, product.id)
+  }
 
   const [activeImg, setActiveImg] = useState(0)
   const [qty, setQty] = useState(1)
@@ -231,6 +247,14 @@ export default function ProductDetailView({
               ))
             : <span className="absolute inset-0 flex items-center justify-center text-[120px] select-none">{product.type === 'wine' ? '🍷' : '🧀'}</span>
           }
+          {/* 위시리스트 하트 (이미지 우측 상단) */}
+          <button
+            onClick={toggleWish}
+            aria-label={wished ? '위시리스트에서 제거' : '위시리스트에 추가'}
+            className="absolute top-4 right-4 z-20 w-11 h-11 rounded-full bg-white/85 hover:bg-white shadow-md flex items-center justify-center text-2xl leading-none transition-all hover:scale-110 cursor-pointer"
+          >
+            <span className={wished ? 'text-[#d94f5c]' : 'text-[#bab6b6]'}>{wished ? '♥' : '♡'}</span>
+          </button>
           {isSoldOut && (
             <div className="absolute inset-0 bg-black/45 flex items-center justify-center z-10">
               <span className="text-white text-sm font-bold tracking-widest uppercase border border-white/60 px-5 py-2">Sold Out</span>
@@ -337,9 +361,6 @@ export default function ProductDetailView({
             )}
           </div>
 
-          <div className="mt-5 pt-4 border-t border-[#eae7e7]">
-            <span className="inline-flex items-center gap-2 text-[13px] font-medium text-[#605d5d]">♡ 위시리스트 추가</span>
-          </div>
         </div>
       </section>
 

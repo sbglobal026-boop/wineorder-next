@@ -59,7 +59,7 @@ export default function Header() {
   // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
   const isHome = pathname === '/'
   // 쇼핑 플로우(상품·장바구니·결제)는 와인 페이지와 동일한 메뉴바(eventsNav) 사용
-  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout')
+  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/order')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
   // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
@@ -176,7 +176,7 @@ export default function Header() {
                         Admin
                       </Link>
                     )}
-                    <span className="text-[#605d5d]">{currentUser.name}</span>
+                    <Link href="/mypage" className="text-[#605d5d] hover:text-[#7d5411] transition-colors">{currentUser.name}</Link>
                     <button onClick={logout} className="rounded-full border border-[#b68235]/50 text-[#7d5411] px-3 py-1.5 hover:bg-[#7d5411]/[0.06] transition-colors cursor-pointer">
                       Logout
                     </button>
@@ -244,7 +244,7 @@ export default function Header() {
                       Admin
                     </Link>
                   )}
-                  <span className="text-[14px] text-[#605d5d]">{currentUser.name}</span>
+                  <Link href="/mypage" onClick={() => setMobileOpen(false)} className="text-[15px] font-medium text-[#7d5411] hover:opacity-80 transition-opacity">마이페이지</Link>
                   <button onClick={() => { logout(); setMobileOpen(false) }}
                     className="text-left text-[15px] font-medium text-[#7d5411] hover:opacity-80 transition-opacity cursor-pointer">
                     Logout
