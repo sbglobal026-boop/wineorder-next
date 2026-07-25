@@ -50,7 +50,7 @@ export default function MyPage() {
 
       <div className="max-w-[1240px] mx-auto px-5 pb-20 grid md:grid-cols-[220px_1fr] gap-6 md:gap-8 items-start">
         {/* 좌측 탭 사이드바 */}
-        <aside className="rounded-[24px] border border-[#eae7e7] bg-[#fffefb] p-4 md:sticky md:top-[90px]">
+        <aside className="min-w-0 rounded-[24px] border border-[#eae7e7] bg-[#fffefb] p-4 md:sticky md:top-[90px]">
           <div className="px-2 py-3 mb-2 border-b border-[#eae7e7]">
             <p className="text-sm font-semibold text-[#1C1A17] truncate">{currentUser.name}</p>
             <p className="text-xs text-[#9b9797] truncate">{currentUser.email}</p>
