@@ -440,7 +440,8 @@ export default function ProductDetailView({
             </div>
           </div>
           {/* pt/pb: 호버 시 카드가 떠오르고 그림자가 생겨도 잘리지 않도록 세로 여백 확보 */}
-          <div ref={carouselRef} className="flex gap-5 px-5 pt-5 pb-12 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
+          {/* scroll-pl-5: px-5와 값을 맞춰야 스냅(snap-start)이 패딩을 무시하고 시작 지점을 카드 왼쪽 끝으로 당겨버리는 걸 방지함 */}
+          <div ref={carouselRef} className="flex gap-5 px-5 pt-5 pb-12 overflow-x-auto snap-x snap-mandatory scroll-pl-5 no-scrollbar scroll-smooth">
             {recommended.map(rec => (
               <div key={rec.id} className="flex-none w-[240px] md:w-[280px] snap-start">
                 <ProductGridCard product={rec} />
