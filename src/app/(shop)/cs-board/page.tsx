@@ -18,22 +18,23 @@ export default function CsBoardPage() {
   }, [])
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto">
-        <div className="bg-[#1C1A17] flex items-center justify-between px-5 h-12">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
-            CS 게시판
-          </h1>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+      <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-8">
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">CS Board</p>
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[34px] md:text-[46px] leading-[1.1] text-[#1C1A17]">
+          CS 게시판
+        </h1>
+      </header>
+
+      <div className="max-w-[1240px] mx-auto px-5 pb-16">
+        <div className="flex justify-end mb-6">
           <Link
             href={currentUser ? '/cs-board/write' : '/login'}
-            className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-5 py-2 rounded-full transition-colors shrink-0"
+            className="text-xs font-semibold px-4 py-2 rounded-full bg-[#7d5411] text-white hover:bg-[#5a3b0a] transition-colors no-underline"
           >
             글쓰기
           </Link>
         </div>
-      </div>
-
-      <div className="max-w-[1240px] mx-auto px-5 py-12">
         {loading ? (
           <p className="text-sm text-gray-400 text-center py-24">불러오는 중...</p>
         ) : posts.length === 0 ? (

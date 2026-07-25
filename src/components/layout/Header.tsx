@@ -61,7 +61,9 @@ export default function Header() {
   const isEvents = pathname.startsWith('/events')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
-  const isInfo = pathname.startsWith('/about') || pathname.startsWith('/faq')
+  // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
+  const INFO_PREFIXES = ['/about', '/faq', '/cs-board', '/shipping-guide', '/returns', '/notices', '/ueber-uns', '/agb', '/datenschutz', '/impressum']
+  const isInfo = INFO_PREFIXES.some(p => pathname.startsWith(p))
   const HOME_NAV = ['/', '/about', '/faq']
   // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
   const BLOG_NAV = ['/', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']

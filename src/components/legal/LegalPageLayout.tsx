@@ -1,16 +1,15 @@
 import { ReactNode } from 'react'
 
+// 법적/안내 페이지 카드 톤 레이아웃 (크림 그라데이션 히어로)
 export default function LegalPageLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto">
-        <div className="bg-[#1C1A17] flex items-center px-5 h-12">
-          <h1 className="font-[family-name:var(--font-playfair-display)] text-white text-[21px] font-bold tracking-tight">
-            {title}
-          </h1>
-        </div>
-      </div>
-      <div className="max-w-[880px] mx-auto px-5 md:px-10 py-16 text-sm text-gray-700 leading-relaxed">
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+      <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-8">
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[34px] md:text-[46px] leading-[1.1] text-[#1C1A17]">
+          {title}
+        </h1>
+      </header>
+      <div className="max-w-[880px] mx-auto px-5 md:px-10 pb-20 text-[15px] text-[#605d5d] leading-relaxed">
         {children}
       </div>
     </div>
