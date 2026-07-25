@@ -58,7 +58,8 @@ export default function Header() {
   const pathname = usePathname()
   // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
   const isHome = pathname === '/'
-  const isEvents = pathname.startsWith('/events')
+  // 쇼핑 플로우(상품·장바구니·결제)는 와인 페이지와 동일한 메뉴바(eventsNav) 사용
+  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
   // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
@@ -98,10 +99,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50">
-      <div>
-        {/* 배경은 1640 폭 전체, 콘텐츠는 홈에서 카드 그리드(1240)에 맞춰 정렬 */}
-        <div className="max-w-[1640px] mx-auto bg-[#F9F4EE] px-[20px]">
-        <div className={`h-12 flex items-center justify-between ${isHome ? 'max-w-[1240px] mx-auto' : ''}`}>
+      {/* 헤더 전체에 배경 → 콘텐츠와 구분선 사이 틈으로 본문이 비치지 않게 */}
+      <div className="bg-[#F9F4EE]">
+        <div>
+        <div className="h-12 flex items-center justify-between max-w-[1240px] mx-auto px-5">
 
         {/* 로고 */}
         <Link href="/" className="relative flex items-center h-full w-[120px] shrink-0">
@@ -204,10 +205,10 @@ export default function Header() {
         </div>
         </div>
 
-        <div className={`mx-auto border-b border-[#eae7e7] mt-3 ${isHome ? 'max-w-[1240px]' : 'max-w-[1600px]'}`} />
+        <div className="max-w-[1240px] mx-auto px-5 mt-3"><div className="border-b border-[#eae7e7]" /></div>
 
         {mobileOpen && (
-          <nav className="md:hidden border-t border-[#eae7e7] max-w-[1640px] mx-auto px-[20px] py-4 flex flex-col gap-4 bg-[#F9F4EE]">
+          <nav className="md:hidden border-t border-[#eae7e7] max-w-[1240px] mx-auto px-5 py-4 flex flex-col gap-4 bg-[#F9F4EE]">
             {navToShow.map((item) => (
               <div key={item.href} className="flex flex-col gap-2">
                 <Link href={item.href} onClick={() => setMobileOpen(false)}

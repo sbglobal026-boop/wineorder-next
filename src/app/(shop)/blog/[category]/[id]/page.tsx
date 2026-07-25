@@ -36,18 +36,16 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-5 md:px-10 py-16">
-        <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+      <div className="max-w-[1240px] mx-auto px-5 py-16">
+        <Link href={`/blog/${category}`} className="text-xs font-bold text-[#7d5411] uppercase tracking-widest hover:opacity-70 transition-opacity mb-8 block">
           ← {categoryLabel(category)}
         </Link>
-        {/* 커버는 헤더와 같은 폭(1640 박스)으로 꽉 채움 */}
+        {/* 커버는 헤더·바디와 같은 1240 폭 */}
         <div className="mb-8">
           <BlogHero post={post} />
         </div>
-        <div className="max-w-[1240px] mx-auto">
-          <BlogPostCard post={post} />
-        </div>
+        <BlogPostCard post={post} />
       </div>
     </div>
   )

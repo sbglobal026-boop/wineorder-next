@@ -16,11 +16,11 @@ export default function CategoryCards() {
 
   return (
     <section
-      className="max-w-[1640px] mx-auto px-[20px] py-[72px] md:py-[110px]"
+      className="py-[72px] md:py-[110px]"
       style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}
     >
       {/* 히어로 헤딩 */}
-      <header className="text-center max-w-[760px] mx-auto mb-14 md:mb-20">
+      <header className="text-center max-w-[760px] mx-auto px-5 mb-14 md:mb-20">
         <p className="text-[13px] tracking-[0.32em] uppercase text-[#7d5411] mb-3.5">{content.eyebrow}</p>
         <h1 className="font-[family-name:var(--font-nanum-square)] font-extrabold text-[36px] md:text-[52px] leading-[1.15] text-[#1C1A17] mb-4">
           {content.heroTitle}
@@ -31,7 +31,7 @@ export default function CategoryCards() {
       </header>
 
       {/* 3개 카드: 데스크톱 3열 그리드 → 모바일 세로 스택(가로형 카드) */}
-      <div className="max-w-[1240px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
+      <div className="max-w-[1240px] mx-auto px-5 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
         {HOME_CARD_KEYS.map((key) => {
           const s = HOME_CARD_STATIC[key]
           const c = content.cards[key]

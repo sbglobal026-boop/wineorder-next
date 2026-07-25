@@ -74,7 +74,7 @@ export default function WinesPage() {
         </p>
       </header>
 
-      <div className="max-w-[1640px] mx-auto px-[20px] pb-16">
+      <div className="max-w-[1240px] mx-auto px-5 pb-16">
         {/* 카테고리 필터 + 세부 필터 */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-10">
           <div className="flex gap-2 flex-wrap">

@@ -51,7 +51,7 @@ export default function FoodPage() {
         </p>
       </header>
 
-      <div className="max-w-[1640px] mx-auto px-[20px] pb-16">
+      <div className="max-w-[1240px] mx-auto px-5 pb-16">
         {/* 필터 바 */}
         <div className="flex flex-wrap items-center justify-end gap-3 mb-10">
           <input

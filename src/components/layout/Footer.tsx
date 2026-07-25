@@ -3,8 +3,9 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer>
-      {/* 카드 톤: 연한 베이지 배경 + 차콜 글씨 + 앰버 악센트 */}
-      <div className="max-w-[1640px] mx-auto bg-[#DAD4CD] text-[#1C1A17] px-[20px] py-16 font-lato-korean">
+      {/* 카드 톤: 연한 베이지 배경(전체 폭) + 콘텐츠는 1240으로 헤더·바디와 정렬 */}
+      <div className="bg-[#DAD4CD] text-[#1C1A17] py-16 font-lato-korean">
+        <div className="max-w-[1240px] mx-auto px-5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
 
           {/* 브랜드 */}
@@ -61,6 +62,7 @@ export default function Footer() {
           <p>sbglobal UG (haftungsbeschränkt) &nbsp;|&nbsp; Geschäftsführer: Max Mustermann &nbsp;|&nbsp; Handelsregister: Amtsgericht Berlin-Charlottenburg, HRB 000000 B</p>
           <p>USt-IdNr.: DE000000000 &nbsp;|&nbsp; Sitz der Gesellschaft: Musterstraße 1, 10115 Berlin, Deutschland</p>
           <p className="pt-2">© 2026 table code. All rights reserved.</p>
+        </div>
         </div>
       </div>
     </footer>
