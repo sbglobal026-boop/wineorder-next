@@ -108,7 +108,7 @@ export default function BlogHomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {catFeatured.map(({ cat, post }) => (
                     <div key={cat}>
-                      <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#7d5411] mb-2">{categoryLabel(cat)}</p>
+                      <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#7d5411] mb-5">{categoryLabel(cat)}</p>
                       <BlogCard post={post} />
                     </div>
                   ))}
