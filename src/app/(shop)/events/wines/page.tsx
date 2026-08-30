@@ -105,11 +105,11 @@ function WinesPageInner() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}
+      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}
     >
       {/* 히어로 헤딩 */}
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-10">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Top Drop Archive</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">Top Drop Archive</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
           Our Wine Selection So Far
         </h1>
@@ -126,7 +126,7 @@ function WinesPageInner() {
               onClick={() => setActive('all')}
               aria-pressed={active === 'all'}
               className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                active === 'all' ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
+                active === 'all' ? 'bg-[#0e3719] text-white border-[#0e3719]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63]'
               }`}
             >
               All
@@ -137,7 +137,7 @@ function WinesPageInner() {
                 onClick={() => setActive(c)}
                 aria-pressed={active === c}
                 className={`text-xs font-semibold px-4 py-2 rounded-full border transition-colors ${
-                  active === c ? 'bg-[#7d5411] text-white border-[#7d5411]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235]'
+                  active === c ? 'bg-[#0e3719] text-white border-[#0e3719]' : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63]'
                 }`}
               >
                 {CATEGORY_LABEL[c]}

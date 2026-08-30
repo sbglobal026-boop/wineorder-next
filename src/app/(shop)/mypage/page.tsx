@@ -26,7 +26,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#fffefb] p-6'
+const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-6'
 
 export default function MyPage() {
   const { currentUser, loading, logout } = useAuth()
@@ -37,12 +37,12 @@ export default function MyPage() {
     if (!loading && currentUser === null) router.replace('/login?redirect=/mypage')
   }, [loading, currentUser, router])
 
-  if (!currentUser) return <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }} />
+  if (!currentUser) return <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }} />
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-20 pb-8">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">My Page</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">My Page</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[34px] md:text-[46px] leading-[1.1] text-[#1C1A17]">
           안녕하세요, {currentUser.name}님
         </h1>
@@ -50,7 +50,7 @@ export default function MyPage() {
 
       <div className="max-w-[1240px] mx-auto px-5 pb-20 grid md:grid-cols-[220px_1fr] gap-6 md:gap-8 items-start">
         {/* 좌측 탭 사이드바 */}
-        <aside className="min-w-0 rounded-[24px] border border-[#eae7e7] bg-[#fffefb] p-4 md:sticky md:top-[90px]">
+        <aside className="min-w-0 rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-4 md:sticky md:top-[90px]">
           <div className="px-2 py-3 mb-2 border-b border-[#eae7e7]">
             <p className="text-sm font-semibold text-[#1C1A17] truncate">{currentUser.name}</p>
             <p className="text-xs text-[#9b9797] truncate">{currentUser.email}</p>
@@ -61,7 +61,7 @@ export default function MyPage() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 transition-colors ${
-                  tab === t.id ? 'bg-[#7d5411]/[0.08] text-[#7d5411] font-semibold' : 'text-[#605d5d] hover:bg-[#7d5411]/[0.04]'
+                  tab === t.id ? 'bg-[#0e3719]/[0.08] text-[#0e3719] font-semibold' : 'text-[#605d5d] hover:bg-[#0e3719]/[0.04]'
                 }`}
               >
                 {t.label}
@@ -69,7 +69,7 @@ export default function MyPage() {
             ))}
             <button
               onClick={() => { logout(); router.push('/') }}
-              className="text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 text-[#bab6b6] hover:text-[#7d5411] transition-colors"
+              className="text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 text-[#bab6b6] hover:text-[#0e3719] transition-colors"
             >
               로그아웃
             </button>
@@ -108,17 +108,17 @@ function OrdersPanel({ userId }: { userId: string }) {
     <div className={`${cardCls} text-center py-16`}>
       <p className="text-4xl mb-3">🍷</p>
       <p className="text-sm text-[#9b9797] mb-4">주문 내역이 없습니다</p>
-      <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#7d5411] hover:underline">와인 보러가기 →</Link>
+      <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:underline">와인 보러가기 →</Link>
     </div>
   )
 
   return (
     <div className="flex flex-col gap-4">
       {orders.map(o => (
-        <Link key={o.id} href={`/order/${o.id}`} className={`${cardCls} block no-underline hover:border-[#b68235] transition-colors`}>
+        <Link key={o.id} href={`/order/${o.id}`} className={`${cardCls} block no-underline hover:border-[#5C7A63] transition-colors`}>
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="text-[11px] font-medium text-[#7d5411] bg-[#7d5411]/10 border border-[#b68235]/40 rounded-full px-2.5 py-0.5 shrink-0">
+              <span className="text-[11px] font-medium text-[#0e3719] bg-[#0e3719]/10 border border-[#5C7A63]/40 rounded-full px-2.5 py-0.5 shrink-0">
                 {ORDER_STATUS_LABEL[o.status] ?? o.status}
               </span>
               <span className="text-xs text-[#9b9797] shrink-0">{formatDate(o.created_at)}</span>
@@ -163,7 +163,7 @@ function WishlistPanel({ userId }: { userId: string }) {
     <div className={`${cardCls} text-center py-16`}>
       <p className="text-4xl mb-3">🤍</p>
       <p className="text-sm text-[#9b9797] mb-4">위시리스트가 비어 있습니다</p>
-      <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#7d5411] hover:underline">와인 담으러 가기 →</Link>
+      <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:underline">와인 담으러 가기 →</Link>
     </div>
   )
 
@@ -174,7 +174,7 @@ function WishlistPanel({ userId }: { userId: string }) {
           <button
             onClick={() => handleRemove(p.id)}
             aria-label="위시리스트에서 제거"
-            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-[#7d5411] flex items-center justify-center shadow-sm transition-colors"
+            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/85 hover:bg-white text-[#0e3719] flex items-center justify-center shadow-sm transition-colors"
           >♥</button>
           <ProductGridCard product={p} />
         </div>
@@ -224,13 +224,13 @@ function ReviewsPanel({ userId }: { userId: string }) {
       {reviews.map(r => (
         <div key={r.id} className={cardCls}>
           <div className="flex items-start justify-between gap-3 mb-1.5">
-            <Link href={`/events/wines/${r.product_id}`} className="text-sm font-semibold text-[#1C1A17] hover:text-[#7d5411] transition-colors no-underline">
+            <Link href={`/events/wines/${r.product_id}`} className="text-sm font-semibold text-[#1C1A17] hover:text-[#0e3719] transition-colors no-underline">
               {productName(r.product_id)}
             </Link>
-            <button onClick={() => handleDelete(r.id)} className="text-xs text-[#bab6b6] hover:text-[#7d5411] transition-colors shrink-0">삭제</button>
+            <button onClick={() => handleDelete(r.id)} className="text-xs text-[#bab6b6] hover:text-[#0e3719] transition-colors shrink-0">삭제</button>
           </div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[#b68235] text-sm">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+            <span className="text-[#5C7A63] text-sm">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
             <span className="text-xs text-[#9b9797]">{formatDate(r.created_at)}</span>
           </div>
           <p className="text-sm text-[#605d5d] leading-relaxed">{r.comment}</p>
@@ -300,28 +300,28 @@ function AddressesPanel({ userId }: { userId: string }) {
 
   const makeDefault = async (id: string) => { await setDefaultAddress(id, userId); await load() }
 
-  const inputCls = 'w-full rounded-xl border border-[#eae7e7] bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#b68235] transition-colors'
+  const inputCls = 'w-full rounded-xl border border-[#eae7e7] bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#5C7A63] transition-colors'
 
   if (loading) return <p className="text-sm text-[#9b9797] py-16 text-center">불러오는 중...</p>
 
   return (
     <div className="flex flex-col gap-4">
       {addresses.map(a => (
-        <div key={a.id} className={`${cardCls} ${a.is_default ? 'border-[#b68235]' : ''}`}>
+        <div key={a.id} className={`${cardCls} ${a.is_default ? 'border-[#5C7A63]' : ''}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-sm font-semibold text-[#1C1A17]">{a.recipient_name}</p>
-                {a.is_default && <span className="text-[10px] font-bold text-[#7d5411] border border-[#b68235] rounded-full px-2 py-0.5">기본</span>}
+                {a.is_default && <span className="text-[10px] font-bold text-[#0e3719] border border-[#5C7A63] rounded-full px-2 py-0.5">기본</span>}
               </div>
               <p className="text-sm text-[#605d5d]">{a.address}, {a.city}</p>
               <p className="text-sm text-[#9b9797]">{countryLabel(a.country)}{a.postal_code ? ` · ${a.postal_code}` : ''}</p>
               {a.country === 'KR' && a.customs_code && <p className="text-xs text-[#9b9797] mt-1">통관부호 {a.customs_code}</p>}
             </div>
             <div className="flex flex-col items-end gap-1.5 shrink-0 text-xs">
-              {!a.is_default && <button onClick={() => makeDefault(a.id)} className="text-[#7d5411] hover:underline">기본 지정</button>}
-              <button onClick={() => startEdit(a)} className="text-[#605d5d] hover:text-[#7d5411]">수정</button>
-              <button onClick={() => remove(a.id)} className={deleteConfirm === a.id ? 'text-red-600 font-semibold' : 'text-[#bab6b6] hover:text-[#7d5411]'}>{deleteConfirm === a.id ? '확인?' : '삭제'}</button>
+              {!a.is_default && <button onClick={() => makeDefault(a.id)} className="text-[#0e3719] hover:underline">기본 지정</button>}
+              <button onClick={() => startEdit(a)} className="text-[#605d5d] hover:text-[#0e3719]">수정</button>
+              <button onClick={() => remove(a.id)} className={deleteConfirm === a.id ? 'text-red-600 font-semibold' : 'text-[#bab6b6] hover:text-[#0e3719]'}>{deleteConfirm === a.id ? '확인?' : '삭제'}</button>
             </div>
           </div>
         </div>
@@ -343,17 +343,17 @@ function AddressesPanel({ userId }: { userId: string }) {
             <input className={inputCls} placeholder="개인통관고유부호 (P로 시작)" value={form.customs_code ?? ''} onChange={e => setForm(f => ({ ...f, customs_code: e.target.value }))} />
           )}
           <label className="flex items-center gap-2 text-sm text-[#605d5d] cursor-pointer">
-            <input type="checkbox" checked={form.is_default} onChange={e => setForm(f => ({ ...f, is_default: e.target.checked }))} className="accent-[#7d5411]" />
+            <input type="checkbox" checked={form.is_default} onChange={e => setForm(f => ({ ...f, is_default: e.target.checked }))} className="accent-[#0e3719]" />
             기본 배송지로 설정
           </label>
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex gap-2">
-            <button onClick={save} disabled={saving} className="rounded-full bg-[#7d5411] hover:bg-[#5a3b0a] text-white text-sm font-semibold px-6 py-2 transition-colors disabled:opacity-50">{saving ? '저장 중...' : '저장'}</button>
-            <button onClick={() => { setShowForm(false); setEditingId(null) }} className="rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] text-sm px-6 py-2 transition-colors">취소</button>
+            <button onClick={save} disabled={saving} className="rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-sm font-semibold px-6 py-2 transition-colors disabled:opacity-50">{saving ? '저장 중...' : '저장'}</button>
+            <button onClick={() => { setShowForm(false); setEditingId(null) }} className="rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] text-sm px-6 py-2 transition-colors">취소</button>
           </div>
         </div>
       ) : (
-        <button onClick={startAdd} className="rounded-[24px] border border-dashed border-[#d7d3d3] text-[#9b9797] hover:border-[#b68235] hover:text-[#7d5411] text-sm font-medium py-4 transition-colors">
+        <button onClick={startAdd} className="rounded-[24px] border border-dashed border-[#d7d3d3] text-[#9b9797] hover:border-[#5C7A63] hover:text-[#0e3719] text-sm font-medium py-4 transition-colors">
           + 새 배송지 추가
         </button>
       )}

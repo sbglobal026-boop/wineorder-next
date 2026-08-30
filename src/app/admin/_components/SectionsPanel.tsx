@@ -18,7 +18,7 @@ export default function SectionsPanel() {
               <p className="text-gray-400 font-semibold text-sm">{item.label}</p>
               <p className="text-gray-300 text-xs mt-0.5">{item.description}</p>
             </div>
-            <div className="relative w-12 h-6 rounded-full bg-[#8B4513]/30 opacity-60">
+            <div className="relative w-12 h-6 rounded-full bg-[#0e3719]/30 opacity-60">
               <span className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow translate-x-6" />
             </div>
           </div>

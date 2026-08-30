@@ -31,10 +31,10 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
   const badge = isLowStock ? '품절임박' : isNew ? '신상' : null
 
   return (
-    <div className="cutecard group relative flex flex-col rounded-[24px] border border-[#eae7e7] bg-[#fffefb] overflow-hidden">
+    <div className="cutecard group relative flex flex-col rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden">
       {/* 배지 */}
       {badge && !isSoldOut && (
-        <span className="absolute top-3.5 left-3.5 z-[2] text-[11px] tracking-[0.12em] border border-[#b68235] text-[#7d5411] bg-[#fffefb] rounded-full px-3 py-1">
+        <span className="absolute top-3.5 left-3.5 z-[2] text-[11px] tracking-[0.12em] border border-[#5C7A63] text-[#0e3719] bg-[#FFFFFF] rounded-full px-3 py-1">
           {badge}
         </span>
       )}
@@ -57,7 +57,7 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
 
       {/* 정보 */}
       <div className="flex flex-col flex-1 p-4 md:p-5">
-        <div className="text-[11px] tracking-[0.16em] uppercase text-[#7d5411] mb-1.5">{meta.label}</div>
+        <div className="text-[11px] tracking-[0.16em] uppercase text-[#0e3719] mb-1.5">{meta.label}</div>
         <Link href={href} className="no-underline">
           <h4 className="font-[family-name:var(--font-playfair-display)] text-[18px] md:text-[20px] leading-tight text-[#1C1A17] mb-1 line-clamp-2">
             {product.name}
@@ -86,7 +86,7 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
           ) : (
             <button
               onClick={() => { addToCart(product.id); openCart() }}
-              className="buybtn rounded-full border border-[#b68235] text-[#7d5411] px-3.5 py-1.5 text-[12px] hover:bg-[#7d5411] hover:text-[#fffdf9] transition-colors cursor-pointer"
+              className="buybtn rounded-full border border-[#5C7A63] text-[#0e3719] px-3.5 py-1.5 text-[12px] hover:bg-[#0e3719] hover:text-[#FFFFFF] transition-colors cursor-pointer"
             >
               담기
             </button>

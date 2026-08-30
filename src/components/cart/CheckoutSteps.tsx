@@ -11,9 +11,9 @@ export default function CheckoutSteps({ current }: { current: 1 | 2 | 3 }) {
         const on = active || done
         return (
           <div key={label} className="flex items-center gap-3 md:gap-4">
-            <span className={`flex items-center gap-2 ${on ? 'text-[#7d5411]' : 'text-[#bab6b6]'}`}>
+            <span className={`flex items-center gap-2 ${on ? 'text-[#0e3719]' : 'text-[#bab6b6]'}`}>
               <span className={`w-[26px] h-[26px] rounded-full border flex items-center justify-center text-[13px] font-[family-name:var(--font-playfair-display)] ${
-                on ? 'border-[#b68235] text-[#7d5411]' : 'border-[#d7d3d3] text-[#bab6b6]'
+                on ? 'border-[#5C7A63] text-[#0e3719]' : 'border-[#d7d3d3] text-[#bab6b6]'
               }`}>{step}</span>
               <span className="whitespace-nowrap">{label}</span>
             </span>

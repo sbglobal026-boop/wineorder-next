@@ -20,8 +20,8 @@ export function PriceRangeSlider({
   const thumbClass =
     'range-slider-thumb pointer-events-none absolute inset-0 h-full w-full appearance-none bg-transparent ' +
     '[&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent ' +
-    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#7d5411] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#FBFAF7] [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110 ' +
-    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#7d5411] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#FBFAF7] [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-pointer'
+    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#0e3719] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#FBFAF7] [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-110 ' +
+    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#0e3719] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[#FBFAF7] [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-pointer'
 
   return (
     <div className="flex items-center gap-3">
@@ -29,7 +29,7 @@ export function PriceRangeSlider({
       <div className="relative h-3.5 w-40 flex items-center">
         <div className="absolute h-[3px] w-full rounded-full bg-[#DAD4CD]" />
         <div
-          className="absolute h-[3px] rounded-full bg-[#7d5411]"
+          className="absolute h-[3px] rounded-full bg-[#0e3719]"
           style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
         />
         <input
@@ -94,7 +94,7 @@ export function FilterSelect({
               type="button"
               onClick={() => { onChange(o.value); setOpen(false) }}
               className={`block w-full text-left px-4 py-2 text-xs whitespace-nowrap transition-colors ${
-                o.value === value ? 'text-[#7d5411] font-semibold bg-[#7d5411]/5' : 'text-gray-600 hover:bg-gray-50'
+                o.value === value ? 'text-[#0e3719] font-semibold bg-[#0e3719]/5' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {o.label}

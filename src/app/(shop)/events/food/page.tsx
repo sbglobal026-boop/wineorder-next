@@ -39,10 +39,10 @@ export default function FoodPage() {
   const newestIds = new Set([...allFoods].sort((a, b) => b.id - a.id).slice(0, 3).map(p => p.id))
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
       {/* 히어로 헤딩 */}
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-10">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Food Collection</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">Food Collection</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
           Best Pairing Food for Wine
         </h1>
@@ -68,7 +68,7 @@ export default function FoodPage() {
               type="checkbox"
               checked={hideOutOfStock}
               onChange={(e) => setHideOutOfStock(e.target.checked)}
-              className="accent-[#7d5411]"
+              className="accent-[#0e3719]"
             />
             품절 상품 제외
           </label>

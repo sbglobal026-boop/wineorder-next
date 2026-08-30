@@ -189,11 +189,11 @@ export default function BlogEditor({
   const coverIsVideo = cover ? isVideoUrl(cover) : false
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
+    <div className="bg-[#FFFFFF] min-h-screen">
       {/* 상단 바: 뒤로가기 / 발행 */}
       {/* backdrop-blur 금지: 스티키 요소에 블러가 있으면 아래 콘텐츠의 클릭 좌표/페인트가
           갱신되지 않는 브라우저 버그(커서 위치 어긋남)를 유발함 → 불투명 배경 사용 */}
-      <div className="sticky top-0 z-20 bg-[#F9F4EE] border-b border-[#DAD4CD]/60">
+      <div className="sticky top-0 z-20 bg-[#FFFFFF] border-b border-[#DAD4CD]/60">
         <div className="max-w-[1640px] mx-auto px-5 md:px-10 h-14 flex items-center justify-between">
           <Link href={backHref} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">
             ← 돌아가기

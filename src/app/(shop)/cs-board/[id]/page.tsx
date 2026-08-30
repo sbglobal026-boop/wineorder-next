@@ -18,13 +18,13 @@ export default function CsBoardDetailPage() {
   }, [id])
 
   if (loading) {
-    return <div className="bg-[#F9F4EE] min-h-screen" />
+    return <div className="bg-[#FFFFFF] min-h-screen" />
   }
 
   if (!post) notFound()
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
+    <div className="bg-[#FFFFFF] min-h-screen">
       <div className="max-w-[1640px] mx-auto px-5 md:px-10 py-16">
         <Link href="/cs-board" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
           ← CS 게시판
@@ -43,7 +43,7 @@ export default function CsBoardDetailPage() {
           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{post.content}</p>
 
           {post.answer && (
-            <div className="mt-8 pt-6 border-t border-gray-200 bg-[#F9F4EE] rounded-xl p-5">
+            <div className="mt-8 pt-6 border-t border-gray-200 bg-[#FFFFFF] rounded-xl p-5">
               <p className="text-xs font-bold text-[#2C5F2D] uppercase tracking-widest mb-2">관리자 답변</p>
               <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{post.answer}</p>
               {post.answered_at && <p className="text-xs text-gray-400 mt-3">{formatDate(post.answered_at)}</p>}

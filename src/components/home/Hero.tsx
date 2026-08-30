@@ -45,8 +45,8 @@ export default function Hero() {
     return (
       <section className="max-w-[1640px] mx-auto px-[20px] pt-0">
         <div className="grid md:grid-cols-2 w-full">
-          <div className="aspect-square bg-[#F9F4EE]" />
-          <div className="aspect-square bg-[#F9F4EE] hidden md:block" />
+          <div className="aspect-square bg-[#FFFFFF]" />
+          <div className="aspect-square bg-[#FFFFFF] hidden md:block" />
         </div>
       </section>
     )

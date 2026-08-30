@@ -32,7 +32,7 @@ export default function CsBoardWritePage() {
   if (!currentUser) return null
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
+    <div className="bg-[#FFFFFF] min-h-screen">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="flex items-center justify-between mb-10">
           <Link href="/cs-board" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors">

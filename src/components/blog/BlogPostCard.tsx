@@ -166,7 +166,7 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
                 placeholder={currentUser ? '댓글을 입력하세요' : '로그인 후 댓글을 작성할 수 있습니다'}
                 className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-gray-400"
               />
-              <button type="submit" className="text-xs font-bold text-[#8B4513] px-2">게시</button>
+              <button type="submit" className="text-xs font-bold text-[#0e3719] px-2">게시</button>
             </form>
           </div>
         )}

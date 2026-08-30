@@ -17,12 +17,12 @@ export default function CategoryCards() {
   return (
     <section
       className="py-[72px] md:py-[110px]"
-      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}
+      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}
     >
       {/* 히어로 헤딩 */}
       <header className="text-center max-w-[760px] mx-auto px-5 mb-14 md:mb-20">
-        <p className="text-[13px] tracking-[0.32em] uppercase text-[#7d5411] mb-3.5">{content.eyebrow}</p>
-        <h1 className="font-[family-name:var(--font-nanum-square)] font-extrabold text-[36px] md:text-[52px] leading-[1.15] text-[#1C1A17] mb-4">
+        <p className="text-[13px] tracking-[0.32em] uppercase text-[#0e3719] mb-3.5">{content.eyebrow}</p>
+        <h1 className="font-[family-name:var(--font-nanum-square)] font-extrabold text-[36px] md:text-[52px] leading-[1.15] text-[#0e3719] mb-4">
           {content.heroTitle}
         </h1>
         <p className="text-[15px] md:text-[17px] leading-[1.65] text-[#605d5d]">
@@ -39,7 +39,7 @@ export default function CategoryCards() {
             <Link
               key={key}
               href={s.href}
-              className="cutecard group block rounded-[24px] md:rounded-[26px] border border-[#eae7e7] bg-[#fffefb] overflow-hidden no-underline
+              className="cutecard group block rounded-[24px] md:rounded-[26px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden no-underline
                          flex flex-row md:flex-col items-center md:items-stretch gap-4 md:gap-0 p-4 md:p-0"
             >
               {/* 상단(모바일: 왼쪽) 이미지/컬러 영역 */}
@@ -61,7 +61,7 @@ export default function CategoryCards() {
 
               {/* 텍스트 */}
               <div className="min-w-0 md:p-6 md:pb-7">
-                <div className="text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-[#7d5411] mb-1.5 md:mb-2">
+                <div className="text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-[#0e3719] mb-1.5 md:mb-2">
                   {c.label}
                 </div>
                 <h3 className="font-[family-name:var(--font-playfair-display)] font-medium text-[21px] md:text-[26px] text-[#1C1A17] mb-1 md:mb-2">
@@ -70,7 +70,7 @@ export default function CategoryCards() {
                 <p className="text-[12.5px] md:text-[14px] leading-[1.6] text-[#605d5d] mb-0 md:mb-[18px]">
                   {c.desc}
                 </p>
-                <span className="hidden md:inline-flex items-center gap-1.5 text-[14px] text-[#7d5411] border-b border-[#b68235]">
+                <span className="hidden md:inline-flex items-center gap-1.5 text-[14px] text-[#0e3719] border-b border-[#0e3719]/40">
                   둘러보기 →
                 </span>
               </div>

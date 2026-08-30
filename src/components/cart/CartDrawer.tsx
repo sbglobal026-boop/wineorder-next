@@ -48,7 +48,7 @@ export default function CartDrawer() {
           </h2>
           <button
             onClick={closeCart}
-            className="text-[#9b9797] hover:text-[#7d5411] transition-colors text-xl leading-none"
+            className="text-[#9b9797] hover:text-[#0e3719] transition-colors text-xl leading-none"
             aria-label="닫기"
           >
             ✕
@@ -62,7 +62,7 @@ export default function CartDrawer() {
               <p className="text-[#9b9797] text-sm">장바구니가 비어 있습니다</p>
               <button
                 onClick={closeCart}
-                className="text-xs font-bold uppercase tracking-widest text-[#7d5411] hover:underline"
+                className="text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:underline"
               >
                 계속 쇼핑하기
               </button>
@@ -82,14 +82,14 @@ export default function CartDrawer() {
 
                   {/* 정보 */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] tracking-[0.16em] uppercase text-[#7d5411] mb-0.5">
+                    <p className="text-[11px] tracking-[0.16em] uppercase text-[#0e3719] mb-0.5">
                       {product.category} · {product.origin}
                     </p>
                     {/* 상품명 클릭 → 상세 페이지 */}
                     <Link
                       href={href}
                       onClick={closeCart}
-                      className="text-sm font-semibold text-[#1C1A17] truncate mb-2 block hover:text-[#7d5411] transition-colors"
+                      className="text-sm font-semibold text-[#1C1A17] truncate mb-2 block hover:text-[#0e3719] transition-colors"
                     >
                       {product.name}
                     </Link>
@@ -97,12 +97,12 @@ export default function CartDrawer() {
                     <div className="flex items-center rounded-full border border-[#d7d3d3] w-fit overflow-hidden">
                       <button
                         onClick={() => updateCartQty(productId, qty - 1)}
-                        className="w-7 h-7 flex items-center justify-center text-[#605d5d] hover:text-[#7d5411] transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-[#605d5d] hover:text-[#0e3719] transition-colors"
                       >−</button>
                       <span className="w-7 text-center text-xs font-bold text-[#1C1A17]">{qty}</span>
                       <button
                         onClick={() => updateCartQty(productId, qty + 1)}
-                        className="w-7 h-7 flex items-center justify-center text-[#605d5d] hover:text-[#7d5411] transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-[#605d5d] hover:text-[#0e3719] transition-colors"
                       >+</button>
                     </div>
                   </div>
@@ -114,7 +114,7 @@ export default function CartDrawer() {
                     </p>
                     <button
                       onClick={() => removeFromCart(productId)}
-                      className="text-[11px] tracking-widest text-[#bab6b6] hover:text-[#7d5411] transition-colors"
+                      className="text-[11px] tracking-widest text-[#bab6b6] hover:text-[#0e3719] transition-colors"
                     >
                       삭제
                     </button>
@@ -136,19 +136,19 @@ export default function CartDrawer() {
             <Link
               href="/cart"
               onClick={closeCart}
-              className="w-full block text-center rounded-full border border-[#b68235] text-[#7d5411] hover:bg-[#7d5411] hover:text-[#fffdf9] text-xs font-bold uppercase tracking-widest py-3.5 transition-colors"
+              className="w-full block text-center rounded-full border border-[#5C7A63] text-[#0e3719] hover:bg-[#0e3719] hover:text-[#FFFFFF] text-xs font-bold uppercase tracking-widest py-3.5 transition-colors"
             >
               장바구니 전체 보기
             </Link>
             <button
               onClick={handleOrder}
-              className="w-full rounded-full bg-[#7d5411] hover:bg-[#5a3b0a] text-[#fffdf9] text-xs font-bold uppercase tracking-widest py-3.5 transition-colors"
+              className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-[#FFFFFF] text-xs font-bold uppercase tracking-widest py-3.5 transition-colors"
             >
               주문하기
             </button>
             <button
               onClick={clearCart}
-              className="self-end text-xs tracking-widest text-[#bab6b6] hover:text-[#7d5411] transition-colors"
+              className="self-end text-xs tracking-widest text-[#bab6b6] hover:text-[#0e3719] transition-colors"
             >
               전체 비우기
             </button>

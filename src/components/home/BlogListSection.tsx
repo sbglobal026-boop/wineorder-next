@@ -51,7 +51,7 @@ export default function BlogListSection({
 
   return (
     <section>
-      <div className={`max-w-[1640px] mx-auto ${green ? 'bg-[#0e3719] text-[#DAD4CD]' : 'bg-[#F9F4EE] text-[#1C1A17]'} pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]`}>
+      <div className={`max-w-[1640px] mx-auto ${green ? 'bg-[#0e3719] text-[#DAD4CD]' : 'bg-[#FFFFFF] text-[#1C1A17]'} pl-[20px] pr-0 py-[20px] md:p-[20px] my-[40px]`}>
         <div className={`max-w-[1600px] mx-auto border-t ${green ? 'border-[#DAD4CD]' : 'border-[#1C1A17]'} my-[10px]`} />
         <div className="flex flex-col md:flex-row items-start gap-5 md:gap-[100px]">
           {/* 제목 폭을 고정해서 제목 길이와 무관하게 카드 시작 위치가 세 섹션 모두 동일하게 함 */}
@@ -108,11 +108,11 @@ export default function BlogListSection({
                       <span className="absolute inset-0 flex items-center justify-center text-4xl">🍷</span>
                     )}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                      <p className="bg-[#F9F4EE] text-[#1C1A17] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                      <p className="bg-[#FFFFFF] text-[#1C1A17] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
                         {categoryLabel(post.category)}
                       </p>
                       {post.images.length > 1 && (
-                        <p className="bg-[#1C1A17] text-[#F9F4EE] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
+                        <p className="bg-[#1C1A17] text-[#FFFFFF] rounded-full px-2.5 py-1 text-[11px] font-medium leading-none">
                           사진 {post.images.length}
                         </p>
                       )}

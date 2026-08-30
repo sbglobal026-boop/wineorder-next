@@ -9,16 +9,16 @@ const categoryBg: Record<string, string> = {
 }
 
 export default function FeaturedPanel() {
-  const { config, setFeaturedWine } = useAppConfig()
+  const { config, toggleFeaturedWine } = useAppConfig()
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-1">추천 상품 관리</h2>
-      <p className="text-gray-500 text-sm mb-8">메인 페이지에 표시할 와인 1개를 선택하세요</p>
+      <p className="text-gray-500 text-sm mb-8">Top Drop에 표시할 와인을 여러 개 선택할 수 있어요</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {config.products.map((product) => {
-          const isFeatured = product.id === config.featuredWineId
+          const isFeatured = config.featuredWineIds.includes(product.id)
           return (
             <div
               key={product.id}
@@ -34,13 +34,16 @@ export default function FeaturedPanel() {
                 <p className="text-gray-900 font-semibold text-sm truncate mb-1">{product.name}</p>
                 <p className="text-gray-700 font-bold text-xs mb-3">{product.price.toLocaleString()}원</p>
                 {isFeatured ? (
-                  <div className="w-full bg-red-800 text-white text-xs font-bold py-2 rounded-full text-center">
+                  <button
+                    onClick={() => toggleFeaturedWine(product.id)}
+                    className="w-full bg-[#0e3719] text-white text-xs font-bold py-2 rounded-full text-center hover:bg-[#22301C] transition-colors"
+                  >
                     ✓ 현재 추천 중
-                  </div>
+                  </button>
                 ) : (
                   <button
-                    onClick={() => setFeaturedWine(product.id)}
-                    className="w-full border border-red-800 text-red-800 hover:bg-red-50 text-xs font-semibold py-2 rounded-full transition-colors"
+                    onClick={() => toggleFeaturedWine(product.id)}
+                    className="w-full border border-[#0e3719] text-[#0e3719] hover:bg-[#0e3719]/5 text-xs font-semibold py-2 rounded-full transition-colors"
                   >
                     추천으로 설정
                   </button>

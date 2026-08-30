@@ -13,7 +13,7 @@ export default function FoodDetailPage() {
     return (
       <div className="bg-[#fef9e4] min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-gray-400 text-sm">존재하지 않는 상품입니다</p>
-        <Link href="/events/food" className="text-xs font-bold uppercase tracking-widest text-[#2C5F2D] hover:text-[#8B4513] transition-colors">
+        <Link href="/events/food" className="text-xs font-bold uppercase tracking-widest text-[#2C5F2D] hover:text-[#0e3719] transition-colors">
           ← 식품 목록으로
         </Link>
       </div>

@@ -4,8 +4,8 @@ import { Product, FixedCost } from '@/data/products'
 import { useAuth } from '@/context/AuthContext'
 import {
   fetchProducts,
-  fetchFeaturedProductId,
-  setFeaturedProductIdRemote,
+  fetchFeaturedProductIds,
+  setFeaturedProductIdsRemote,
 } from '@/lib/products'
 import { fetchBannerSlides, updateBannerSlideRow } from '@/lib/banners'
 
@@ -32,7 +32,7 @@ export type CartItem = {
 }
 
 export type AppConfig = {
-  featuredWineId: number
+  featuredWineIds: number[]
   bannerSlides: BannerSlide[]
   products: Product[]
   approvedWriters: string[]
@@ -44,7 +44,7 @@ type AppConfigContextType = {
   config: AppConfig
   productsLoaded: boolean
   bannerSlidesLoaded: boolean
-  setFeaturedWine: (id: number) => void
+  toggleFeaturedWine: (id: number) => void
   updateBannerSlide: (slide: BannerSlide) => void
   approveWriter: (email: string) => void
   revokeWriter: (email: string) => void
@@ -69,7 +69,7 @@ const defaultBannerSlides: BannerSlide[] = [
 ]
 
 const defaultConfig: AppConfig = {
-  featuredWineId: 1,
+  featuredWineIds: [1],
   bannerSlides: defaultBannerSlides,
   products: [],
   approvedWriters: [],
@@ -111,8 +111,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       setConfig(prev => ({ ...prev, products }))
       setProductsLoaded(true)
     })
-    fetchFeaturedProductId().then(id => {
-      if (id !== null) setConfig(prev => ({ ...prev, featuredWineId: id }))
+    fetchFeaturedProductIds().then(ids => {
+      setConfig(prev => ({ ...prev, featuredWineIds: ids }))
     })
     fetchBannerSlides().then(bannerSlides => {
       if (bannerSlides.length > 0) setConfig(prev => ({ ...prev, bannerSlides }))
@@ -159,9 +159,14 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     setConfig(prev => ({ ...prev, products }))
   }
 
-  const setFeaturedWine = (id: number) => {
-    setConfig(prev => ({ ...prev, featuredWineId: id }))
-    setFeaturedProductIdRemote(id)
+  const toggleFeaturedWine = (id: number) => {
+    setConfig(prev => {
+      const next = prev.featuredWineIds.includes(id)
+        ? prev.featuredWineIds.filter(existingId => existingId !== id)
+        : [...prev.featuredWineIds, id]
+      setFeaturedProductIdsRemote(next)
+      return { ...prev, featuredWineIds: next }
+    })
   }
 
   const updateBannerSlide = (slide: BannerSlide) => {
@@ -259,7 +264,7 @@ const clearCart = () => {
 
   return (
     <AppConfigContext.Provider value={{
-      config, productsLoaded, bannerSlidesLoaded, setFeaturedWine,
+      config, productsLoaded, bannerSlidesLoaded, toggleFeaturedWine,
       updateBannerSlide,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,

@@ -412,7 +412,7 @@ function FixedCostsSection() {
 }*/
 
 export default function ProductsPanel() {
-  const { config, setFeaturedWine, refreshProducts } = useAppConfig()
+  const { config, toggleFeaturedWine, refreshProducts } = useAppConfig()
   const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
@@ -687,7 +687,7 @@ export default function ProductsPanel() {
                   <td className="px-3 py-1.5">
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
                       product.type === 'wine'
-                        ? 'bg-[#8B4513]/10 text-[#8B4513]'
+                        ? 'bg-[#0e3719]/10 text-[#0e3719]'
                         : 'bg-[#2C5F2D]/10 text-[#2C5F2D]'
                     }`}>
                       {product.type === 'wine' ? '와인' : '식품'}
@@ -702,14 +702,17 @@ export default function ProductsPanel() {
                     {(product.stock ?? 0) === 0 ? '품절' : product.stock}
                   </td>
                   <td className="px-3 py-1.5">
-                    {product.id === config.featuredWineId ? (
-                      <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full whitespace-nowrap">
+                    {config.featuredWineIds.includes(product.id) ? (
+                      <button
+                        onClick={() => toggleFeaturedWine(product.id)}
+                        className="text-xs font-bold text-[#0e3719] bg-[#0e3719]/10 border border-[#0e3719]/30 hover:bg-[#0e3719]/20 px-2 py-1 rounded-full whitespace-nowrap transition-colors"
+                      >
                         ✓ Top Drop
-                      </span>
+                      </button>
                     ) : (
                       <button
-                        onClick={() => setFeaturedWine(product.id)}
-                        className="text-xs text-gray-500 hover:text-amber-700 border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-2 py-1 rounded-full transition-colors"
+                        onClick={() => toggleFeaturedWine(product.id)}
+                        className="text-xs text-gray-500 hover:text-[#0e3719] border border-gray-200 hover:border-[#0e3719]/40 hover:bg-[#0e3719]/5 px-2 py-1 rounded-full transition-colors"
                       >
                         선택
                       </button>

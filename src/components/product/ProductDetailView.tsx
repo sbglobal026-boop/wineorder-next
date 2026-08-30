@@ -211,14 +211,14 @@ export default function ProductDetailView({
   const catLabel = product.category
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
 
       {/* 뒤로가기 */}
       {backLink && (
         <div className="max-w-[1240px] mx-auto px-5 pt-8">
           <Link
             href={backLink.href}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#7d5411] hover:opacity-70 transition-opacity no-underline"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:opacity-70 transition-opacity no-underline"
           >
             <ChevronLeft size={14} strokeWidth={2.5} /> {backLink.label}
           </Link>
@@ -228,10 +228,10 @@ export default function ProductDetailView({
       {/* ===== Top Drop 전용 인트로 밴드 (/events 에서만) ===== */}
       {topDrop && (
         <section className="max-w-[1240px] mx-auto px-5 pt-14 md:pt-20 pb-4 md:pb-6 text-center">
-          <div className="inline-flex items-center gap-2.5 text-[16px] md:text-[18px] tracking-[0.28em] uppercase text-[#7d5411] mb-4">
-            <span className="w-8 h-px bg-[#b68235]/50" />
+          <div className="inline-flex items-center gap-2.5 text-[16px] md:text-[18px] tracking-[0.28em] uppercase text-[#0e3719] mb-4">
+            <span className="w-8 h-px bg-[#5C7A63]/50" />
             Top Drop
-            <span className="w-8 h-px bg-[#b68235]/50" />
+            <span className="w-8 h-px bg-[#5C7A63]/50" />
           </div>
           <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[40px] md:text-[56px] leading-[1.05] text-[#1C1A17] mb-4">
             Today&rsquo;s Drop
@@ -277,7 +277,7 @@ export default function ProductDetailView({
               <button onClick={() => setActiveImg(i => (i + 1) % images.length)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-[#1C1A17] shadow-sm transition-colors">›</button>
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
                 {images.map((_, i) => (
-                  <button key={i} onClick={() => setActiveImg(i)} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeImg ? 'bg-[#7d5411]' : 'bg-white/70'}`} />
+                  <button key={i} onClick={() => setActiveImg(i)} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeImg ? 'bg-[#0e3719]' : 'bg-white/70'}`} />
                 ))}
               </div>
             </>
@@ -288,8 +288,8 @@ export default function ProductDetailView({
         <div className="flex flex-col">
           {/* 별점 + 리뷰 토글 */}
           <div className="flex items-center gap-2.5 mb-3">
-            <span className="text-[#b68235] text-sm tracking-wide">{'★'.repeat(Math.round(avgRating))}{'☆'.repeat(5 - Math.round(avgRating))}</span>
-            <button onClick={() => setReviewOpen(o => !o)} className="text-[13px] text-[#7d5411] underline underline-offset-2 cursor-pointer">
+            <span className="text-[#5C7A63] text-sm tracking-wide">{'★'.repeat(Math.round(avgRating))}{'☆'.repeat(5 - Math.round(avgRating))}</span>
+            <button onClick={() => setReviewOpen(o => !o)} className="text-[13px] text-[#0e3719] underline underline-offset-2 cursor-pointer">
               고객 리뷰 {reviews.length}개 {reviewOpen ? '▴' : '▾'}
             </button>
           </div>
@@ -315,7 +315,7 @@ export default function ProductDetailView({
                         )}
                       </div>
                     </div>
-                    <span className="text-[#b68235] text-xs">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                    <span className="text-[#5C7A63] text-xs">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                     <p className="text-[13px] text-[#605d5d] leading-relaxed">{r.comment}</p>
                   </div>
                 ))}
@@ -323,12 +323,12 @@ export default function ProductDetailView({
                   <div className="flex flex-col gap-2 pt-2 border-t border-[#eae7e7]">
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map(n => (
-                        <button key={n} onClick={() => setNewRating(n)} className="text-lg cursor-pointer leading-none text-[#b68235]">{n <= newRating ? '★' : '☆'}</button>
+                        <button key={n} onClick={() => setNewRating(n)} className="text-lg cursor-pointer leading-none text-[#5C7A63]">{n <= newRating ? '★' : '☆'}</button>
                       ))}
                     </div>
                     <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="이 상품에 대한 리뷰를 남겨주세요" className="w-full text-[13px] p-2.5 border border-[#eae7e7] rounded-lg bg-white resize-none" rows={2} />
                     {reviewError && <p className="text-[12px] text-red-600">{reviewError}</p>}
-                    <button onClick={handleSubmitReview} disabled={!newComment.trim() || submitting} className="self-end px-4 py-2 rounded-full bg-[#7d5411] text-white text-xs font-medium disabled:opacity-40 cursor-pointer">리뷰 등록</button>
+                    <button onClick={handleSubmitReview} disabled={!newComment.trim() || submitting} className="self-end px-4 py-2 rounded-full bg-[#0e3719] text-white text-xs font-medium disabled:opacity-40 cursor-pointer">리뷰 등록</button>
                   </div>
                 ) : (
                   <p className="text-[13px] text-[#9b9797] pt-2 border-t border-[#eae7e7]">리뷰를 남기려면 로그인이 필요합니다.</p>
@@ -337,7 +337,7 @@ export default function ProductDetailView({
             </div>
           )}
 
-          <div className="text-[12px] tracking-[0.22em] uppercase text-[#7d5411] mb-3">{eyebrow} · {catLabel}</div>
+          <div className="text-[12px] tracking-[0.22em] uppercase text-[#0e3719] mb-3">{eyebrow} · {catLabel}</div>
           <h1 className="font-[family-name:var(--font-playfair-display)] text-[34px] md:text-[42px] leading-[1.1] text-[#1C1A17] mb-4">
             {product.name}
           </h1>
@@ -350,14 +350,14 @@ export default function ProductDetailView({
               <span className="text-[15px] text-[#9b9797] line-through">{fmt(originalPrice)}</span>
             )}
             {discountRate && (
-              <span className="text-[12px] font-semibold text-[#7d5411] border border-[#b68235] rounded-full px-2.5 py-1">{discountRate}% OFF</span>
+              <span className="text-[12px] font-semibold text-[#0e3719] border border-[#5C7A63] rounded-full px-2.5 py-1">{discountRate}% OFF</span>
             )}
           </div>
 
           {showDuty && (
             <div className="mb-5">
-              <p className="text-xs text-[#7d5411]">* 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}</p>
-              <p className="text-xs text-[#7d5411] mt-0.5">* 배송비 별도</p>
+              <p className="text-xs text-[#0e3719]">* 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}</p>
+              <p className="text-xs text-[#0e3719] mt-0.5">* 배송비 별도</p>
             </div>
           )}
 
@@ -374,10 +374,10 @@ export default function ProductDetailView({
               <span className="flex-1 min-w-[160px] flex items-center justify-center h-12 rounded-full bg-[#eae7e7] text-[#9b9797] text-sm">품절</span>
             ) : (
               <>
-                <button onClick={handleBuyNow} className="buybtn flex-1 min-w-[130px] h-12 rounded-full bg-[#7d5411] text-[#fffdf9] text-sm font-medium hover:bg-[#5a3b0a] transition-colors cursor-pointer">
+                <button onClick={handleBuyNow} className="buybtn flex-1 min-w-[130px] h-12 rounded-full bg-[#0e3719] text-[#FFFFFF] text-sm font-medium hover:bg-[#22301C] transition-colors cursor-pointer">
                   바로 구매
                 </button>
-                <button onClick={handleAdd} className="buybtn flex-1 min-w-[130px] h-12 rounded-full border border-[#b68235] text-[#7d5411] text-sm font-medium hover:bg-[#7d5411] hover:text-[#fffdf9] transition-colors cursor-pointer">
+                <button onClick={handleAdd} className="buybtn flex-1 min-w-[130px] h-12 rounded-full border border-[#5C7A63] text-[#0e3719] text-sm font-medium hover:bg-[#0e3719] hover:text-[#FFFFFF] transition-colors cursor-pointer">
                   장바구니 담기
                 </button>
               </>
@@ -393,7 +393,7 @@ export default function ProductDetailView({
       {/* ===== 상품 상세 설명 (사진 → 글) ===== */}
       <section className="max-w-[1240px] mx-auto px-5">
         <div className="text-center mb-7">
-          <div className="text-[12px] tracking-[0.24em] uppercase text-[#7d5411] mb-2">Product Detail</div>
+          <div className="text-[12px] tracking-[0.24em] uppercase text-[#0e3719] mb-2">Product Detail</div>
           <h3 className="font-[family-name:var(--font-playfair-display)] text-[28px] md:text-[30px] text-[#1C1A17]">상품 상세 설명</h3>
         </div>
 
@@ -415,7 +415,7 @@ export default function ProductDetailView({
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
               {hashtags.map(tag => (
-                <span key={tag} className="text-[12px] text-[#7d5411] border border-[#e2d9c8] rounded-full px-3 py-1">{tag}</span>
+                <span key={tag} className="text-[12px] text-[#0e3719] border border-[#e2d9c8] rounded-full px-3 py-1">{tag}</span>
               ))}
             </div>
           </div>
@@ -431,10 +431,10 @@ export default function ProductDetailView({
           <div className="px-5 flex items-center justify-between mb-5">
             <h3 className="font-[family-name:var(--font-playfair-display)] text-[26px] md:text-[28px] text-[#1C1A17]">함께 곁들이기 좋은</h3>
             <div className="hidden md:flex items-center gap-2.5">
-              <button onClick={() => scrollCarousel('left')} className="w-10 h-10 rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411] flex items-center justify-center transition-colors">
+              <button onClick={() => scrollCarousel('left')} className="w-10 h-10 rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719] flex items-center justify-center transition-colors">
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={() => scrollCarousel('right')} className="w-10 h-10 rounded-full border border-[#b68235] text-[#7d5411] hover:bg-[#7d5411] hover:text-white flex items-center justify-center transition-colors">
+              <button onClick={() => scrollCarousel('right')} className="w-10 h-10 rounded-full border border-[#5C7A63] text-[#0e3719] hover:bg-[#0e3719] hover:text-white flex items-center justify-center transition-colors">
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -494,7 +494,7 @@ export default function ProductDetailView({
               onClick={isSoldOut ? undefined : handleAdd}
               disabled={isSoldOut}
               className={`flex items-center gap-6 px-5 h-12 rounded-full text-sm font-medium transition-colors ${
-                isSoldOut ? 'bg-[#eae7e7] text-[#9b9797] cursor-not-allowed' : 'bg-[#7d5411] hover:bg-[#5a3b0a] text-[#fffdf9] cursor-pointer'
+                isSoldOut ? 'bg-[#eae7e7] text-[#9b9797] cursor-not-allowed' : 'bg-[#0e3719] hover:bg-[#22301C] text-[#FFFFFF] cursor-pointer'
               }`}
             >
               <span>{isSoldOut ? '품절' : '장바구니 담기'}</span>

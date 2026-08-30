@@ -12,7 +12,7 @@ export default function ProductGrid() {
         {/* 섹션 헤더 */}
         <div className="flex items-end justify-between mb-12 border-b border-gray-200 pb-6">
           <div>
-            <p className="text-[#8B4513] text-xs font-bold tracking-widest uppercase mb-2">Wine Collection</p>
+            <p className="text-[#0e3719] text-xs font-bold tracking-widest uppercase mb-2">Wine Collection</p>
             <h2 className="text-3xl font-black text-gray-900 tracking-tight">전체 와인</h2>
           </div>
           <button className="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors">

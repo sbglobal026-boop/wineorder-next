@@ -163,7 +163,7 @@ export default function BlogPanel() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   {slotsFor(post).filter(s => featuredMap[s.slot] === post.id).map(s => (
-                    <span key={s.slot} className="text-[10px] font-bold text-[#7d5411] bg-[#7d5411]/10 border border-[#b68235]/40 rounded-full px-2 py-0.5 shrink-0">
+                    <span key={s.slot} className="text-[10px] font-bold text-[#0e3719] bg-[#0e3719]/10 border border-[#5C7A63]/40 rounded-full px-2 py-0.5 shrink-0">
                       ★ {s.label} 대표
                     </span>
                   ))}
@@ -186,8 +186,8 @@ export default function BlogPanel() {
                       title={active ? `${s.label} 대표 해제` : `${s.label} 대표로 지정`}
                       className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
                         active
-                          ? 'text-[#7d5411] border-[#b68235] bg-[#7d5411]/5'
-                          : 'text-gray-500 hover:text-[#7d5411] border-gray-200 hover:border-[#b68235]'
+                          ? 'text-[#0e3719] border-[#5C7A63] bg-[#0e3719]/5'
+                          : 'text-gray-500 hover:text-[#0e3719] border-gray-200 hover:border-[#5C7A63]'
                       }`}
                     >{active ? '★' : '☆'} {s.label}</button>
                   )

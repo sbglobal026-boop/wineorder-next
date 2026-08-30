@@ -50,11 +50,11 @@ export function BlogCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blog/${post.category}/${post.id}`}
-      className="cutecard group block rounded-[24px] border border-[#eae7e7] bg-[#fffefb] overflow-hidden no-underline"
+      className="cutecard group block rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden no-underline"
     >
       <Thumb post={post} className="h-[180px]" />
       <div className="p-5">
-        <span className="text-[12px] text-[#7d5411]">{categoryLabel(post.category)}</span>
+        <span className="text-[12px] text-[#0e3719]">{categoryLabel(post.category)}</span>
         <h4 className="font-[family-name:var(--font-playfair-display)] text-[21px] leading-[1.3] text-[#1C1A17] mt-2 mb-2 line-clamp-2">
           {post.title}
         </h4>
@@ -71,11 +71,11 @@ export function BlogFeaturedCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blog/${post.category}/${post.id}`}
-      className="cutecard group grid md:grid-cols-2 rounded-[28px] border border-[#eae7e7] bg-[#fffefb] overflow-hidden no-underline"
+      className="cutecard group grid md:grid-cols-2 rounded-[28px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden no-underline"
     >
       <Thumb post={post} className="h-[240px] md:h-full min-h-[240px]" />
       <div className="p-8 md:p-10 flex flex-col justify-center">
-        <span className="self-start text-[11px] tracking-[0.16em] uppercase text-[#7d5411] border border-[#b68235] rounded-full px-3 py-1 mb-4">
+        <span className="self-start text-[11px] tracking-[0.16em] uppercase text-[#0e3719] border border-[#5C7A63] rounded-full px-3 py-1 mb-4">
           Editor&rsquo;s Pick
         </span>
         <h2 className="font-[family-name:var(--font-playfair-display)] text-[26px] md:text-[32px] leading-[1.2] text-[#1C1A17] mb-3 line-clamp-3">

@@ -52,10 +52,10 @@ export default function BlogHomePage() {
   const pagePosts = rest.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
       {/* 히어로 */}
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-8">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Table Code Journal</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">Table Code Journal</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[38px] md:text-[54px] leading-[1.1] text-[#1C1A17] mb-4">
           와인과 사람, 그리고 이야기
         </h1>
@@ -68,19 +68,19 @@ export default function BlogHomePage() {
         {/* 카테고리 칩 (하위 페이지로 이동) */}
         <div className="flex items-center justify-between gap-3 flex-wrap mb-10">
           <div className="flex gap-2 flex-wrap">
-            <span className="text-xs font-semibold px-4 py-2 rounded-full border bg-[#7d5411] text-white border-[#7d5411]">전체</span>
+            <span className="text-xs font-semibold px-4 py-2 rounded-full border bg-[#0e3719] text-white border-[#0e3719]">전체</span>
             {chips.map(c => (
               <Link
                 key={c.value}
                 href={`/blog/${c.value}`}
-                className="text-xs font-semibold px-4 py-2 rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411] transition-colors no-underline"
+                className="text-xs font-semibold px-4 py-2 rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719] transition-colors no-underline"
               >
                 {c.label}
               </Link>
             ))}
           </div>
           {isApproved && (
-            <Link href="/blog/write" className="text-xs font-semibold px-4 py-2 rounded-full bg-[#7d5411] text-white hover:bg-[#5a3b0a] transition-colors no-underline">
+            <Link href="/blog/write" className="text-xs font-semibold px-4 py-2 rounded-full bg-[#0e3719] text-white hover:bg-[#22301C] transition-colors no-underline">
               + 글쓰기
             </Link>
           )}
@@ -108,7 +108,7 @@ export default function BlogHomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {catFeatured.map(({ cat, post }) => (
                     <div key={cat}>
-                      <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#7d5411] mb-5">{categoryLabel(cat)}</p>
+                      <p className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#0e3719] mb-5">{categoryLabel(cat)}</p>
                       <BlogCard post={post} />
                     </div>
                   ))}
@@ -136,7 +136,7 @@ export default function BlogHomePage() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#b68235] hover:text-[#7d5411] transition-colors disabled:opacity-30"
+                  className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#5C7A63] hover:text-[#0e3719] transition-colors disabled:opacity-30"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -146,8 +146,8 @@ export default function BlogHomePage() {
                     onClick={() => setPage(n)}
                     className={`w-9 h-9 rounded-full border flex items-center justify-center text-sm transition-colors ${
                       n === page
-                        ? 'border-[#b68235] text-[#7d5411] font-semibold bg-[#7d5411]/5'
-                        : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411]'
+                        ? 'border-[#5C7A63] text-[#0e3719] font-semibold bg-[#0e3719]/5'
+                        : 'border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719]'
                     }`}
                   >
                     {n}
@@ -156,7 +156,7 @@ export default function BlogHomePage() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#b68235] hover:text-[#7d5411] transition-colors disabled:opacity-30"
+                  className="w-9 h-9 rounded-full border border-[#d7d3d3] text-[#605d5d] flex items-center justify-center hover:border-[#5C7A63] hover:text-[#0e3719] transition-colors disabled:opacity-30"
                 >
                   <ChevronRight size={16} />
                 </button>

@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
 
-const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }
-const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#fffefb]'
+const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }
+const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF]'
 
 interface OrderItem {
   productId: number
@@ -78,7 +78,7 @@ export default function OrderPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={pageBg}>
         <p className="text-[#9b9797] text-sm">{error || '주문 정보를 찾을 수 없습니다'}</p>
-        <Link href="/" className="text-xs font-bold uppercase tracking-widest text-[#7d5411] hover:underline">
+        <Link href="/" className="text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:underline">
           홈으로 →
         </Link>
       </div>
@@ -91,7 +91,7 @@ export default function OrderPage() {
     <div className="min-h-screen" style={pageBg}>
       {/* 히어로 */}
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-20 pb-6">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">Order Complete</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">Order Complete</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[36px] md:text-[48px] leading-[1.1] text-[#1C1A17] mb-4">
           주문이 완료됐어요 🎉
         </h1>
@@ -105,10 +105,10 @@ export default function OrderPage() {
 
         {/* 완료 확인 */}
         <div className="flex flex-col items-center text-center mb-10">
-          <div className="check w-[88px] h-[88px] rounded-full bg-[#7d5411]/[0.12] border-[1.5px] border-[#b68235] flex items-center justify-center mb-5 text-[#7d5411] text-4xl">✓</div>
+          <div className="check w-[88px] h-[88px] rounded-full bg-[#0e3719]/[0.12] border-[1.5px] border-[#5C7A63] flex items-center justify-center mb-5 text-[#0e3719] text-4xl">✓</div>
           <h2 className="font-[family-name:var(--font-playfair-display)] text-[26px] text-[#1C1A17] mb-2">주문해 주셔서 감사합니다!</h2>
           <p className="text-sm text-[#605d5d]">
-            주문번호 <span className="font-mono text-[#7d5411]">{order.order_number ?? order.id.slice(0, 8).toUpperCase()}</span>
+            주문번호 <span className="font-mono text-[#0e3719]">{order.order_number ?? order.id.slice(0, 8).toUpperCase()}</span>
           </p>
           <p className="text-[13px] text-[#9b9797] mt-1">배송이 시작되면 알려드릴게요.</p>
         </div>
@@ -135,7 +135,7 @@ export default function OrderPage() {
             <div className="mt-5 pt-5 border-t border-[#eae7e7] flex flex-col gap-2.5">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold text-[#605d5d]">배송 상태</span>
-                <span className="text-sm font-semibold text-[#7d5411]">{STATUS_LABEL[order.status] ?? order.status}</span>
+                <span className="text-sm font-semibold text-[#0e3719]">{STATUS_LABEL[order.status] ?? order.status}</span>
               </div>
               {order.split_delivery && order.split_deliveries && order.split_deliveries.length > 0 ? (
                 [...order.split_deliveries]
@@ -175,13 +175,13 @@ export default function OrderPage() {
               </div>
               <div className="flex items-baseline justify-between pt-4">
                 <span className="text-[15px] text-[#1C1A17]">총 결제금액</span>
-                <span className="font-[family-name:var(--font-playfair-display)] text-[26px] text-[#7d5411]">€{order.total_eur.toLocaleString()}</span>
+                <span className="font-[family-name:var(--font-playfair-display)] text-[26px] text-[#0e3719]">€{order.total_eur.toLocaleString()}</span>
               </div>
             </div>
-            <Link href="/mypage" className="block text-center rounded-full border border-[#b68235] text-[#7d5411] hover:bg-[#7d5411] hover:text-[#fffdf9] text-sm font-semibold py-3.5 transition-colors no-underline">
+            <Link href="/mypage" className="block text-center rounded-full border border-[#5C7A63] text-[#0e3719] hover:bg-[#0e3719] hover:text-[#FFFFFF] text-sm font-semibold py-3.5 transition-colors no-underline">
               주문 내역 보기
             </Link>
-            <Link href="/events/wines" className="block text-center rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#b68235] hover:text-[#7d5411] text-sm py-3 transition-colors no-underline">
+            <Link href="/events/wines" className="block text-center rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719] text-sm py-3 transition-colors no-underline">
               계속 쇼핑하기
             </Link>
           </div>

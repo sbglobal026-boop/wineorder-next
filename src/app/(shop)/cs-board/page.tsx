@@ -18,9 +18,9 @@ export default function CsBoardPage() {
   }, [])
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, #F9F4EE 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-8">
-        <p className="text-[13px] tracking-[0.28em] uppercase text-[#7d5411] mb-3.5">CS Board</p>
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">CS Board</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[34px] md:text-[46px] leading-[1.1] text-[#1C1A17]">
           CS 게시판
         </h1>
@@ -30,7 +30,7 @@ export default function CsBoardPage() {
         <div className="flex justify-end mb-6">
           <Link
             href={currentUser ? '/cs-board/write' : '/login'}
-            className="text-xs font-semibold px-4 py-2 rounded-full bg-[#7d5411] text-white hover:bg-[#5a3b0a] transition-colors no-underline"
+            className="text-xs font-semibold px-4 py-2 rounded-full bg-[#0e3719] text-white hover:bg-[#22301C] transition-colors no-underline"
           >
             글쓰기
           </Link>

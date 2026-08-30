@@ -17,11 +17,11 @@ export default function AdminBlogEditPage() {
     fetchBlogPost(Number(id)).then(data => { setPost(data); setLoading(false) })
   }, [id])
 
-  if (loading) return <div className="bg-[#F9F4EE] min-h-screen" />
+  if (loading) return <div className="bg-[#FFFFFF] min-h-screen" />
 
   if (!post) {
     return (
-      <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center">
+      <div className="bg-[#FFFFFF] min-h-screen flex items-center justify-center">
         <p className="text-sm text-gray-400">글을 찾을 수 없습니다</p>
       </div>
     )

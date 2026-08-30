@@ -11,18 +11,18 @@ export const HOME_CARD_STATIC: Record<HomeCardKey, {
 }> = {
   wine: {
     href: '/events',
-    bg: 'radial-gradient(90% 120% at 70% 10%, #f7e7cf, #f1d6b0)',
-    blob: '#e8b877', ink: '#7a5216', shape: '42% 58% 60% 40% / 45% 45% 55% 55%', emoji: '🍷',
+    bg: 'radial-gradient(90% 120% at 70% 10%, #eef3ea, #dce8d8)',
+    blob: '#8fae87', ink: '#0e3719', shape: '42% 58% 60% 40% / 45% 45% 55% 55%', emoji: '🍷',
   },
   blog: {
     href: '/blog',
     bg: 'radial-gradient(90% 120% at 70% 10%, #eef0dd, #dde5c5)',
-    blob: '#b7c98d', ink: '#4f5f28', shape: '58% 42% 45% 55% / 55% 48% 52% 45%', emoji: '✦',
+    blob: '#b7c98d', ink: '#0e3719', shape: '58% 42% 45% 55% / 55% 48% 52% 45%', emoji: '✦',
   },
   journal: {
     href: '/journal',
-    bg: 'radial-gradient(90% 120% at 70% 10%, #f2e6e1, #e6cdc4)',
-    blob: '#d99f8b', ink: '#7d4432', shape: '48% 52% 55% 45% / 58% 42% 58% 42%', emoji: '✎',
+    bg: 'radial-gradient(90% 120% at 70% 10%, #e7f1ec, #d3e6de)',
+    blob: '#7fb0a3', ink: '#0e3719', shape: '48% 52% 55% 45% / 58% 42% 58% 42%', emoji: '✎',
   },
 }
 

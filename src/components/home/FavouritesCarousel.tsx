@@ -4,7 +4,7 @@ import { useAppConfig } from '@/context/AppConfigContext'
 
 export default function FavouritesCarousel() {
   const { config } = useAppConfig()
-  const product = config.products.find(p => p.id === config.featuredWineId)
+  const product = config.products.find(p => p.id === config.featuredWineIds[0])
 
   if (!product) return null
 
