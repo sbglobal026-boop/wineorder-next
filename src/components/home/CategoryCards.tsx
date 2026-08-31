@@ -17,7 +17,7 @@ export default function CategoryCards() {
   return (
     <section
       className="py-[72px] md:py-[110px]"
-      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}
+      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}
     >
       {/* 히어로 헤딩 */}
       <header className="text-center max-w-[760px] mx-auto px-5 mb-14 md:mb-20">

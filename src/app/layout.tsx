@@ -60,7 +60,7 @@ export default function RootLayout({
 
   return (
     <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${lato.variable} ${nanumSquare.variable} h-full antialiased`} style={fontVars}>
-      <body className="min-h-full bg-white font-korean">
+      <body className="min-h-full bg-[#F9F4EE] font-korean">
         <Providers>{children}</Providers>
       </body>
     </html>

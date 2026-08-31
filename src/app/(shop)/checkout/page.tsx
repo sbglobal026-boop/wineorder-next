@@ -229,7 +229,7 @@ export default function CheckoutPage() {
     setDeleteConfirmId(null)
   }
 
-  const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }
+  const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }
 
   if (items.length === 0) {
     return (

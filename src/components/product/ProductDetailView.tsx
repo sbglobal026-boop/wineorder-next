@@ -211,7 +211,7 @@ export default function ProductDetailView({
   const catLabel = product.category
 
   return (
-    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
 
       {/* 뒤로가기 */}
       {backLink && (

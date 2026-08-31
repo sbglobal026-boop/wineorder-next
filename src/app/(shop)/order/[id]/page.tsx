@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
 
-const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }
+const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }
 const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF]'
 
 interface OrderItem {

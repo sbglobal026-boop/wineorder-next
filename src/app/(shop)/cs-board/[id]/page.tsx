@@ -18,13 +18,13 @@ export default function CsBoardDetailPage() {
   }, [id])
 
   if (loading) {
-    return <div className="bg-[#FFFFFF] min-h-screen" />
+    return <div className="bg-[#F9F4EE] min-h-screen" />
   }
 
   if (!post) notFound()
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen">
+    <div className="bg-[#F9F4EE] min-h-screen">
       <div className="max-w-[1640px] mx-auto px-5 md:px-10 py-16">
         <Link href="/cs-board" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
           ← CS 게시판

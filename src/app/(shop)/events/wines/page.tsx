@@ -105,7 +105,7 @@ function WinesPageInner() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #FFFFFF 0%, #FFFFFF 55%)' }}
+      style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}
     >
       {/* 히어로 헤딩 */}
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-24 pb-10">

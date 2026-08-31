@@ -39,7 +39,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   heroTitle: '오늘 어디를 가고 싶으세요?',
   heroSubtitle: '마음이 가는 카드를 골라보세요. 마우스를 올리면 카드가 살포시 떠오릅니다.',
   cards: {
-    wine: { label: 'Shop', title: 'Wine', desc: '엄선한 프리미엄 와인을 만나보세요.' },
+    wine: { label: 'Shop', title: 'Store', desc: '엄선한 프리미엄 와인을 만나보세요.' },
     blog: { label: 'Story', title: 'Blog', desc: '와인과 사람, 그리고 이야기.' },
     journal: { label: 'Journal', title: 'Journal', desc: '테이블 코드가 기록하는 순간들.' },
   },
