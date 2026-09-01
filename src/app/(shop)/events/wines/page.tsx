@@ -114,7 +114,7 @@ function WinesPageInner() {
           Our Wine Selection So Far
         </h1>
         <p className="text-[15px] md:text-[16px] leading-[1.7] text-[#605d5d]">
-          취향대로 골라 담는 둥근 카드 리스트. 마우스를 올리면 살포시 떠올라요.
+          지난 판매된 프리미엄 와인들
         </p>
       </header>
 
