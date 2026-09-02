@@ -4,17 +4,8 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-
-const EU_COUNTRIES = ['FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'PL', 'SE', 'DK', 'FI', 'IE', 'GR', 'CZ', 'HU', 'RO', 'SK', 'BG', 'HR', 'SI', 'LT', 'LV', 'EE', 'LU', 'MT', 'CY']
-
-type CountryZone = 'DE' | 'KR' | 'EU'
-
-function getZone(country: string): CountryZone {
-  if (country === 'DE') return 'DE'
-  if (country === 'KR') return 'KR'
-  if (EU_COUNTRIES.includes(country)) return 'EU'
-  return 'EU'
-}
+import CheckoutSteps from '@/components/cart/CheckoutSteps'
+import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
 
 interface Address {
   id: string
@@ -47,23 +38,6 @@ const COUNTRY_OPTIONS = [
   { code: 'SE', label: '🇸🇪 스웨덴' },
   { code: 'PL', label: '🇵🇱 폴란드' },
 ]
-
-// 관세 계산
-function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
-  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈'] 
-  const isFTA = ftaOrigins.some(o => origin.includes(o))
-
-  const priceUsd = price * eurToUsd
-  const priceKrw = price * eurToKrw
-
-  if (priceUsd <= 150) {
-    const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)
-    return { total }
-  } else {
-    const total = Math.round(isFTA ? priceKrw * 0.463 : priceKrw * 0.683)
-    return { total }
-  }
-}
 
 export default function CheckoutPage() {
   const { config, clearCart } = useAppConfig()
@@ -109,14 +83,10 @@ export default function CheckoutPage() {
   const selectedAddress = addresses.find(a => a.id === selectedAddressId)
   const zone = selectedAddress ? getZone(selectedAddress.country) : null
 
-  // 배송비 데이터베이스에서
-  const rateInfo = shippingRates.find(r => r.zone === zone)
+  // 배송비 데이터베이스에서 (서버의 /api/orders 도 동일 로직으로 재계산함 — src/lib/orderPricing.ts)
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
-  // 한국 배송은 병수만큼 배송비 곱하기, 그 외는 고정 배송비
-  const shippingFee = rateInfo ? (zone === 'KR' ? rateInfo.fee * totalQty : rateInfo.fee) : 0
-  const splitFee = splitDelivery ? totalQty * 1 : 0
-  const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
-  const total = subtotal + shippingFee + splitFee + vat
+  const rateInfo = shippingRates.find(r => r.zone === zone)
+  const { shippingFee, splitFee, vat, total } = calcOrderTotals({ zone, subtotal, totalQty, splitDelivery, shippingRates })
 
   useEffect(() => {
     // 배송지 불러오기
@@ -259,11 +229,14 @@ export default function CheckoutPage() {
     setDeleteConfirmId(null)
   }
 
+  const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }
+
   if (items.length === 0) {
     return (
-      <div className="bg-[#F9F4EE] min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-400 text-sm">장바구니가 비어 있습니다</p>
-        <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#8B4513] hover:text-[#2C5F2D] transition-colors">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={pageBg}>
+        <p className="text-5xl">🎁</p>
+        <p className="text-[#9b9797] text-sm">장바구니가 비어 있습니다</p>
+        <Link href="/events/wines" className="text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:underline">
           ← 와인 목록으로
         </Link>
       </div>
@@ -271,10 +244,20 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-3">결제하기</h1>
-        <div className="border-t border-gray-900 mb-10" />
+    <div className="min-h-screen" style={pageBg}>
+      {/* 히어로 */}
+      <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-20 pb-6">
+        <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">Checkout</p>
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[36px] md:text-[48px] leading-[1.1] text-[#1C1A17] mb-4">
+          마지막 한 걸음
+        </h1>
+        <p className="text-[15px] md:text-[16px] leading-[1.7] text-[#605d5d]">
+          배송지와 결제 방법을 확인하고 주문을 완료하세요.
+        </p>
+      </header>
+
+      <div className="max-w-[1240px] mx-auto px-5 pb-16">
+        <CheckoutSteps current={2} />
 
         <div className="grid md:grid-cols-2 gap-10">
 
@@ -285,10 +268,10 @@ export default function CheckoutPage() {
             {addresses.length > 0 && (
               <div className="flex flex-col gap-3 mb-4">
                 {addresses.map(addr => (
-                  <div key={addr.id} className={`border bg-white transition-colors ${
+                  <div key={addr.id} className={`cutecard rounded-[20px] border bg-[#FFFFFF] ${
                     selectedAddressId === addr.id && editingAddressId !== addr.id
-                      ? 'border-[#8B4513]'
-                      : 'border-gray-200'
+                      ? 'border-[#5C7A63]'
+                      : 'border-[#eae7e7]'
                   }`}>
                     {editingAddressId === addr.id ? (
                       /* 인라인 수정 폼 */
@@ -296,12 +279,12 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-xs text-gray-500 mb-1 block">수령인</label>
-                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                               value={form.recipient_name} onChange={e => setForm(f => ({ ...f, recipient_name: e.target.value }))} />
                           </div>
                           <div>
                             <label className="text-xs text-gray-500 mb-1 block">국가</label>
-                            <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513] bg-white"
+                            <select className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719] bg-white"
                               value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}>
                               {COUNTRY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
                             </select>
@@ -309,30 +292,30 @@ export default function CheckoutPage() {
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">도시</label>
-                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                             value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">상세 주소</label>
-                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                             value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">우편번호</label>
-                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                          <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                             value={form.postal_code} onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="10115" />
                         </div>
                         {form.country === 'KR' && (
                           <div>
                             <label className="text-xs text-gray-500 mb-1 block">개인통관고유부호</label>
-                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                            <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                               value={form.customs_code} onChange={e => setForm(f => ({ ...f, customs_code: e.target.value }))} placeholder="P123456789012" />
                           </div>
                         )}
                         {saveError && <p className="text-xs text-red-500">{saveError}</p>}
                         <div className="flex gap-2">
                           <button onClick={handleSaveAddress} disabled={saving}
-                            className="flex-1 bg-[#8B4513] text-white text-xs font-bold uppercase tracking-widest py-2.5 hover:bg-[#2C5F2D] transition-colors disabled:opacity-50">
+                            className="flex-1 bg-[#0e3719] text-white text-xs font-bold uppercase tracking-widest py-2.5 hover:bg-[#22301C] transition-colors disabled:opacity-50">
                             {saving ? '저장 중...' : '저장'}
                           </button>
                           <button onClick={() => { setEditingAddressId(null); setForm(emptyForm); setSaveError('') }}
@@ -355,7 +338,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-gray-400 mt-1">통관부호 {addr.customs_code}</p>
                           )}
                           {addr.is_default && (
-                            <span className="text-[10px] font-bold text-[#8B4513] uppercase tracking-widest mt-1 inline-block">기본 배송지</span>
+                            <span className="text-[10px] font-bold text-[#0e3719] uppercase tracking-widest mt-1 inline-block">기본 배송지</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -380,14 +363,14 @@ export default function CheckoutPage() {
             {!showNewForm && (
               <button
                 onClick={() => { setEditingAddressId(null); setForm(emptyForm); setShowNewForm(true) }}
-                className="w-full border border-dashed border-gray-300 text-gray-400 text-xs font-bold uppercase tracking-widest py-3 hover:border-gray-500 hover:text-gray-600 transition-colors"
+                className="w-full rounded-[20px] border border-dashed border-[#d7d3d3] text-[#9b9797] text-xs font-bold uppercase tracking-widest py-3.5 hover:border-[#5C7A63] hover:text-[#0e3719] transition-colors"
               >
                 + 새 배송지 추가
               </button>
             )}
 
             {showNewForm && (
-              <div className="border border-gray-200 bg-white p-6 flex flex-col gap-4">
+              <div className="rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-6 flex flex-col gap-4">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
                   {editingAddressId ? '배송지 수정' : '새 배송지'}
                 </p>
@@ -395,7 +378,7 @@ export default function CheckoutPage() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">수령인 이름</label>
                   <input
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.recipient_name}
                     onChange={e => setForm(f => ({ ...f, recipient_name: e.target.value }))}
                     placeholder="홍길동"
@@ -405,7 +388,7 @@ export default function CheckoutPage() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">국가</label>
                   <select
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513] bg-white"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719] bg-white"
                     value={form.country}
                     onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
                   >
@@ -418,7 +401,7 @@ export default function CheckoutPage() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">도시</label>
                   <input
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.city}
                     onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
                     placeholder="Berlin"
@@ -428,7 +411,7 @@ export default function CheckoutPage() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">상세 주소</label>
                   <input
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.address}
                     onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                     placeholder="Musterstraße 1"
@@ -438,7 +421,7 @@ export default function CheckoutPage() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">우편번호</label>
                   <input
-                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                    className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.postal_code}
                     onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))}
                     placeholder="10115"
@@ -450,7 +433,7 @@ export default function CheckoutPage() {
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">개인통관고유부호</label>
                     <input
-                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#8B4513]"
+                      className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                       value={form.customs_code}
                       onChange={e => setForm(f => ({ ...f, customs_code: e.target.value }))}
                       placeholder="P123456789012"
@@ -476,7 +459,7 @@ export default function CheckoutPage() {
                   <button
                     onClick={handleSaveAddress}
                     disabled={saving}
-                    className="flex-1 bg-[#8B4513] text-white text-xs font-bold uppercase tracking-widest py-3 hover:bg-[#2C5F2D] transition-colors disabled:opacity-50"
+                    className="flex-1 bg-[#0e3719] text-white text-xs font-bold uppercase tracking-widest py-3 hover:bg-[#22301C] transition-colors disabled:opacity-50"
                   >
                     {saving ? '저장 중...' : '저장'}
                   </button>
@@ -497,7 +480,7 @@ export default function CheckoutPage() {
           <div>
             <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700 mb-4">주문 요약</h2>
 
-            <div className="border border-gray-200 divide-y divide-gray-200 bg-white">
+            <div className="rounded-[24px] border border-[#eae7e7] divide-y divide-[#eae7e7] bg-[#FFFFFF] overflow-hidden">
               {items.map(({ productId, qty, product }) => {
                 const perBottleKrw = eurToKrw ? product.price * eurToKrw : null
                 const perBottleDuty = (eurToKrw && eurToUsd)
@@ -538,7 +521,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* 요금 내역 */}
-            <div className="border border-t-0 border-gray-200 bg-white p-5 flex flex-col gap-3">
+            <div className="rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-6 mt-3 flex flex-col gap-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">상품 금액</span>
                 <span className="text-gray-900 font-medium">€{subtotal.toLocaleString()}</span>
@@ -613,7 +596,7 @@ export default function CheckoutPage() {
             <button
               disabled={!selectedAddressId}
               onClick={() => selectedAddressId && setShowPaymentConfirm(true)}
-              className="w-full mt-3 bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-sm font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full mt-3 rounded-full bg-[#0e3719] hover:bg-[#22301C] text-[#FFFFFF] text-sm font-semibold py-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {selectedAddressId ? '결제 진행' : '배송지를 선택해주세요'}
               </button>
@@ -682,7 +665,7 @@ export default function CheckoutPage() {
                     setOrderLoading(false)
                   }
                 }}
-                className="w-full bg-[#8B4513] hover:bg-[#2C5F2D] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {orderLoading ? '처리 중...' : '확인했습니다 — 결제하기'}
               </button>

@@ -78,8 +78,9 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(pageUrl)}`
 
   return (
-    <div className="w-full border border-gray-100 overflow-hidden mb-8">
-      <div className="p-5">
+    // 모바일: 테두리/좌우 패딩 없이 커버 사진과 같은 라인에 텍스트 정렬, 데스크톱: 기존 카드 형태
+    <div className="w-full md:border md:border-gray-100 overflow-hidden mb-8">
+      <div className="py-5 md:p-5">
         {/* 브레드크럼: 하위 카테고리 글은 상위 카테고리도 함께 표시 (Home › Wine › Tasting › 제목) */}
         <nav className="text-sm text-gray-400 mb-5 flex items-center gap-1.5 flex-wrap">
           <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
@@ -106,7 +107,8 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
         </div>
 
         {/* 제목/카테고리/작성자·날짜는 상단 커버 히어로(BlogHero)에 표시됨 */}
-        <BlogContent html={post.content} className="text-lg text-gray-700 mb-4" />
+        {/* 본문 기본 크기: 모바일 16px / 데스크톱 18px (h2·h3 등 상대값은 자동으로 따라감) */}
+        <BlogContent html={post.content} className="text-base md:text-lg text-gray-700 mb-4" />
 
         {/* 대표 사진을 제외한 나머지 업로드 사진 (본문 하단 갤러리) */}
         <BlogGallery images={post.images.slice(1)} />
@@ -164,7 +166,7 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
                 placeholder={currentUser ? '댓글을 입력하세요' : '로그인 후 댓글을 작성할 수 있습니다'}
                 className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-gray-400"
               />
-              <button type="submit" className="text-xs font-bold text-[#8B4513] px-2">게시</button>
+              <button type="submit" className="text-xs font-bold text-[#0e3719] px-2">게시</button>
             </form>
           </div>
         )}

@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { useAppConfig, BannerSlide } from '@/context/AppConfigContext'
 import { uploadBannerImage, uploadBannerVideo } from '@/lib/uploadImage'
+import HomeCardsEditor from './HomeCardsEditor'
 
 export default function BannerPanel() {
   const { config, updateBannerSlide } = useAppConfig()
@@ -62,6 +63,11 @@ export default function BannerPanel() {
 
   return (
     <div>
+      {/* 홈 카테고리 카드 편집 */}
+      <HomeCardsEditor />
+
+      <div className="border-t border-gray-100 pt-10" />
+
       <h2 className="text-2xl font-bold text-gray-900 mb-1">배너 슬라이드 관리</h2>
       <p className="text-gray-500 text-sm mb-8">메인 배너 각 슬라이드의 텍스트와 배경 이미지를 수정할 수 있습니다</p>
 

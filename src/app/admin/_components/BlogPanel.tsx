@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { isVideoUrl } from '@/lib/uploadImage'
-import { fetchBlogPosts, deleteBlogPost, BlogPost } from '@/lib/blog'
+import { fetchBlogPosts, deleteBlogPost, fetchFeaturedBlogPosts, setFeaturedBlogPost, clearFeaturedBlogPost, FeaturedSlot, BlogPost } from '@/lib/blog'
 import { BlogCategory, BLOG_CATEGORIES, topLevelCategories, childCategories, categoryLabel } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
 
@@ -76,13 +76,40 @@ export default function BlogPanel() {
   const [loading, setLoading] = useState(true)
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [filter, setFilter] = useState<BlogCategory | 'all'>('all')
+  const [featuredMap, setFeaturedMap] = useState<Record<string, number>>({})
 
   const loadPosts = () => {
     setLoading(true)
     fetchBlogPosts().then(data => { setPosts(data); setLoading(false) })
   }
 
-  useEffect(() => { loadPosts() }, [])
+  useEffect(() => {
+    loadPosts()
+    fetchFeaturedBlogPosts().then(setFeaturedMap)
+  }, [])
+
+  // 대표글 슬롯 토글 — 이미 이 글이면 해제, 아니면 이 글로 지정
+  const toggleFeatured = async (slot: FeaturedSlot, post: BlogPost) => {
+    const isCurrent = featuredMap[slot] === post.id
+    setFeaturedMap(prev => {
+      const next = { ...prev }
+      if (isCurrent) delete next[slot]
+      else next[slot] = post.id
+      return next
+    })
+    if (isCurrent) await clearFeaturedBlogPost(slot)
+    else await setFeaturedBlogPost(slot, post.id)
+  }
+
+  // 글의 대표 지정 가능한 슬롯: 전체(main) + 해당 상위 카테고리(대표 노출 대상만)
+  const FEATURED_CATS: BlogCategory[] = ['wine', 'food-drink', 'travel', 'monthly-table']
+  const slotsFor = (post: BlogPost): { slot: FeaturedSlot; label: string }[] => {
+    const meta = BLOG_CATEGORIES.find(c => c.value === post.category)
+    const top = (meta?.parent ?? post.category) as BlogCategory
+    const list: { slot: FeaturedSlot; label: string }[] = [{ slot: 'main', label: '전체' }]
+    if (FEATURED_CATS.includes(top)) list.push({ slot: top, label: categoryLabel(top) })
+    return list
+  }
 
   const visiblePosts = filter === 'all' ? posts : posts.filter(p => p.category === filter)
 
@@ -134,7 +161,12 @@ export default function BlogPanel() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {slotsFor(post).filter(s => featuredMap[s.slot] === post.id).map(s => (
+                    <span key={s.slot} className="text-[10px] font-bold text-[#0e3719] bg-[#0e3719]/10 border border-[#5C7A63]/40 rounded-full px-2 py-0.5 shrink-0">
+                      ★ {s.label} 대표
+                    </span>
+                  ))}
                   <span className="text-xs font-semibold text-gray-400 border border-gray-200 rounded-full px-2 py-0.5">
                     {categoryLabel(post.category)}
                   </span>
@@ -144,6 +176,22 @@ export default function BlogPanel() {
                 <p className="text-xs text-gray-500 mt-1 line-clamp-1">{stripHtml(post.content)}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {/* 대표 지정 토글 (전체 + 해당 카테고리) */}
+                {slotsFor(post).map(s => {
+                  const active = featuredMap[s.slot] === post.id
+                  return (
+                    <button
+                      key={s.slot}
+                      onClick={() => toggleFeatured(s.slot, post)}
+                      title={active ? `${s.label} 대표 해제` : `${s.label} 대표로 지정`}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                        active
+                          ? 'text-[#0e3719] border-[#5C7A63] bg-[#0e3719]/5'
+                          : 'text-gray-500 hover:text-[#0e3719] border-gray-200 hover:border-[#5C7A63]'
+                      }`}
+                    >{active ? '★' : '☆'} {s.label}</button>
+                  )
+                })}
                 <Link
                   href={`/admin/blog/${post.id}/edit`}
                   className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-full transition-colors"

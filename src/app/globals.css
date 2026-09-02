@@ -17,6 +17,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  word-break: keep-all; /* 한글이 단어 중간에서 끊기지 않도록 의미 단위로만 줄바꿈 */
+  overflow-wrap: break-word; /* 그래도 못 끊는 긴 문자열(URL 등)은 화면 밖으로 안 넘치게 */
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -46,6 +48,31 @@ body {
 @keyframes wh-slideup {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+/* 주문완료 체크 아이콘 팝 애니메이션 */
+@keyframes pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.check { animation: pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* 홈 카테고리 카드(CategoryCards): 호버 시 살포시 떠오르고 blob이 회전·확대 */
+.cutecard {
+  transition: transform .32s cubic-bezier(.34,1.56,.64,1), box-shadow .32s ease;
+  will-change: transform;
+}
+.cutecard:hover {
+  transform: translateY(-14px) scale(1.015);
+  box-shadow: 0 26px 44px -18px rgba(80,58,20,.34), 0 8px 16px -10px rgba(80,58,20,.22);
+}
+.cutecard .blob { transition: transform .5s cubic-bezier(.34,1.56,.64,1); }
+.cutecard:hover .blob { transform: scale(1.12) rotate(-4deg); }
+/* 모바일에서는 떠오름 효과 축소 (터치라 hover 잔상 방지) */
+@media (max-width: 767px) {
+  .cutecard:hover { transform: none; box-shadow: none; }
+  .cutecard:hover .blob { transform: none; }
 }
 
 .blog-rich-content :is(h2, h3) {

@@ -50,9 +50,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 영문 폰트 변수에 나눔스퀘어를 폴백으로 추가 → 영문은 원래 폰트, 한글은 전부 나눔스퀘어로 표시
+  const fontVars = {
+    "--font-geist-sans": `${geist.style.fontFamily}, ${nanumSquare.style.fontFamily}`,
+    "--font-grotesk": `${grotesk.style.fontFamily}, ${nanumSquare.style.fontFamily}`,
+    "--font-playfair-display": `${playfairDisplay.style.fontFamily}, ${nanumSquare.style.fontFamily}`,
+    "--font-lato": `${lato.style.fontFamily}, ${nanumSquare.style.fontFamily}`,
+  } as React.CSSProperties;
+
   return (
-    <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${lato.variable} ${nanumSquare.variable} h-full antialiased`}>
-      <body className="min-h-full bg-white font-korean">
+    <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${lato.variable} ${nanumSquare.variable} h-full antialiased`} style={fontVars}>
+      <body className="min-h-full bg-[#F9F4EE] font-korean">
         <Providers>{children}</Providers>
       </body>
     </html>

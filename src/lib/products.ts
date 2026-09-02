@@ -17,6 +17,8 @@ export type ProductRow = {
   extra_images: string[] | null
   critic_ratings: string | null
   grape_variety: string | null
+  volume: string | null
+  alcohol: string | null
   stock: number | null
 }
 
@@ -36,6 +38,8 @@ export function rowToProduct(row: ProductRow): Product {
     extraImages: row.extra_images ?? undefined,
     criticRatings: row.critic_ratings ?? undefined,
     grapeVariety: row.grape_variety ?? undefined,
+    volume: row.volume ?? undefined,
+    alcohol: row.alcohol ?? undefined,
     stock: row.stock ?? 0,
   }
 }
@@ -55,6 +59,8 @@ export function productToRow(product: Omit<Product, 'id'>) {
     extra_images: product.extraImages ?? [],
     critic_ratings: product.criticRatings ?? null,
     grape_variety: product.grapeVariety ?? null,
+    volume: product.volume ?? null,
+    alcohol: product.alcohol ?? null,
     stock: product.stock ?? 0,
   }
 }
@@ -103,13 +109,16 @@ export async function deleteProductRow(id: number, imageUrl?: string, extraImage
   if (!res.ok) throw new Error('상품 삭제에 실패했습니다')
 }
 
-export async function fetchFeaturedProductId(): Promise<number | null> {
+// Top Drop: 여러 상품을 동시에 선택 가능 (app_config에 ID 배열을 JSON으로 저장)
+export async function fetchFeaturedProductIds(): Promise<number[]> {
   const supabase = createClient()
-  const { data } = await supabase.from('app_config').select('value').eq('key', 'featuredProductId').maybeSingle()
-  return data ? Number(data.value) : null
+  const { data } = await supabase.from('app_config').select('value').eq('key', 'featuredProductIds').maybeSingle()
+  if (!data?.value) return []
+  const parsed = JSON.parse(data.value)
+  return Array.isArray(parsed) ? parsed.map(Number) : []
 }
 
-export async function setFeaturedProductIdRemote(id: number): Promise<void> {
+export async function setFeaturedProductIdsRemote(ids: number[]): Promise<void> {
   const supabase = createClient()
-  await supabase.from('app_config').upsert({ key: 'featuredProductId', value: String(id) })
+  await supabase.from('app_config').upsert({ key: 'featuredProductIds', value: JSON.stringify(ids) })
 }

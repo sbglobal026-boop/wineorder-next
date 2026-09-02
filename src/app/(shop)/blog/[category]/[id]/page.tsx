@@ -27,7 +27,7 @@ export default function BlogPostPage() {
       <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-400 text-sm mb-4">글을 찾을 수 없습니다</p>
-          <Link href={`/blog/${category}`} className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
+          <Link href={`/blog/${category}`} className="text-xs font-bold text-[#0e3719] uppercase tracking-widest hover:underline">
             ← {categoryLabel(category)}로 돌아가기
           </Link>
         </div>
@@ -36,18 +36,16 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="bg-[#F9F4EE] min-h-screen">
-      <div className="max-w-[1640px] mx-auto px-5 md:px-10 py-16">
-        <Link href={`/blog/${category}`} className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors mb-8 block">
+    <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
+      <div className="max-w-[1240px] mx-auto px-5 py-16">
+        <Link href={`/blog/${category}`} className="text-xs font-bold text-[#0e3719] uppercase tracking-widest hover:opacity-70 transition-opacity mb-8 block">
           ← {categoryLabel(category)}
         </Link>
-        {/* 커버는 헤더와 같은 폭(1640 박스)으로 꽉 채움 */}
+        {/* 커버는 헤더·바디와 같은 1240 폭 */}
         <div className="mb-8">
           <BlogHero post={post} />
         </div>
-        <div className="max-w-[1240px] mx-auto">
-          <BlogPostCard post={post} />
-        </div>
+        <BlogPostCard post={post} />
       </div>
     </div>
   )

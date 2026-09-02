@@ -637,6 +637,9 @@ export default function ShippingPanel() {
                           {order.addresses.postal_code && ` ${order.addresses.postal_code}`}
                           {' '}({order.addresses.country})
                         </p>
+                        {order.addresses.country === 'KR' && order.addresses.customs_code && (
+                          <p className="text-sm text-gray-700 mt-0.5">개인통관고유부호: {order.addresses.customs_code}</p>
+                        )}
                       </div>
                     )}
 

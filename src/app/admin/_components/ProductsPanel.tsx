@@ -10,7 +10,7 @@ type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
 
 const emptyProduct: Omit<Product, 'id'> = {
-  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '', grapeVariety: '', stock: 0,
+  name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '', grapeVariety: '', volume: '', alcohol: '', stock: 0,
 }
 
 // 가격 계산 함수
@@ -25,12 +25,16 @@ function ProductForm({
   onSave,
   onCancel,
   saveLabel,
+  saving,
+  saved,
 }: {
   data: Omit<Product, 'id'>
   onChange: (d: Omit<Product, 'id'>) => void
   onSave: () => void
   onCancel: () => void
   saveLabel: string
+  saving?: boolean
+  saved?: boolean
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const extraFileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
@@ -273,6 +277,34 @@ function ProductForm({
           placeholder="예: 카베르네 소비뇽"
         />
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">용량</label>
+          <div className="relative">
+            <input
+              inputMode="numeric"
+              value={data.volume ?? ''}
+              onChange={(e) => onChange({ ...data, volume: e.target.value.replace(/[^\d.]/g, '') })}
+              className="w-full border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:border-gray-400"
+              placeholder="예: 750"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">ml</span>
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">알코올</label>
+          <div className="relative">
+            <input
+              inputMode="decimal"
+              value={data.alcohol ?? ''}
+              onChange={(e) => onChange({ ...data, alcohol: e.target.value.replace(/[^\d.]/g, '') })}
+              className="w-full border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm focus:outline-none focus:border-gray-400"
+              placeholder="예: 12"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">%</span>
+          </div>
+        </div>
+      </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">평가 (평론가 점수)</label>
         <input
@@ -303,13 +335,14 @@ function ProductForm({
           placeholder="예: 보르도의 왕이라 불리는 명품 레드와인"
         />
       </div>
-      <div className="md:col-span-3 flex gap-2">
-        <button onClick={onSave} className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
-          {saveLabel}
+      <div className="md:col-span-3 flex items-center gap-2">
+        <button onClick={onSave} disabled={saving} className="bg-gray-900 hover:bg-gray-700 disabled:bg-gray-400 text-white text-sm font-semibold px-6 py-2 rounded-full transition-colors">
+          {saving ? '저장 중...' : saveLabel}
         </button>
-        <button onClick={onCancel} className="border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-6 py-2 rounded-full transition-colors">
+        <button onClick={onCancel} disabled={saving} className="border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 text-sm px-6 py-2 rounded-full transition-colors">
           취소
         </button>
+        {saved && <span className="text-sm text-green-600 font-medium">저장되었습니다 ✓</span>}
       </div>
     </div>
   )
@@ -379,12 +412,17 @@ function FixedCostsSection() {
 }*/
 
 export default function ProductsPanel() {
-  const { config, setFeaturedWine, refreshProducts } = useAppConfig()
+  const { config, toggleFeaturedWine, refreshProducts } = useAppConfig()
   const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState<Omit<Product, 'id'>>(emptyProduct)
+  const [saving, setSaving] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
+
+  // 저장 완료 표시를 잠깐 보여줌
+  const flashSaved = () => { setSavedFlash(true); setTimeout(() => setSavedFlash(false), 2000) }
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvStatus, setCsvStatus] = useState<string | null>(null)
@@ -426,21 +464,32 @@ export default function ProductsPanel() {
   }
 
   const saveEdit = async () => {
-    if (!editForm) return
-    await updateProductRow(editForm)
-    setProducts(prev => prev.map(p => p.id === editForm.id ? editForm : p))
-    await refreshProducts()
-    setEditingId(null)
-    setEditForm(null)
+    if (!editForm || saving) return
+    setSaving(true)
+    try {
+      await updateProductRow(editForm)
+      setProducts(prev => prev.map(p => p.id === editForm.id ? editForm : p))
+      await refreshProducts()
+      setEditingId(null)
+      setEditForm(null)
+      flashSaved()
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAdd = async () => {
-    if (addForm.name && addForm.price) {
+    if (saving || !addForm.name || !addForm.price) return
+    setSaving(true)
+    try {
       const created = await createProductRow(addForm)
       setProducts(prev => [...prev, created])
       await refreshProducts()
       setAddForm(emptyProduct)
       setShowAdd(false)
+      flashSaved()
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -530,6 +579,8 @@ export default function ProductsPanel() {
             onSave={handleAdd}
             onCancel={() => setShowAdd(false)}
             saveLabel="추가"
+            saving={saving}
+            saved={savedFlash}
           />
         </div>
       )}
@@ -624,6 +675,8 @@ export default function ProductsPanel() {
                     data={editForm}
                     onChange={(d) => setEditForm({ ...d, id: product.id })}
                     onSave={saveEdit}
+                    saving={saving}
+                    saved={savedFlash}
                     onCancel={() => setEditingId(null)}
                     saveLabel="저장"
                   />
@@ -634,7 +687,7 @@ export default function ProductsPanel() {
                   <td className="px-3 py-1.5">
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
                       product.type === 'wine'
-                        ? 'bg-[#8B4513]/10 text-[#8B4513]'
+                        ? 'bg-[#0e3719]/10 text-[#0e3719]'
                         : 'bg-[#2C5F2D]/10 text-[#2C5F2D]'
                     }`}>
                       {product.type === 'wine' ? '와인' : '식품'}
@@ -649,14 +702,17 @@ export default function ProductsPanel() {
                     {(product.stock ?? 0) === 0 ? '품절' : product.stock}
                   </td>
                   <td className="px-3 py-1.5">
-                    {product.id === config.featuredWineId ? (
-                      <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full whitespace-nowrap">
+                    {config.featuredWineIds.includes(product.id) ? (
+                      <button
+                        onClick={() => toggleFeaturedWine(product.id)}
+                        className="text-xs font-bold text-[#0e3719] bg-[#0e3719]/10 border border-[#0e3719]/30 hover:bg-[#0e3719]/20 px-2 py-1 rounded-full whitespace-nowrap transition-colors"
+                      >
                         ✓ Top Drop
-                      </span>
+                      </button>
                     ) : (
                       <button
-                        onClick={() => setFeaturedWine(product.id)}
-                        className="text-xs text-gray-500 hover:text-amber-700 border border-gray-200 hover:border-amber-300 hover:bg-amber-50 px-2 py-1 rounded-full transition-colors"
+                        onClick={() => toggleFeaturedWine(product.id)}
+                        className="text-xs text-gray-500 hover:text-[#0e3719] border border-gray-200 hover:border-[#0e3719]/40 hover:bg-[#0e3719]/5 px-2 py-1 rounded-full transition-colors"
                       >
                         선택
                       </button>

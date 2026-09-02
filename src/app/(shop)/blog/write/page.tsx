@@ -37,7 +37,7 @@ function BlogWriteForm() {
           <p className="text-4xl mb-4">🔒</p>
           <h2 className="text-xl font-black text-gray-900 mb-2">글쓰기 권한이 없습니다</h2>
           <p className="text-sm text-gray-500 mb-6">관리자에게 승인을 요청해주세요</p>
-          <Link href="/blog/wine" className="text-xs font-bold text-[#8B4513] uppercase tracking-widest hover:underline">
+          <Link href="/blog/wine" className="text-xs font-bold text-[#0e3719] uppercase tracking-widest hover:underline">
             ← 블로그로 돌아가기
           </Link>
         </div>
