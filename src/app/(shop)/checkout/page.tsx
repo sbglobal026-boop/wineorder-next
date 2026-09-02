@@ -1,11 +1,15 @@
 'use client'
 import Link from 'next/link'
 import { useAppConfig } from '@/context/AppConfigContext'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
 import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
+import { loadStripe } from '@stripe/stripe-js'
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 interface Address {
   id: string
@@ -40,9 +44,22 @@ const COUNTRY_OPTIONS = [
 ]
 
 export default function CheckoutPage() {
-  const { config, clearCart } = useAppConfig()
+  return (
+    <Suspense fallback={null}>
+      <CheckoutContent />
+    </Suspense>
+  )
+}
+
+function CheckoutContent() {
+  const { config } = useAppConfig()
   const supabase = createClient()
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const paymentNotice = searchParams.get('canceled')
+    ? '결제가 취소되었습니다. 장바구니는 그대로 유지되어 있습니다.'
+    : searchParams.get('error')
+      ? '결제 처리 중 문제가 발생했습니다. 다시 시도해주세요.'
+      : null
 
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
@@ -58,6 +75,7 @@ export default function CheckoutPage() {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderError, setOrderError] = useState('')
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
 
   const emptyForm = { recipient_name: '', address: '', city: '', postal_code: '', country: 'DE', is_default: false, customs_code: '' }
 
@@ -257,6 +275,11 @@ export default function CheckoutPage() {
       </header>
 
       <div className="max-w-[1240px] mx-auto px-5 pb-16">
+        {paymentNotice && (
+          <div className="mb-6 rounded-xl border border-[#e2b53a]/40 bg-[#fdf6e3] px-4 py-3 text-sm text-[#7a5c00]">
+            {paymentNotice}
+          </div>
+        )}
         <CheckoutSteps current={2} />
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -638,7 +661,7 @@ export default function CheckoutPage() {
                           return sum + d.total
                         }, 0)
                       : 0
-                    const res = await fetch('/api/orders', {
+                    const res = await fetch('/api/checkout/session', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
@@ -654,11 +677,12 @@ export default function CheckoutPage() {
                     })
                     const data = await res.json()
                     if (!res.ok) {
-                      setOrderError(data.error ?? '주문 처리 중 오류가 발생했습니다')
+                      setOrderError(data.error ?? '결제 처리 중 오류가 발생했습니다')
                       return
                     }
-                    clearCart()
-                    router.push(`/order/${data.orderId}`)
+                    // 사이트 안에 Stripe 결제창을 띄움 (리다이렉트 없음) — 장바구니는 결제 성공 후 주문 상세 페이지에서 비움
+                    setShowPaymentConfirm(false)
+                    setCheckoutClientSecret(data.clientSecret)
                   } catch {
                     setOrderError('주문 처리 중 오류가 발생했습니다')
                   } finally {
@@ -675,6 +699,31 @@ export default function CheckoutPage() {
               >
                 돌아가기
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stripe 결제창 — 사이트 안에서 iframe으로 표시 (리다이렉트 없음) */}
+      {checkoutClientSecret && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-end px-6 pt-6">
+              <button
+                onClick={() => setCheckoutClientSecret(null)}
+                className="text-gray-400 hover:text-gray-700 text-sm"
+              >
+                닫기 ✕
+              </button>
+            </div>
+            <div className="p-6 pt-3">
+              <EmbeddedCheckoutProvider
+                stripe={stripePromise}
+                options={{ clientSecret: checkoutClientSecret }}
+              >
+                <EmbeddedCheckout />
+              </EmbeddedCheckoutProvider>
             </div>
           </div>
         </div>

@@ -515,12 +515,11 @@ export default function ShippingPanel() {
             { label: '주문자명', value: searchName, set: setSearchName},
             { label: '주문번호', value: searchOrderNum, set: setSearchOrderNum},
             { label: '와인 이름', value: searchWine, set: setSearchWine},
-          ].map(({ label, value, set, placeholder }) => (
+          ].map(({ label, value, set }) => (
             <div key={label} className="relative">
               <label className="block text-xs font-semibold text-gray-400 mb-1">{label}</label>
               <input
                 type="text"
-                placeholder={placeholder}
                 value={value}
                 onChange={e => set(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 pr-7 text-sm focus:outline-none focus:border-gray-400"

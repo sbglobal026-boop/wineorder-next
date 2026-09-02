@@ -1,9 +1,10 @@
 'use client'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
+import { useAppConfig } from '@/context/AppConfigContext'
 
 const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }
 const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF]'
@@ -48,9 +49,16 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const { clearCart } = useAppConfig()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    // Stripe 결제 성공 직후(/api/checkout/confirm)에서 넘어온 경우에만 장바구니를 비움
+    if (searchParams.get('new') === '1') clearCart()
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
