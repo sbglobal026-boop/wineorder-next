@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
-import { fetchBlogPosts, BlogPost } from '@/lib/blog'
+import { fetchBlogPostsPage, BlogPost } from '@/lib/blog'
 import { isBlogCategory, BlogCategory, childCategories, categoryLabel, categoryHero } from '@/lib/blogCategories'
 import { BlogCard } from '@/components/blog/BlogCard'
 
@@ -13,32 +13,42 @@ const PER_PAGE = 9
 
 export default function BlogCategoryPage() {
   const { category } = useParams<{ category: string }>()
-  const { config } = useAppConfig()
-  const { currentUser } = useAuth()
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
-  const [subFilter, setSubFilter] = useState<BlogCategory | 'all'>('all')
-  const [page, setPage] = useState(1)
-  const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
-
   if (!isBlogCategory(category)) notFound()
   // Journal은 독립 페이지로 이동
   if (category === 'journal') redirect('/journal')
+  // key로 카테고리가 바뀔 때마다 아래 컴포넌트를 통째로 새로 마운트 → subFilter/page가 자연스럽게 초기화됨
+  return <BlogCategoryPageInner key={category} category={category} />
+}
+
+function BlogCategoryPageInner({ category }: { category: BlogCategory }) {
+  const { config } = useAppConfig()
+  const { currentUser } = useAuth()
+  const [pagePosts, setPagePosts] = useState<BlogPost[]>([])
+  const [total, setTotal] = useState(0)
+  const [subFilter, setSubFilter] = useState<BlogCategory | 'all'>('all')
+  const [page, setPage] = useState(1)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
+
   const children = childCategories(category)
   const hero = categoryHero(category)
 
+  // 필요한 페이지 분량만 서버에서 가져옴 (본문 포함 전체를 매번 다 받지 않도록)
   useEffect(() => {
-    if (!isBlogCategory(category)) return
-    setSubFilter('all')
-    setPage(1)
     const childCats = childCategories(category)
-    const target = childCats.length > 0 ? [category, ...childCats] : category
-    fetchBlogPosts(target).then(data => { setPosts(data); setLoading(false) })
-  }, [category])
+    const target = subFilter === 'all'
+      ? (childCats.length > 0 ? [category, ...childCats] : category)
+      : subFilter
+    const key = `${category}:${subFilter}:${page}`
+    fetchBlogPostsPage(target, page, PER_PAGE).then(({ posts, total }) => {
+      setPagePosts(posts)
+      setTotal(total)
+      setLoadedKey(key)
+    })
+  }, [category, subFilter, page])
 
-  const filtered = subFilter === 'all' ? posts : posts.filter(p => p.category === subFilter)
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
-  const pagePosts = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  const loading = loadedKey !== `${category}:${subFilter}:${page}`
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>

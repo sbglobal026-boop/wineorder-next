@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { BlogPost } from '@/lib/blog'
 import { categoryLabel, categoryEyebrow, BLOG_CATEGORIES, BlogCategory } from '@/lib/blogCategories'
 import { stripHtml } from '@/lib/sanitizeHtml'
@@ -38,7 +39,7 @@ function Thumb({ post, className = '' }: { post: BlogPost; className?: string })
       {src ? (
         isVideoUrl(src)
           ? <video src={src} muted className="thumb absolute inset-0 w-full h-full object-cover" />
-          : <img src={src} alt={post.title} className="thumb absolute inset-0 w-full h-full object-cover" />
+          : <Image src={src} alt={post.title} fill sizes="(max-width: 768px) 100vw, 400px" className="thumb object-cover" />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-4xl select-none">🍷</div>
       )}

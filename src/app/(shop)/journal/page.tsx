@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { fetchBlogPosts, BlogPost } from '@/lib/blog'
+import { fetchBlogPostsPage, BlogPost } from '@/lib/blog'
 import { categoryHero } from '@/lib/blogCategories'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
@@ -13,22 +13,37 @@ const PER_PAGE = 9
 export default function JournalPage() {
   const { currentUser } = useAuth()
   const { config } = useAppConfig()
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
+  const [featured, setFeatured] = useState<BlogPost | null>(null)
+  const [featuredLoaded, setFeaturedLoaded] = useState(false)
+  const [pagePosts, setPagePosts] = useState<BlogPost[]>([])
+  const [total, setTotal] = useState(0)
+  const [loadedPage, setLoadedPage] = useState<number | null>(null)
   const [page, setPage] = useState(1)
 
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
   const hero = categoryHero('journal')
 
+  // 대표글(최신 저널 글)만 먼저 로드
   useEffect(() => {
-    fetchBlogPosts('journal').then(data => { setPosts(data); setLoading(false) })
+    fetchBlogPostsPage('journal', 1, 1).then(({ posts }) => {
+      setFeatured(posts[0] ?? null)
+      setFeaturedLoaded(true)
+    })
   }, [])
 
-  // 대표글: 최신 저널 글
-  const featured = posts[0] ?? null
-  const rest = posts.filter(p => p.id !== featured?.id)
-  const totalPages = Math.max(1, Math.ceil(rest.length / PER_PAGE))
-  const pagePosts = rest.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  // 대표글을 제외한 나머지를 페이지 단위로 로드 (본문 포함 전체를 매번 다 받지 않도록)
+  useEffect(() => {
+    if (!featuredLoaded) return
+    fetchBlogPostsPage('journal', page, PER_PAGE, featured ? [featured.id] : undefined).then(({ posts, total }) => {
+      setPagePosts(posts)
+      setTotal(total)
+      setLoadedPage(page)
+    })
+  }, [featuredLoaded, featured, page])
+
+  const loading = !featuredLoaded || loadedPage !== page
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
+  const isEmpty = !loading && !featured && total === 0
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
@@ -52,7 +67,7 @@ export default function JournalPage() {
 
         {loading ? (
           <p className="text-[#9b9797] text-sm text-center py-24">불러오는 중...</p>
-        ) : posts.length === 0 ? (
+        ) : isEmpty ? (
           <p className="text-[#9b9797] text-sm text-center py-24">아직 작성된 저널 글이 없습니다</p>
         ) : (
           <>

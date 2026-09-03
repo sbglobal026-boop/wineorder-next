@@ -32,6 +32,34 @@ export async function fetchBlogPosts(category?: BlogCategory | BlogCategory[]): 
   return data ?? []
 }
 
+// 목록 페이지네이션 전용 — 필요한 페이지 분량만 서버에서 가져옴 (본문 포함 전체를 매번 다 받지 않도록)
+export async function fetchBlogPostsPage(
+  category: BlogCategory | BlogCategory[],
+  page: number,
+  perPage: number,
+  excludeIds?: number[],
+): Promise<{ posts: BlogPost[]; total: number }> {
+  const supabase = createClient()
+  let query = supabase.from('blog_posts').select('*', { count: 'exact' }).order('created_at', { ascending: false })
+  query = Array.isArray(category) ? query.in('category', category) : query.eq('category', category)
+  if (excludeIds && excludeIds.length > 0) query = query.not('id', 'in', `(${excludeIds.join(',')})`)
+  const from = (page - 1) * perPage
+  const to = from + perPage - 1
+  const { data, error, count } = await query.range(from, to)
+  if (error) throw error
+  return { posts: data ?? [], total: count ?? 0 }
+}
+
+// 카테고리 내 최신 글 1개만 (대표글 미지정 시 자동 폴백용)
+export async function fetchLatestBlogPost(category: BlogCategory | BlogCategory[]): Promise<BlogPost | null> {
+  const supabase = createClient()
+  let query = supabase.from('blog_posts').select('*').order('created_at', { ascending: false }).limit(1)
+  query = Array.isArray(category) ? query.in('category', category) : query.eq('category', category)
+  const { data, error } = await query
+  if (error) throw error
+  return data?.[0] ?? null
+}
+
 export async function fetchBlogPost(id: number): Promise<BlogPost | null> {
   const supabase = createClient()
   const { data } = await supabase.from('blog_posts').select('*').eq('id', id).maybeSingle()

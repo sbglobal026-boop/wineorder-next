@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { fetchBlogPosts, fetchFeaturedBlogPosts, BlogPost } from '@/lib/blog'
+import { fetchBlogPost, fetchFeaturedBlogPosts, fetchLatestBlogPost, fetchBlogPostsPage, BlogPost } from '@/lib/blog'
 import { topLevelCategories, categoryLabel, childCategories, BlogCategory } from '@/lib/blogCategories'
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
@@ -10,46 +10,61 @@ import { BlogCard, BlogFeaturedCard } from '@/components/blog/BlogCard'
 
 const PER_PAGE = 9
 
+// Journal은 독립 페이지라 블로그 칩/목록에서 제외
+const chips = topLevelCategories().filter(c => c.value !== 'journal')
+const allNonJournalCategories: BlogCategory[] = chips.flatMap(c => {
+  const top = c.value as BlogCategory
+  return [top, ...childCategories(top)]
+})
+
 export default function BlogHomePage() {
   const { currentUser } = useAuth()
   const { config } = useAppConfig()
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [featuredMap, setFeaturedMap] = useState<Record<string, number>>({})
-  const [loading, setLoading] = useState(true)
+  const [featured, setFeatured] = useState<BlogPost | null>(null)
+  const [catFeatured, setCatFeatured] = useState<{ cat: BlogCategory; post: BlogPost }[]>([])
+  const [featuredLoaded, setFeaturedLoaded] = useState(false)
+  const [pagePosts, setPagePosts] = useState<BlogPost[]>([])
+  const [total, setTotal] = useState(0)
+  const [loadedPage, setLoadedPage] = useState<number | null>(null)
   const [page, setPage] = useState(1)
 
   const isApproved = currentUser && config.approvedWriters.includes(currentUser.email)
 
+  // 대표글(Editor's Pick + 카테고리별 대표글)만 먼저 로드
+  // — 지정된 글은 ID로 콕 집어서, 미지정 카테고리는 최신 글 1개만 (전체 글을 다 받지 않음)
   useEffect(() => {
-    Promise.all([fetchBlogPosts(), fetchFeaturedBlogPosts()]).then(([data, fmap]) => {
-      // Journal은 독립 운영 → 전체 블로그에서 제외
-      setPosts(data.filter(p => p.category !== 'journal'))
-      setFeaturedMap(fmap)
-      setLoading(false)
+    fetchFeaturedBlogPosts().then(async (fmap) => {
+      const mainPost = fmap['main']
+        ? await fetchBlogPost(fmap['main'])
+        : await fetchLatestBlogPost(allNonJournalCategories)
+
+      const catResults = await Promise.all(chips.map(async (c) => {
+        const top = c.value as BlogCategory
+        const target = [top, ...childCategories(top)]
+        const post = fmap[top] ? await fetchBlogPost(fmap[top]) : await fetchLatestBlogPost(target)
+        return { cat: top, post }
+      }))
+
+      setFeatured(mainPost)
+      setCatFeatured(catResults.filter((x): x is { cat: BlogCategory; post: BlogPost } => !!x.post))
+      setFeaturedLoaded(true)
     })
   }, [])
 
-  const byId = (id?: number) => (id ? posts.find(p => p.id === id) : undefined)
+  // 대표글로 이미 보여준 것들을 제외하고 "최근 글"을 페이지 단위로 로드
+  useEffect(() => {
+    if (!featuredLoaded) return
+    const shownIds = [featured?.id, ...catFeatured.map(x => x.post.id)].filter((v): v is number => !!v)
+    fetchBlogPostsPage(allNonJournalCategories, page, PER_PAGE, shownIds).then(({ posts, total }) => {
+      setPagePosts(posts)
+      setTotal(total)
+      setLoadedPage(page)
+    })
+  }, [featuredLoaded, featured, catFeatured, page])
 
-  // Editor's Pick: 지정된 글, 없으면 최신 글
-  const featured = byId(featuredMap['main']) ?? posts[0] ?? null
-
-  // Journal은 독립 페이지라 블로그 칩에서 제외
-  const chips = topLevelCategories().filter(c => c.value !== 'journal')
-
-  // 카테고리별 대표글: 지정된 글, 없으면 그 카테고리(하위 포함) 최신 글로 자동
-  const catFeatured = chips.map(c => {
-    const top = c.value as BlogCategory
-    const inCat = (p: BlogPost) => p.category === top || childCategories(top).includes(p.category)
-    const post = byId(featuredMap[top]) ?? posts.find(inCat) ?? null
-    return { cat: top, post }
-  }).filter((x): x is { cat: BlogCategory; post: BlogPost } => !!x.post)
-
-  // 최근 글: 대표글(전체+카테고리별)로 이미 노출된 글은 제외
-  const shownIds = new Set<number>([featured?.id, ...catFeatured.map(x => x.post.id)].filter((v): v is number => !!v))
-  const rest = posts.filter(p => !shownIds.has(p.id))
-  const totalPages = Math.max(1, Math.ceil(rest.length / PER_PAGE))
-  const pagePosts = rest.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  const loading = !featuredLoaded || loadedPage !== page
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE))
+  const isEmpty = !loading && !featured && catFeatured.length === 0 && total === 0
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
@@ -88,7 +103,7 @@ export default function BlogHomePage() {
 
         {loading ? (
           <p className="text-[#9b9797] text-sm text-center py-24">불러오는 중...</p>
-        ) : posts.length === 0 ? (
+        ) : isEmpty ? (
           <p className="text-[#9b9797] text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (
           <>
