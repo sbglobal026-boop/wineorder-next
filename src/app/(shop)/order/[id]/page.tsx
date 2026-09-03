@@ -47,6 +47,9 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: '주문 취소',
 }
 
+// 손님이 직접 취소 가능한 상태 — 배송이 시작되면(shipped 이후) 취소 버튼 자체를 숨김
+const CANCELLABLE_STATUSES = ['pending', 'confirmed']
+
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -54,6 +57,14 @@ export default function OrderPage() {
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+  const [showCancelRequest, setShowCancelRequest] = useState(false)
+  const [cancelRequestMessage, setCancelRequestMessage] = useState('')
+  const [cancelRequestSending, setCancelRequestSending] = useState(false)
+  const [cancelRequestError, setCancelRequestError] = useState('')
+  const [cancelRequestSent, setCancelRequestSent] = useState(false)
 
   useEffect(() => {
     // Stripe 결제 성공 직후(/api/checkout/confirm)에서 넘어온 경우에만 장바구니를 비움
@@ -73,6 +84,49 @@ export default function OrderPage() {
         setLoading(false)
       })
   }, [id])
+
+  const handleCancel = async () => {
+    if (!order) return
+    setCancelling(true)
+    setCancelError('')
+    try {
+      const res = await fetch(`/api/orders/${order.id}/cancel`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setCancelError(data.error ?? '주문 취소 중 오류가 발생했습니다')
+        return
+      }
+      setOrder({ ...order, status: 'cancelled' })
+      setShowCancelConfirm(false)
+    } catch {
+      setCancelError('주문 취소 중 오류가 발생했습니다')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const handleCancelRequest = async () => {
+    if (!order) return
+    setCancelRequestSending(true)
+    setCancelRequestError('')
+    try {
+      const res = await fetch(`/api/orders/${order.id}/cancel-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: cancelRequestMessage }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setCancelRequestError(data.error ?? '요청 접수 중 오류가 발생했습니다')
+        return
+      }
+      setCancelRequestSent(true)
+    } catch {
+      setCancelRequestError('요청 접수 중 오류가 발생했습니다')
+    } finally {
+      setCancelRequestSending(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -192,9 +246,113 @@ export default function OrderPage() {
             <Link href="/events/wines" className="block text-center rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719] text-sm py-3 transition-colors no-underline">
               계속 쇼핑하기
             </Link>
+            {CANCELLABLE_STATUSES.includes(order.status) && (
+              <button
+                onClick={() => { setCancelError(''); setShowCancelConfirm(true) }}
+                className="text-center text-xs text-[#9b9797] hover:text-[#605d5d] py-2 transition-colors cursor-pointer"
+              >
+                주문취소
+              </button>
+            )}
+            {order.status === 'shipped' && (
+              <button
+                onClick={() => { setCancelRequestError(''); setCancelRequestSent(false); setCancelRequestMessage(''); setShowCancelRequest(true) }}
+                className="text-center text-xs text-[#9b9797] hover:text-[#605d5d] py-2 transition-colors cursor-pointer"
+              >
+                취소요청
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* 주문취소 확인창 */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => !cancelling && setShowCancelConfirm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 md:p-7">
+            <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">주문을 취소하시겠어요?</h3>
+            <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
+              결제하신 금액은 결제 수단으로 환불되며, 되돌릴 수 없습니다.
+            </p>
+            {cancelError && (
+              <p className="text-xs text-red-600 mb-4">{cancelError}</p>
+            )}
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {cancelling ? '처리 중...' : '취소 확정 — 환불 진행'}
+              </button>
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={cancelling}
+                className="w-full text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 py-3 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                돌아가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 배송중 주문 취소요청 */}
+      {showCancelRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => !cancelRequestSending && setShowCancelRequest(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 md:p-7">
+            {cancelRequestSent ? (
+              <>
+                <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">취소 요청이 접수됐어요</h3>
+                <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
+                  이미 배송이 시작된 주문이라, 담당자가 확인 후 별도로 안내드릴게요.
+                </p>
+                <button
+                  onClick={() => setShowCancelRequest(false)}
+                  className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors cursor-pointer"
+                >
+                  확인
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">취소 요청</h3>
+                <p className="text-sm text-[#605d5d] leading-relaxed mb-4">
+                  이미 배송이 시작돼서 바로 취소되진 않아요. 사유를 남겨주시면 담당자가 확인 후 연락드릴게요.
+                </p>
+                <textarea
+                  value={cancelRequestMessage}
+                  onChange={e => setCancelRequestMessage(e.target.value)}
+                  placeholder="취소 사유를 입력해주세요"
+                  rows={4}
+                  className="w-full rounded-xl border border-[#eae7e7] px-3.5 py-3 text-sm text-[#1C1A17] placeholder-[#bab6b6] resize-none focus:outline-none focus:border-[#5C7A63] transition-colors mb-4"
+                />
+                {cancelRequestError && (
+                  <p className="text-xs text-red-600 mb-4">{cancelRequestError}</p>
+                )}
+                <div className="flex flex-col gap-2.5">
+                  <button
+                    onClick={handleCancelRequest}
+                    disabled={cancelRequestSending}
+                    className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {cancelRequestSending ? '전송 중...' : '취소 요청 보내기'}
+                  </button>
+                  <button
+                    onClick={() => setShowCancelRequest(false)}
+                    disabled={cancelRequestSending}
+                    className="w-full text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 py-3 transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    돌아가기
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

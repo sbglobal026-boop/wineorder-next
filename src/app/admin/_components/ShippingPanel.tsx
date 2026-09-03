@@ -95,6 +95,7 @@ export default function ShippingPanel() {
   const [searchName, setSearchName] = useState<string>('')
   const [searchOrderNum, setSearchOrderNum] = useState<string>('')
   const [searchWine, setSearchWine] = useState<string>('')
+  const [csOnlyFilter, setCsOnlyFilter] = useState(false)
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [updatingShipmentId, setUpdatingShipmentId] = useState<string | null>(null)
@@ -444,6 +445,7 @@ export default function ShippingPanel() {
     .filter(o => !searchName.trim() || (o.addresses?.recipient_name ?? '').toLowerCase().includes(searchName.trim().toLowerCase()))
     .filter(o => !searchOrderNum.trim() || (o.order_number ?? '').toLowerCase().includes(searchOrderNum.trim().toLowerCase()) || (o.split_deliveries ?? []).some(s => s.shipment_number.toLowerCase().includes(searchOrderNum.trim().toLowerCase())))
     .filter(o => !searchWine.trim() || o.items.some(i => i.name.toLowerCase().includes(searchWine.trim().toLowerCase())))
+    .filter(o => !csOnlyFilter || (o.cs_requests ?? []).length > 0)
 
   if (loading) {
     return <p className="text-sm text-gray-400">불러오는 중...</p>
@@ -569,7 +571,16 @@ export default function ShippingPanel() {
             )}
           </div>
           {/* 상태 필터 */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
+            <button
+              onClick={() => setCsOnlyFilter(v => !v)}
+              className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
+                csOnlyFilter ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+              }`}
+            >
+              CS 접수된 주문만 ({orders.filter(o => (o.cs_requests ?? []).length > 0).length})
+            </button>
+            <span className="w-px h-4 bg-gray-200 mx-1" />
             <button
               onClick={() => setStatusFilter('all')}
               className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
