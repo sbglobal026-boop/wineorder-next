@@ -432,6 +432,8 @@ export default function ProductsPanel() {
   const [filterOrigin, setFilterOrigin] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'wine' | 'food'>('all')
   const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
+  const [pendingOnlyFilter, setPendingOnlyFilter] = useState(false)
+  const [approvingId, setApprovingId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchAdminProducts().then(setProducts).catch(() => setProducts([]))
@@ -450,12 +452,32 @@ export default function ProductsPanel() {
       list = list.filter(p => p.name.toLowerCase().includes(searchName.toLowerCase()))
     if (filterOrigin)
       list = list.filter(p => p.origin === filterOrigin)
+    if (pendingOnlyFilter)
+      list = list.filter(p => p.approvalStatus === 'pending')
     if (sortPrice === 'asc')
       list = [...list].sort((a, b) => a.price - b.price)
     else if (sortPrice === 'desc')
       list = [...list].sort((a, b) => b.price - a.price)
     return list
-  }, [products, searchName, filterOrigin, filterType, sortPrice])
+  }, [products, searchName, filterOrigin, filterType, sortPrice, pendingOnlyFilter])
+
+  const pendingCount = useMemo(() => products.filter(p => p.approvalStatus === 'pending').length, [products])
+
+  const handleApprove = async (id: number) => {
+    setApprovingId(id)
+    try {
+      const res = await fetch(`/api/admin/products/${id}/approval`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approval_status: 'live' }),
+      })
+      if (res.ok) {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, approvalStatus: 'live' } : p))
+      }
+    } finally {
+      setApprovingId(null)
+    }
+  }
 
   const startEdit = (product: Product) => {
     setEditingId(product.id)
@@ -536,7 +558,7 @@ export default function ProductsPanel() {
     if (csvInputRef.current) csvInputRef.current.value = ''
   }
 
-  const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none'
+  const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none' || pendingOnlyFilter
 
   return (
     <div>
@@ -590,6 +612,16 @@ export default function ProductsPanel() {
 
       {/* 필터 */}
       <div className="flex flex-wrap gap-3 mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+        <div className="flex items-end">
+          <button
+            onClick={() => setPendingOnlyFilter(v => !v)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+              pendingOnlyFilter ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+            }`}
+          >
+            벤더 검수 대기만 ({pendingCount})
+          </button>
+        </div>
         <div className="min-w-[100px]">
           <label className="block text-xs font-semibold text-gray-500 mb-1">구분</label>
           <select
@@ -637,7 +669,7 @@ export default function ProductsPanel() {
         {isFiltered && (
           <div className="flex items-end">
             <button
-              onClick={() => { setSearchName(''); setFilterOrigin(''); setFilterType('all'); setSortPrice('none') }}
+              onClick={() => { setSearchName(''); setFilterOrigin(''); setFilterType('all'); setSortPrice('none'); setPendingOnlyFilter(false) }}
               className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
             >
               초기화
@@ -694,7 +726,12 @@ export default function ProductsPanel() {
                     </span>
                   </td>
                   <td className="px-3 py-1.5 text-sm font-semibold text-gray-900 max-w-0">
-                    <p className="truncate cursor-pointer hover:text-gray-500 transition-colors" onClick={() => startEdit(product)}>{product.name}</p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="truncate cursor-pointer hover:text-gray-500 transition-colors" onClick={() => startEdit(product)}>{product.name}</p>
+                      {product.approvalStatus === 'pending' && (
+                        <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">검수대기</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-3 py-1.5 text-sm text-gray-600">{product.category}</td>
                   <td className="px-3 py-1.5 text-sm font-semibold text-gray-900 whitespace-nowrap">€{product.price.toLocaleString()}</td>
@@ -720,6 +757,15 @@ export default function ProductsPanel() {
                   </td>
                   <td className="px-3 py-1.5">
                     <div className="flex items-center gap-2">
+                      {product.approvalStatus === 'pending' && (
+                        <button
+                          onClick={() => handleApprove(product.id)}
+                          disabled={approvingId === product.id}
+                          className="text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
+                        >
+                          {approvingId === product.id ? '처리 중...' : '승인'}
+                        </button>
+                      )}
                       <button
                         onClick={() => startEdit(product)}
                         className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-200 hover:border-gray-400 px-3 py-1.5 rounded-full transition-colors"

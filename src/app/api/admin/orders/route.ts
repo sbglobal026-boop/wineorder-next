@@ -13,5 +13,24 @@ export async function GET() {
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  // 주문(orders.items)엔 벤더 구분이 없어서, 상품ID→벤더명 맵을 만들어 주문마다 등장하는 벤더명을 붙여줌
+  const { data: products } = await supabase
+    .from('products')
+    .select('id, vendors(shop_name)')
+  const productVendorMap = new Map<number, string>(
+    (products ?? []).map(p => {
+      const vendor = p.vendors as unknown as { shop_name: string } | { shop_name: string }[] | null
+      const shopName = Array.isArray(vendor) ? vendor[0]?.shop_name : vendor?.shop_name
+      return [p.id, shopName ?? '미상']
+    })
+  )
+
+  const enriched = (data ?? []).map(order => {
+    const items = order.items as { productId: number }[]
+    const vendorNames = Array.from(new Set(items.map(i => productVendorMap.get(i.productId) ?? '미상')))
+    return { ...order, vendorNames }
+  })
+
+  return NextResponse.json(enriched)
 }

@@ -16,6 +16,8 @@ export type Product = {
   volume?: string
   alcohol?: string
   stock?: number
+  vendorId?: string
+  approvalStatus?: string // live | pending — 벤더 상품 검수 상태
 }
 
 export type FixedCost = {

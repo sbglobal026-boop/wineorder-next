@@ -70,6 +70,7 @@ interface Order {
   } | null
   split_deliveries?: SplitDelivery[]
   cs_requests?: CsRequest[]
+  vendorNames?: string[]
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -96,6 +97,7 @@ export default function ShippingPanel() {
   const [searchOrderNum, setSearchOrderNum] = useState<string>('')
   const [searchWine, setSearchWine] = useState<string>('')
   const [csOnlyFilter, setCsOnlyFilter] = useState(false)
+  const [vendorFilter, setVendorFilter] = useState<string>('all')
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [updatingShipmentId, setUpdatingShipmentId] = useState<string | null>(null)
@@ -446,6 +448,9 @@ export default function ShippingPanel() {
     .filter(o => !searchOrderNum.trim() || (o.order_number ?? '').toLowerCase().includes(searchOrderNum.trim().toLowerCase()) || (o.split_deliveries ?? []).some(s => s.shipment_number.toLowerCase().includes(searchOrderNum.trim().toLowerCase())))
     .filter(o => !searchWine.trim() || o.items.some(i => i.name.toLowerCase().includes(searchWine.trim().toLowerCase())))
     .filter(o => !csOnlyFilter || (o.cs_requests ?? []).length > 0)
+    .filter(o => vendorFilter === 'all' || (o.vendorNames ?? []).includes(vendorFilter))
+
+  const allVendorNames = Array.from(new Set(orders.flatMap(o => o.vendorNames ?? []))).sort()
 
   if (loading) {
     return <p className="text-sm text-gray-400">불러오는 중...</p>
@@ -580,6 +585,18 @@ export default function ShippingPanel() {
             >
               CS 접수된 주문만 ({orders.filter(o => (o.cs_requests ?? []).length > 0).length})
             </button>
+            {allVendorNames.length > 1 && (
+              <select
+                value={vendorFilter}
+                onChange={(e) => setVendorFilter(e.target.value)}
+                className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-700 border-none focus:outline-none cursor-pointer"
+              >
+                <option value="all">전체 벤더</option>
+                {allVendorNames.map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            )}
             <span className="w-px h-4 bg-gray-200 mx-1" />
             <button
               onClick={() => setStatusFilter('all')}
@@ -629,6 +646,13 @@ export default function ShippingPanel() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex gap-1">
+                      {(order.vendorNames ?? []).map(name => (
+                        <span key={name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 whitespace-nowrap">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
                     <span className="text-sm font-black text-gray-900">€{order.total_eur.toLocaleString()}</span>
                     <StatusBadge status={order.status} />
                     <span className="text-gray-300 text-xs">{expandedOrderId === order.id ? '▲' : '▼'}</span>
