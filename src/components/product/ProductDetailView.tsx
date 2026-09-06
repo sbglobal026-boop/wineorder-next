@@ -195,6 +195,7 @@ export default function ProductDetailView({
 
   // 상품 정보 스펙표 (용량·알코올은 데이터 필드 없음 → 껍데기 '—')
   const specRows = [
+    ...(product.vendorName ? [{ k: '벤더', v: product.vendorName }] : []),
     { k: '원산지', v: product.origin },
     { k: '품종', v: product.grapeVariety || '—' },
     { k: '빈티지', v: extractVintage(product.name) },

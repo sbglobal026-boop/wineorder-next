@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import VendorProductsPanel from './_components/VendorProductsPanel'
 import VendorSalesPanel from './_components/VendorSalesPanel'
 
@@ -16,6 +17,9 @@ export default function VendorPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-[900px] mx-auto px-6 py-10">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors no-underline mb-6">
+          ← 판매페이지로 돌아가기
+        </Link>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">벤더 센터</h1>
         <p className="text-sm text-gray-400 mb-8">내 상품과 매출을 관리하세요</p>
 

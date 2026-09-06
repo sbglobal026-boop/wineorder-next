@@ -7,7 +7,10 @@ type SalesData = {
   commissionAmount: number
   netPayout: number
   orderCount: number
-  items: { name: string; qty: number; amount: number; createdAt: string }[]
+  items: {
+    name: string; qty: number; amount: number; createdAt: string
+    imageUrl: string | null; orderNumber: string | null; status: string
+  }[]
 }
 
 function fmt(n: number) {
@@ -53,12 +56,25 @@ export default function VendorSalesPanel() {
       ) : (
         <div className="flex flex-col gap-1.5">
           {data.items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg px-4 py-2.5 text-sm">
-              <div className="min-w-0">
-                <p className="text-gray-900 truncate">{item.name}</p>
-                <p className="text-xs text-gray-400">{new Date(item.createdAt).toLocaleDateString('ko-KR')} · 수량 {item.qty}개</p>
+            <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-4 py-2.5 text-sm">
+              <div className="shrink-0 w-11 h-11 rounded-lg bg-gray-100 overflow-hidden">
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300">🍷</div>
+                )}
               </div>
-              <p className="font-semibold text-gray-900 shrink-0">{fmt(item.amount)}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-gray-900 truncate">{item.name}</p>
+                <p className="text-xs text-gray-400">
+                  {item.orderNumber ?? ''} · {new Date(item.createdAt).toLocaleDateString('ko-KR')} · 수량 {item.qty}개
+                </p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="font-semibold text-gray-900">{fmt(item.amount)}</p>
+                <p className="text-xs text-gray-400">{item.status}</p>
+              </div>
             </div>
           ))}
         </div>

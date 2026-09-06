@@ -17,6 +17,7 @@ export type Product = {
   alcohol?: string
   stock?: number
   vendorId?: string
+  vendorName?: string // 공개 상품 목록/상세에서 쓰는 벤더(입점샵) 이름
   approvalStatus?: string // live | pending — 벤더 상품 검수 상태
 }
 

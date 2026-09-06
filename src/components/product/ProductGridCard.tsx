@@ -32,12 +32,19 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
 
   return (
     <div className="cutecard group relative flex flex-col rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden">
-      {/* 배지 */}
-      {badge && !isSoldOut && (
-        <span className="absolute top-3.5 left-3.5 z-[2] text-[11px] tracking-[0.12em] border border-[#5C7A63] text-[#0e3719] bg-[#FFFFFF] rounded-full px-3 py-1">
-          {badge}
-        </span>
-      )}
+      {/* 배지 — 벤더 아이콘(항상 위쪽) + 품절임박/신상(있을 때만) 순서로 쌓임 */}
+      <div className="absolute top-3.5 left-3.5 z-[2] flex flex-col items-start gap-1.5">
+        {product.vendorName && (
+          <span className="flex items-center gap-1 text-[10px] font-semibold text-[#1C1A17] bg-[#FBFAF7]/90 backdrop-blur-sm rounded-full px-2.5 py-1">
+            🏪 {product.vendorName}
+          </span>
+        )}
+        {badge && !isSoldOut && (
+          <span className="text-[11px] tracking-[0.12em] border border-[#5C7A63] text-[#0e3719] bg-[#FFFFFF] rounded-full px-3 py-1">
+            {badge}
+          </span>
+        )}
+      </div>
 
       {/* 이미지 영역 */}
       <Link href={href} className="relative block aspect-square no-underline" style={{ background: meta.bg }}>

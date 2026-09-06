@@ -433,6 +433,7 @@ export default function ProductsPanel() {
   const [filterType, setFilterType] = useState<'all' | 'wine' | 'food'>('all')
   const [sortPrice, setSortPrice] = useState<'none' | 'asc' | 'desc'>('none')
   const [pendingOnlyFilter, setPendingOnlyFilter] = useState(false)
+  const [vendorFilter, setVendorFilter] = useState('all')
   const [approvingId, setApprovingId] = useState<number | null>(null)
 
   useEffect(() => {
@@ -444,6 +445,11 @@ export default function ProductsPanel() {
     [products]
   )
 
+  const vendorNames = useMemo(
+    () => Array.from(new Set(products.map(p => p.vendorName).filter((v): v is string => !!v))).sort(),
+    [products]
+  )
+
   const filtered = useMemo(() => {
     let list = products
     if (filterType !== 'all')
@@ -452,6 +458,8 @@ export default function ProductsPanel() {
       list = list.filter(p => p.name.toLowerCase().includes(searchName.toLowerCase()))
     if (filterOrigin)
       list = list.filter(p => p.origin === filterOrigin)
+    if (vendorFilter !== 'all')
+      list = list.filter(p => p.vendorName === vendorFilter)
     if (pendingOnlyFilter)
       list = list.filter(p => p.approvalStatus === 'pending')
     if (sortPrice === 'asc')
@@ -459,7 +467,7 @@ export default function ProductsPanel() {
     else if (sortPrice === 'desc')
       list = [...list].sort((a, b) => b.price - a.price)
     return list
-  }, [products, searchName, filterOrigin, filterType, sortPrice, pendingOnlyFilter])
+  }, [products, searchName, filterOrigin, filterType, sortPrice, pendingOnlyFilter, vendorFilter])
 
   const pendingCount = useMemo(() => products.filter(p => p.approvalStatus === 'pending').length, [products])
 
@@ -558,7 +566,7 @@ export default function ProductsPanel() {
     if (csvInputRef.current) csvInputRef.current.value = ''
   }
 
-  const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none' || pendingOnlyFilter
+  const isFiltered = searchName || filterOrigin || filterType !== 'all' || sortPrice !== 'none' || pendingOnlyFilter || vendorFilter !== 'all'
 
   return (
     <div>
@@ -611,8 +619,77 @@ export default function ProductsPanel() {
       {/*<FixedCostsSection />*/}
 
       {/* 필터 */}
-      <div className="flex flex-wrap gap-3 mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-        <div className="flex items-end">
+      <div className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+        <div className="flex flex-wrap gap-3">
+          {vendorNames.length > 1 && (
+            <div className="min-w-[140px]">
+              <label className="block text-xs font-semibold text-gray-500 mb-1">벤더별 상품</label>
+              <select
+                value={vendorFilter}
+                onChange={(e) => setVendorFilter(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+              >
+                <option value="all">전체</option>
+                {vendorNames.map(v => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="min-w-[100px]">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">구분</label>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'wine' | 'food')}
+              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+            >
+              <option value="all">전체</option>
+              <option value="wine">와인</option>
+              <option value="food">식품</option>
+            </select>
+          </div>
+          <div className="flex-1 min-w-[160px]">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">상품명</label>
+            <input
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              placeholder="검색..."
+              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+            />
+          </div>
+          <div className="min-w-[120px]">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">원산지</label>
+            <select
+              value={filterOrigin}
+              onChange={(e) => setFilterOrigin(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+            >
+              <option value="">전체</option>
+              {origins.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div className="min-w-[120px]">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">가격</label>
+            <select
+              value={sortPrice}
+              onChange={(e) => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}
+              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
+            >
+              <option value="none">기본</option>
+              <option value="asc">낮은순</option>
+              <option value="desc">높은순</option>
+            </select>
+          </div>
+          {isFiltered && (
+            <div className="flex items-end">
+              <button
+                onClick={() => { setSearchName(''); setFilterOrigin(''); setFilterType('all'); setSortPrice('none'); setPendingOnlyFilter(false); setVendorFilter('all') }}
+                className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+              >
+                초기화
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex mt-3 pt-3 border-t border-gray-200">
           <button
             onClick={() => setPendingOnlyFilter(v => !v)}
             className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
@@ -622,60 +699,6 @@ export default function ProductsPanel() {
             벤더 검수 대기만 ({pendingCount})
           </button>
         </div>
-        <div className="min-w-[100px]">
-          <label className="block text-xs font-semibold text-gray-500 mb-1">구분</label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as 'all' | 'wine' | 'food')}
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
-          >
-            <option value="all">전체</option>
-            <option value="wine">와인</option>
-            <option value="food">식품</option>
-          </select>
-        </div>
-        <div className="flex-1 min-w-[160px]">
-          <label className="block text-xs font-semibold text-gray-500 mb-1">상품명</label>
-          <input
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            placeholder="검색..."
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
-          />
-        </div>
-        <div className="min-w-[120px]">
-          <label className="block text-xs font-semibold text-gray-500 mb-1">원산지</label>
-          <select
-            value={filterOrigin}
-            onChange={(e) => setFilterOrigin(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
-          >
-            <option value="">전체</option>
-            {origins.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </div>
-        <div className="min-w-[120px]">
-          <label className="block text-xs font-semibold text-gray-500 mb-1">가격</label>
-          <select
-            value={sortPrice}
-            onChange={(e) => setSortPrice(e.target.value as 'none' | 'asc' | 'desc')}
-            className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gray-400"
-          >
-            <option value="none">기본</option>
-            <option value="asc">낮은순</option>
-            <option value="desc">높은순</option>
-          </select>
-        </div>
-        {isFiltered && (
-          <div className="flex items-end">
-            <button
-              onClick={() => { setSearchName(''); setFilterOrigin(''); setFilterType('all'); setSortPrice('none'); setPendingOnlyFilter(false) }}
-              className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
-            >
-              초기화
-            </button>
-          </div>
-        )}
       </div>
 
       {/* 리스트 */}

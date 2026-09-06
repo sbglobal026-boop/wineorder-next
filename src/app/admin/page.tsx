@@ -11,14 +11,18 @@ import ShippingPanel from './_components/ShippingPanel'
 import CsBoardPanel from './_components/CsBoardPanel'
 import NoticesPanel from './_components/NoticesPanel'
 import QnaPanel from './_components/QnaPanel'
+import VendorsPanel from './_components/VendorsPanel'
+import MembersPanel from './_components/MembersPanel'
 
-type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping' | 'cs-board' | 'notices' | 'qna'
+type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping' | 'cs-board' | 'notices' | 'qna' | 'vendors' | 'members'
 
-const VALID_PANELS: Panel[] = ['products', 'shipping', 'blog', 'cs-board', 'notices', 'qna', 'writers', 'banner', 'sections']
+const VALID_PANELS: Panel[] = ['products', 'shipping', 'vendors', 'members', 'blog', 'cs-board', 'notices', 'qna', 'writers', 'banner', 'sections']
 
 const navItems: { id: Panel; label: string; icon: string }[] = [
   { id: 'products', label: '상품 관리', icon: '🍷' },
   { id: 'shipping', label: '주문·배송 관리', icon: '🚚' },
+  { id: 'vendors', label: '벤더 관리', icon: '🏪' },
+  { id: 'members', label: '회원 관리', icon: '🧑‍🤝‍🧑' },
   { id: 'blog', label: '블로그 관리', icon: '✍️' },
   { id: 'cs-board', label: 'CS 게시판', icon: '💬' },
   { id: 'notices', label: '공지사항 관리', icon: '📢' },
@@ -86,6 +90,8 @@ function AdminContent() {
       <main className="flex-1 p-8 overflow-auto">
         {activePanel === 'products' && <ProductsPanel />}
         {activePanel === 'shipping' && <ShippingPanel />}
+        {activePanel === 'vendors' && <VendorsPanel />}
+        {activePanel === 'members' && <MembersPanel />}
         {activePanel === 'blog' && <BlogPanel />}
         {activePanel === 'cs-board' && <CsBoardPanel />}
         {activePanel === 'notices' && <NoticesPanel />}

@@ -14,22 +14,25 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // 주문(orders.items)엔 벤더 구분이 없어서, 상품ID→벤더명 맵을 만들어 주문마다 등장하는 벤더명을 붙여줌
+  // 주문(orders.items)엔 벤더 구분·사진이 없어서, 상품ID→벤더명/사진 맵을 만들어 주문마다 붙여줌
   const { data: products } = await supabase
     .from('products')
-    .select('id, vendors(shop_name)')
-  const productVendorMap = new Map<number, string>(
+    .select('id, image_url, vendors(shop_name)')
+  const productInfoMap = new Map<number, { vendorName: string; imageUrl: string | null }>(
     (products ?? []).map(p => {
       const vendor = p.vendors as unknown as { shop_name: string } | { shop_name: string }[] | null
       const shopName = Array.isArray(vendor) ? vendor[0]?.shop_name : vendor?.shop_name
-      return [p.id, shopName ?? '미상']
+      return [p.id, { vendorName: shopName ?? '미상', imageUrl: p.image_url }]
     })
   )
 
   const enriched = (data ?? []).map(order => {
-    const items = order.items as { productId: number }[]
-    const vendorNames = Array.from(new Set(items.map(i => productVendorMap.get(i.productId) ?? '미상')))
-    return { ...order, vendorNames }
+    const items = (order.items as { productId: number }[]).map(item => ({
+      ...item,
+      imageUrl: productInfoMap.get(item.productId)?.imageUrl ?? null,
+    }))
+    const vendorNames = Array.from(new Set(items.map(i => productInfoMap.get(i.productId)?.vendorName ?? '미상')))
+    return { ...order, items, vendorNames }
   })
 
   return NextResponse.json(enriched)

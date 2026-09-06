@@ -21,6 +21,7 @@ export type ProductRow = {
   alcohol: string | null
   stock: number | null
   vendor_id?: string | null
+  vendor_name?: string | null
   approval_status?: string
 }
 
@@ -44,6 +45,7 @@ export function rowToProduct(row: ProductRow): Product {
     alcohol: row.alcohol ?? undefined,
     stock: row.stock ?? 0,
     vendorId: row.vendor_id ?? undefined,
+    vendorName: row.vendor_name ?? undefined,
     approvalStatus: row.approval_status ?? undefined,
   }
 }

@@ -32,10 +32,19 @@ export default function MyPage() {
   const { currentUser, loading, logout } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('orders')
+  const [isVendor, setIsVendor] = useState(false)
 
   useEffect(() => {
     if (!loading && currentUser === null) router.replace('/login?redirect=/mypage')
   }, [loading, currentUser, router])
+
+  useEffect(() => {
+    if (!currentUser) return
+    fetch('/api/vendor/me')
+      .then(res => res.json())
+      .then(data => setIsVendor(!!data.isVendor))
+      .catch(() => setIsVendor(false))
+  }, [currentUser])
 
   if (!currentUser) return <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }} />
 
@@ -67,6 +76,14 @@ export default function MyPage() {
                 {t.label}
               </button>
             ))}
+            {isVendor && (
+              <Link
+                href="/vendor"
+                className="text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 text-[#605d5d] hover:bg-[#0e3719]/[0.04] hover:text-[#0e3719] transition-colors no-underline"
+              >
+                🏪 벤더 센터
+              </Link>
+            )}
             <button
               onClick={() => { logout(); router.push('/') }}
               className="text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 text-[#bab6b6] hover:text-[#0e3719] transition-colors"

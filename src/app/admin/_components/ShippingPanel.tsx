@@ -29,6 +29,7 @@ interface OrderItem {
   name: string
   qty: number
   price_eur: number
+  imageUrl?: string | null
 }
 
 interface SplitDelivery {
@@ -634,6 +635,19 @@ export default function ShippingPanel() {
                   onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                 >
                   <div className="flex items-center gap-4">
+                    <div className="relative shrink-0 w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
+                      {order.items[0]?.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300 text-lg">🍷</div>
+                      )}
+                      {order.items.length > 1 && (
+                        <span className="absolute bottom-0 right-0 text-[9px] font-bold bg-gray-900/80 text-white px-1 rounded-tl-md">
+                          +{order.items.length - 1}
+                        </span>
+                      )}
+                    </div>
                     <div>
                       <p className="text-xs font-mono text-gray-400">{order.order_number ?? order.id.slice(0, 8).toUpperCase()}</p>
                       <p className="text-sm font-bold text-gray-900">
