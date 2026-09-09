@@ -35,16 +35,33 @@ export interface ShippingRateRow {
   vat_rate: number
 }
 
+export interface OrderShippingItem {
+  qty: number
+  shippingFee?: number | null // 상품별 배송비 직접 입력값(개당). null/미입력 시 국가별 기본 배송비 대상
+}
+
 export function calcOrderTotals(params: {
   zone: CountryZone | null
   subtotal: number
-  totalQty: number
+  items: OrderShippingItem[]
   splitDelivery: boolean
   shippingRates: ShippingRateRow[]
 }) {
-  const { zone, subtotal, totalQty, splitDelivery, shippingRates } = params
+  const { zone, subtotal, items, splitDelivery, shippingRates } = params
+  const totalQty = items.reduce((sum, i) => sum + i.qty, 0)
   const rateInfo = zone ? shippingRates.find(r => r.zone === zone) : undefined
-  const shippingFee = rateInfo ? (zone === 'KR' ? rateInfo.fee * totalQty : rateInfo.fee) : 0
+
+  // 배송비를 직접 입력한 상품은 국가별 기본 배송비 계산에서 제외하고 개당 값 × 수량으로 따로 더함
+  const defaultItems = items.filter(i => i.shippingFee == null)
+  const overrideItems = items.filter(i => i.shippingFee != null)
+  const defaultQty = defaultItems.reduce((sum, i) => sum + i.qty, 0)
+
+  const defaultShippingFee = (rateInfo && defaultItems.length > 0)
+    ? (zone === 'KR' ? rateInfo.fee * defaultQty : rateInfo.fee)
+    : 0
+  const overrideShippingFee = overrideItems.reduce((sum, i) => sum + (i.shippingFee ?? 0) * i.qty, 0)
+  const shippingFee = defaultShippingFee + overrideShippingFee
+
   const splitFee = splitDelivery ? totalQty * 1 : 0
   const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
   const total = subtotal + shippingFee + splitFee + vat

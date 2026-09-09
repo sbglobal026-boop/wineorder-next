@@ -326,6 +326,18 @@ function ProductForm({
           placeholder="예: 10"
         />
       </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">배송비 (직접 입력, 개당)</label>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={data.shippingFee ?? ''}
+          onChange={(e) => onChange({ ...data, shippingFee: e.target.value === '' ? null : Number(e.target.value) })}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          placeholder="비워두면 국가별 기본 배송비 적용"
+        />
+      </div>
       <div className="md:col-span-3">
         <label className="block text-xs font-semibold text-gray-600 mb-1">상품 설명</label>
         <textarea

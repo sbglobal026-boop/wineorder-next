@@ -23,6 +23,7 @@ export type ProductRow = {
   vendor_id?: string | null
   vendor_name?: string | null
   approval_status?: string
+  shipping_fee?: number | null
 }
 
 export function rowToProduct(row: ProductRow): Product {
@@ -47,6 +48,7 @@ export function rowToProduct(row: ProductRow): Product {
     vendorId: row.vendor_id ?? undefined,
     vendorName: row.vendor_name ?? undefined,
     approvalStatus: row.approval_status ?? undefined,
+    shippingFee: row.shipping_fee ?? null,
   }
 }
 
@@ -68,6 +70,7 @@ export function productToRow(product: Omit<Product, 'id'>) {
     volume: product.volume ?? null,
     alcohol: product.alcohol ?? null,
     stock: product.stock ?? 0,
+    shipping_fee: product.shippingFee ?? null,
   }
 }
 

@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   const productIds = [...new Set(items.map((i: { productId: number }) => i.productId))]
   const { data: products } = await adminSupabase
     .from('products')
-    .select('id, name, price, origin, stock')
+    .select('id, name, price, origin, stock, shipping_fee')
     .in('id', productIds)
   const productMap = new Map((products ?? []).map(p => [p.id, p]))
 
@@ -63,7 +63,8 @@ export async function POST(request: Request) {
 
   const { data: shippingRates } = await adminSupabase.from('shipping_rates').select('zone, fee, vat_rate')
   const { shippingFee, splitFee, vat, total } = calcOrderTotals({
-    zone, subtotal, totalQty, splitDelivery: !!splitDelivery, shippingRates: shippingRates ?? [],
+    zone, subtotal, splitDelivery: !!splitDelivery, shippingRates: shippingRates ?? [],
+    items: trustedItems.map(i => ({ qty: i.qty, shippingFee: productMap.get(i.productId)?.shipping_fee ?? null })),
   })
 
   let dutyEur = 0

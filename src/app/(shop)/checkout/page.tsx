@@ -101,10 +101,13 @@ function CheckoutContent() {
   const selectedAddress = addresses.find(a => a.id === selectedAddressId)
   const zone = selectedAddress ? getZone(selectedAddress.country) : null
 
-  // 배송비 데이터베이스에서 (서버의 /api/orders 도 동일 로직으로 재계산함 — src/lib/orderPricing.ts)
+  // 배송비 데이터베이스에서 (서버의 /api/checkout/session 도 동일 로직으로 재계산함 — src/lib/orderPricing.ts)
   const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
   const rateInfo = shippingRates.find(r => r.zone === zone)
-  const { shippingFee, splitFee, vat, total } = calcOrderTotals({ zone, subtotal, totalQty, splitDelivery, shippingRates })
+  const { shippingFee, splitFee, vat, total } = calcOrderTotals({
+    zone, subtotal, splitDelivery, shippingRates,
+    items: items.map(item => ({ qty: item.qty, shippingFee: item.product.shippingFee })),
+  })
 
   useEffect(() => {
     // 배송지 불러오기

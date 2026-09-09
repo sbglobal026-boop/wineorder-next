@@ -19,6 +19,7 @@ export type Product = {
   vendorId?: string
   vendorName?: string // 공개 상품 목록/상세에서 쓰는 벤더(입점샵) 이름
   approvalStatus?: string // live | pending — 벤더 상품 검수 상태
+  shippingFee?: number | null // 상품별 배송비 직접 입력(개당). null/미입력 시 국가별 기본 배송비 적용
 }
 
 export type FixedCost = {
