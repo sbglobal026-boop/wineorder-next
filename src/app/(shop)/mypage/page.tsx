@@ -8,6 +8,7 @@ import { fetchMyOrders, MyOrder, ORDER_STATUS_LABEL } from '@/lib/orders'
 import { fetchMyReviews, deleteReview, ProductReview } from '@/lib/reviews'
 import { fetchWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
+import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 import {
   fetchMyAddresses, saveAddress, deleteAddress, setDefaultAddress,
   Address, AddressInput, COUNTRY_OPTIONS, countryLabel,
@@ -39,7 +40,7 @@ export default function MyPage() {
   }, [loading, currentUser, router])
 
   useEffect(() => {
-    if (!currentUser) return
+    if (!currentUser || !VENDOR_MARKETPLACE_ENABLED) return
     fetch('/api/vendor/me')
       .then(res => res.json())
       .then(data => setIsVendor(!!data.isVendor))
@@ -76,7 +77,7 @@ export default function MyPage() {
                 {t.label}
               </button>
             ))}
-            {isVendor && (
+            {VENDOR_MARKETPLACE_ENABLED && isVendor && (
               <Link
                 href="/vendor"
                 className="text-left whitespace-nowrap text-sm rounded-xl px-3 py-2.5 text-[#605d5d] hover:bg-[#0e3719]/[0.04] hover:text-[#0e3719] transition-colors no-underline"

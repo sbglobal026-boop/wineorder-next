@@ -5,6 +5,7 @@ import { Product } from '@/data/products'
 import { uploadProductImage } from '@/lib/uploadImage'
 import { fetchAdminProducts, createProductRow, updateProductRow, deleteProductRow } from '@/lib/products'
 import { productsToCsv, parseProductsCsv, downloadCsv } from '@/lib/productsCsv'
+import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -621,7 +622,7 @@ export default function ProductsPanel() {
       {/* 필터 */}
       <div className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
         <div className="flex flex-wrap gap-3">
-          {vendorNames.length > 1 && (
+          {VENDOR_MARKETPLACE_ENABLED && vendorNames.length > 1 && (
             <div className="min-w-[140px]">
               <label className="block text-xs font-semibold text-gray-500 mb-1">벤더별 상품</label>
               <select
@@ -689,16 +690,18 @@ export default function ProductsPanel() {
             </div>
           )}
         </div>
-        <div className="flex mt-3 pt-3 border-t border-gray-200">
-          <button
-            onClick={() => setPendingOnlyFilter(v => !v)}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
-              pendingOnlyFilter ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-            }`}
-          >
-            벤더 검수 대기만 ({pendingCount})
-          </button>
-        </div>
+        {VENDOR_MARKETPLACE_ENABLED && (
+          <div className="flex mt-3 pt-3 border-t border-gray-200">
+            <button
+              onClick={() => setPendingOnlyFilter(v => !v)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                pendingOnlyFilter ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+              }`}
+            >
+              벤더 검수 대기만 ({pendingCount})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 리스트 */}
@@ -751,7 +754,7 @@ export default function ProductsPanel() {
                   <td className="px-3 py-1.5 text-sm font-semibold text-gray-900 max-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                       <p className="truncate cursor-pointer hover:text-gray-500 transition-colors" onClick={() => startEdit(product)}>{product.name}</p>
-                      {product.approvalStatus === 'pending' && (
+                      {VENDOR_MARKETPLACE_ENABLED && product.approvalStatus === 'pending' && (
                         <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">검수대기</span>
                       )}
                     </div>
@@ -780,7 +783,7 @@ export default function ProductsPanel() {
                   </td>
                   <td className="px-3 py-1.5">
                     <div className="flex items-center gap-2">
-                      {product.approvalStatus === 'pending' && (
+                      {VENDOR_MARKETPLACE_ENABLED && product.approvalStatus === 'pending' && (
                         <button
                           onClick={() => handleApprove(product.id)}
                           disabled={approvingId === product.id}

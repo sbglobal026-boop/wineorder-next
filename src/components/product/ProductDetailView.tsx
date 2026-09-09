@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 import { fetchReviews, addReview, deleteReview, ProductReview } from '@/lib/reviews'
 import { fetchWishlist, addToWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
+import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 
 // 카테고리별 상단 카드 그라데이션 (카드 컨셉)
 const categoryGradient: Record<string, string> = {
@@ -195,7 +196,7 @@ export default function ProductDetailView({
 
   // 상품 정보 스펙표 (용량·알코올은 데이터 필드 없음 → 껍데기 '—')
   const specRows = [
-    ...(product.vendorName ? [{ k: '벤더', v: product.vendorName }] : []),
+    ...(VENDOR_MARKETPLACE_ENABLED && product.vendorName ? [{ k: '벤더', v: product.vendorName }] : []),
     { k: '원산지', v: product.origin },
     { k: '품종', v: product.grapeVariety || '—' },
     { k: '빈티지', v: extractVintage(product.name) },

@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
+import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 
 // 상품 카드 (카드 컨셉 · 둥근 카드). 와인/음식 리스트, 장바구니·상세 추천에서 공유.
 
@@ -34,7 +35,7 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
     <div className="cutecard group relative flex flex-col rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden">
       {/* 배지 — 벤더 아이콘(항상 위쪽) + 품절임박/신상(있을 때만) 순서로 쌓임 */}
       <div className="absolute top-3.5 left-3.5 z-[2] flex flex-col items-start gap-1.5">
-        {product.vendorName && (
+        {VENDOR_MARKETPLACE_ENABLED && product.vendorName && (
           <span className="flex items-center gap-1 text-[10px] font-semibold text-[#1C1A17] bg-[#FBFAF7]/90 backdrop-blur-sm rounded-full px-2.5 py-1">
             🏪 {product.vendorName}
           </span>

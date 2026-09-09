@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import * as XLSX from 'xlsx'
+import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 
 const ZONE_LABELS: Record<string, { label: string; icon: string; desc: string }> = {
   DE: { label: '독일', icon: '🇩🇪', desc: '독일 내 배송 & VAT 적용' },
@@ -586,7 +587,7 @@ export default function ShippingPanel() {
             >
               CS 접수된 주문만 ({orders.filter(o => (o.cs_requests ?? []).length > 0).length})
             </button>
-            {allVendorNames.length > 1 && (
+            {VENDOR_MARKETPLACE_ENABLED && allVendorNames.length > 1 && (
               <select
                 value={vendorFilter}
                 onChange={(e) => setVendorFilter(e.target.value)}
@@ -660,13 +661,15 @@ export default function ShippingPanel() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex gap-1">
-                      {(order.vendorNames ?? []).map(name => (
-                        <span key={name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 whitespace-nowrap">
-                          {name}
-                        </span>
-                      ))}
-                    </div>
+                    {VENDOR_MARKETPLACE_ENABLED && (
+                      <div className="flex gap-1">
+                        {(order.vendorNames ?? []).map(name => (
+                          <span key={name} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 whitespace-nowrap">
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <span className="text-sm font-black text-gray-900">€{order.total_eur.toLocaleString()}</span>
                     <StatusBadge status={order.status} />
                     <span className="text-gray-300 text-xs">{expandedOrderId === order.id ? '▲' : '▼'}</span>
