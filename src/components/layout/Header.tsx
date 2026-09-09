@@ -52,7 +52,10 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { currentUser, logout } = useAuth()
   const { config } = useAppConfig()
-  const cartCount = config.cart.reduce((sum, c) => sum + c.qty, 0)
+  // 삭제된 상품을 가리키는 장바구니 항목은 실제 화면(카트/체크아웃)에서도 제외되므로 카운트에서도 동일하게 제외
+  const cartCount = config.cart
+    .filter(c => config.products.some(p => p.id === c.productId))
+    .reduce((sum, c) => sum + c.qty, 0)
   const [isAdmin, setIsAdmin] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
