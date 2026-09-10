@@ -60,6 +60,7 @@ export default function OrderPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [cancelError, setCancelError] = useState('')
+  const [cancelDone, setCancelDone] = useState(false)
   const [showCancelRequest, setShowCancelRequest] = useState(false)
   const [cancelRequestMessage, setCancelRequestMessage] = useState('')
   const [cancelRequestSending, setCancelRequestSending] = useState(false)
@@ -97,7 +98,7 @@ export default function OrderPage() {
         return
       }
       setOrder({ ...order, status: 'cancelled' })
-      setShowCancelConfirm(false)
+      setCancelDone(true)
     } catch {
       setCancelError('주문 취소 중 오류가 발생했습니다')
     } finally {
@@ -163,6 +164,21 @@ export default function OrderPage() {
       </header>
 
       <div className="max-w-[1240px] mx-auto px-5 pb-16">
+        {/* 취소된 주문 — 나중에 다시 들어와도 환불 진행 상황을 알 수 있게 상시 표시 */}
+        {order.status === 'cancelled' && (
+          <div className="rounded-[20px] border border-[#e4ddd3] bg-[#FFFFFF] px-5 py-4 mb-6 flex items-start gap-3">
+            <span className="text-lg leading-none mt-0.5">↩︎</span>
+            <div>
+              <p className="text-sm font-semibold text-[#1C1A17] mb-1">취소된 주문입니다</p>
+              <p className="text-[13px] leading-relaxed text-[#605d5d]">
+                결제하신 €{order.total_eur.toLocaleString()}는 결제하신 수단으로 환불 처리됐습니다.
+                카드사·은행에 따라 영업일 기준 5~10일 내에 명세서에 반영되며, 결제 직후 취소된 경우에는
+                환불 내역 대신 원래 결제 내역이 사라지는 형태로 표시될 수 있습니다.
+              </p>
+            </div>
+          </div>
+        )}
+
         <CheckoutSteps current={3} />
 
         {/* 완료 확인 */}
@@ -271,29 +287,47 @@ export default function OrderPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => !cancelling && setShowCancelConfirm(false)} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 md:p-7">
-            <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">주문을 취소하시겠어요?</h3>
-            <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
-              결제하신 금액은 결제 수단으로 환불되며, 되돌릴 수 없습니다.
-            </p>
-            {cancelError && (
-              <p className="text-xs text-red-600 mb-4">{cancelError}</p>
+            {cancelDone ? (
+              <>
+                <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">주문이 취소됐어요</h3>
+                <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
+                  결제하신 €{order.total_eur.toLocaleString()}는 결제하신 수단으로 환불 처리됐습니다.
+                  카드사·은행에 따라 영업일 기준 5~10일 내에 명세서에 반영됩니다.
+                </p>
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors cursor-pointer"
+                >
+                  확인
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">주문을 취소하시겠어요?</h3>
+                <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
+                  결제하신 금액은 결제 수단으로 환불되며, 되돌릴 수 없습니다.
+                </p>
+                {cancelError && (
+                  <p className="text-xs text-red-600 mb-4">{cancelError}</p>
+                )}
+                <div className="flex flex-col gap-2.5">
+                  <button
+                    onClick={handleCancel}
+                    disabled={cancelling}
+                    className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {cancelling ? '처리 중...' : '취소 확정 — 환불 진행'}
+                  </button>
+                  <button
+                    onClick={() => setShowCancelConfirm(false)}
+                    disabled={cancelling}
+                    className="w-full text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 py-3 transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    돌아가기
+                  </button>
+                </div>
+              </>
             )}
-            <div className="flex flex-col gap-2.5">
-              <button
-                onClick={handleCancel}
-                disabled={cancelling}
-                className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {cancelling ? '처리 중...' : '취소 확정 — 환불 진행'}
-              </button>
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                disabled={cancelling}
-                className="w-full text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-700 py-3 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                돌아가기
-              </button>
-            </div>
           </div>
         </div>
       )}
