@@ -130,10 +130,11 @@ export async function POST(request: Request) {
 
   // Embedded Checkout — 사이트를 벗어나지 않고 체크아웃 페이지 안에 결제창을 iframe으로 띄움
   // 참고: 이 Stripe 계정의 API 버전에서는 ui_mode 'embedded'가 폐기되어 'embedded_page'를 써야 함
+  // payment_method_types를 지정하지 않아야 Stripe 대시보드에 켜둔 결제수단이 동적으로 노출됨
+  // (카카오페이·네이버페이 등 현지 통화 전용 수단은 Adaptive Pricing과 함께 이 방식에서만 표시됨)
   const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
     ui_mode: 'embedded_page',
-    payment_method_types: ['card'],
     locale: 'auto', // 결제창 언어를 방문자 브라우저 언어에 맞춰 자동 설정 (한국 방문자는 한국어로 보임)
     line_items: lineItems,
     customer_email: user.email ?? undefined,
