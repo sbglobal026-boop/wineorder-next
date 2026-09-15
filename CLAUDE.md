@@ -20,7 +20,7 @@
 | 상품 리뷰 | Supabase `product_reviews` (`src/lib/reviews.ts`) |
 | 고정비 | Supabase `fixed_costs` (`src/lib/fixedCosts.ts`) |
 | 배송비 요율 | Supabase `shipping_rates` (`/api/admin/shipping-rates`) |
-| 주문 / 분할배송 | API 라우트 `/api/orders`, `/api/admin/orders`, `/api/admin/split-deliveries` |
+| 주문 / 분할배송 | 주문 생성은 Stripe 결제 경유만: `/api/checkout/session` → 결제 완료 시 `/api/checkout/confirm`·`/api/webhooks/stripe`가 `src/lib/checkoutFinalize.ts`로 생성. 취소는 `/api/orders/[id]/cancel`·`cancel-request`, 어드민은 `/api/admin/orders`, `/api/admin/split-deliveries` |
 | 회원 인증 | Supabase Auth (`src/context/AuthContext.tsx`) |
 | 이미지 파일 | Supabase Storage 버킷 `blog-images`, `product-images` (`src/lib/uploadImage.ts`) — base64로 DB에 저장하지 않음 |
 | 승인된 작성자 목록, 장바구니(사용자별) | 브라우저 `localStorage` (`src/context/AppConfigContext.tsx`) — 작성자 목록만 서버 미이전 |
