@@ -32,7 +32,7 @@ export default function FavouritesCarousel() {
           {product.description}
         </p>
 
-        <Link href="/events" className="inline-flex items-center gap-2 text-[#FBFAF7] font-semibold text-sm no-underline hover:opacity-80 transition-opacity">
+        <Link href="/" className="inline-flex items-center gap-2 text-[#FBFAF7] font-semibold text-sm no-underline hover:opacity-80 transition-opacity">
           Go to the Top Drop <span>→</span>
         </Link>
       </div>

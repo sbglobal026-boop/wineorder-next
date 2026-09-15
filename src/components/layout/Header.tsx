@@ -9,13 +9,16 @@ import { childCategories, categoryLabel } from '@/lib/blogCategories'
 
 type NavItem = { label: string; href: string; children?: { label: string; href: string }[] }
 
+// 메인(/) = Top Drop 목록. 안내·블로그·저널 메뉴바 맨 앞에만 붙이고,
+// Top Drop 메뉴와 같은 곳을 가리키므로 두 메뉴가 함께 보이는 곳(쇼핑 메뉴바·기본 메뉴바)에서는 뺌
+const homeItem: NavItem = { label: 'Home', href: '/' }
+
 const navItems: NavItem[] = [
-  { label: 'Home', href: '/' },
   { label: '소개', href: '/about' },
   { label: 'FAQ', href: '/faq' },
   {
     label: 'Top Drop',
-    href: '/events',
+    href: '/',
     children: [
       { label: 'Wine', href: '/events/wines' },
       { label: 'Food', href: '/events/food' },
@@ -40,10 +43,9 @@ const navItems: NavItem[] = [
   { label: 'Journal', href: '/journal' },
 ]
 
-// /events 계열 페이지 전용 평탄화 메뉴 (Top Drop 하위메뉴를 상단으로 올림, 나머지 숨김)
+// 메인(/)·/events 계열 페이지 전용 평탄화 메뉴 (Top Drop 하위메뉴를 상단으로 올림, 나머지 숨김)
 const eventsNav: NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Top Drop', href: '/events' },
+  { label: 'Top Drop', href: '/' },
   { label: 'Wine', href: '/events/wines' },
   { label: 'Food', href: '/events/food' },
 ]
@@ -59,28 +61,28 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
-  // 홈("/")에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
-  const isHome = pathname === '/'
-  // 쇼핑 플로우(상품·장바구니·결제)는 와인 페이지와 동일한 메뉴바(eventsNav) 사용
-  const isEvents = pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/order') || pathname.startsWith('/mypage')
+  // 카드 선택 화면(/welcome)에서는 미니멀 헤더 — Home/소개/FAQ 메뉴 + Login 버튼만 노출
+  const isHome = pathname === '/welcome'
+  // 메인(Top Drop)과 쇼핑 플로우(상품·장바구니·결제)는 와인 페이지와 동일한 메뉴바(eventsNav) 사용
+  const isEvents = pathname === '/' || pathname.startsWith('/events') || pathname.startsWith('/cart') || pathname.startsWith('/checkout') || pathname.startsWith('/order') || pathname.startsWith('/mypage')
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
   // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
   const INFO_PREFIXES = ['/about', '/faq', '/cs-board', '/shipping-guide', '/returns', '/notices', '/ueber-uns', '/agb', '/datenschutz', '/impressum']
   const isInfo = INFO_PREFIXES.some(p => pathname.startsWith(p))
-  const HOME_NAV = ['/', '/about', '/faq']
+  const HOME_NAV = ['/about', '/faq']
   // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
-  const BLOG_NAV = ['/', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
+  const BLOG_NAV = ['/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
   // 저널 페이지: Home + Journal만, 나머지 숨김
-  const JOURNAL_NAV = ['/', '/journal']
+  const JOURNAL_NAV = ['/journal']
   const navToShow = isHome || isInfo
-    ? navItems.filter(i => HOME_NAV.includes(i.href))
+    ? [homeItem, ...navItems.filter(i => HOME_NAV.includes(i.href))]
     : isEvents
       ? eventsNav
       : isBlog
-        ? navItems.filter(i => BLOG_NAV.includes(i.href))
+        ? [homeItem, ...navItems.filter(i => BLOG_NAV.includes(i.href))]
         : isJournal
-          ? navItems.filter(i => JOURNAL_NAV.includes(i.href))
+          ? [homeItem, ...navItems.filter(i => JOURNAL_NAV.includes(i.href))]
           : navItems
 
   useEffect(() => {

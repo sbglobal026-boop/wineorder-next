@@ -4,8 +4,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import CartDrawer from '@/components/cart/CartDrawer'
 
-// 홈("/")에서는 푸터만 숨김 (카드 컨셉 랜딩을 깔끔하게 보여주기 위함). 헤더는 모든 페이지에 표시
-const HIDE_FOOTER_PATHS = ['/']
+// 카드 선택 화면(/welcome)에서는 푸터만 숨김 (카드 컨셉 랜딩을 깔끔하게 보여주기 위함). 헤더는 모든 페이지에 표시
+const HIDE_FOOTER_PATHS = ['/welcome']
 
 export default function ShopChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

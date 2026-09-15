@@ -10,7 +10,7 @@ export const HOME_CARD_STATIC: Record<HomeCardKey, {
   href: string; bg: string; blob: string; ink: string; shape: string; emoji: string
 }> = {
   wine: {
-    href: '/events',
+    href: '/',
     bg: 'radial-gradient(90% 120% at 70% 10%, #eef3ea, #dce8d8)',
     blob: '#8fae87', ink: '#0e3719', shape: '42% 58% 60% 40% / 45% 45% 55% 55%', emoji: '🍷',
   },

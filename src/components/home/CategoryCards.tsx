@@ -5,7 +5,7 @@ import {
   HOME_CARD_KEYS, HOME_CARD_STATIC, DEFAULT_HOME_CONTENT, HomeContent, fetchHomeContent,
 } from '@/lib/homeCards'
 
-// 홈 메인: 3개 카테고리 선택 카드. 텍스트·사진은 어드민 배너관리에서 편집(app_config), 링크/색은 고정.
+// 카드 선택 화면(/welcome): 3개 카테고리 선택 카드. 텍스트·사진은 어드민 배너관리에서 편집(app_config), 링크/색은 고정.
 
 export default function CategoryCards() {
   const [content, setContent] = useState<HomeContent>(DEFAULT_HOME_CONTENT)
