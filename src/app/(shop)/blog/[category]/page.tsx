@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext'
 import { fetchBlogPostsPage, BlogPost } from '@/lib/blog'
 import { isBlogCategory, BlogCategory, childCategories, categoryLabel, categoryHero } from '@/lib/blogCategories'
 import { BlogCard } from '@/components/blog/BlogCard'
+import LoadingDots from '@/components/LoadingDots'
 
 const PER_PAGE = 9
 
@@ -99,7 +100,7 @@ function BlogCategoryPageInner({ category }: { category: BlogCategory }) {
         </div>
 
         {loading ? (
-          <p className="text-[#9b9797] text-sm text-center py-24">불러오는 중...</p>
+          <LoadingDots className="py-24" />
         ) : pagePosts.length === 0 ? (
           <p className="text-[#9b9797] text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (

@@ -7,6 +7,7 @@ import { topLevelCategories, categoryLabel, childCategories, BlogCategory } from
 import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { BlogCard, BlogFeaturedCard } from '@/components/blog/BlogCard'
+import LoadingDots from '@/components/LoadingDots'
 
 const PER_PAGE = 9
 
@@ -102,7 +103,7 @@ export default function BlogHomePage() {
         </div>
 
         {loading ? (
-          <p className="text-[#9b9797] text-sm text-center py-24">불러오는 중...</p>
+          <LoadingDots className="py-24" />
         ) : isEmpty ? (
           <p className="text-[#9b9797] text-sm text-center py-24">아직 작성된 글이 없습니다</p>
         ) : (

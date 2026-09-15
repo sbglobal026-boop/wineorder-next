@@ -5,6 +5,7 @@ import { fetchBlogPost, BlogPost } from '@/lib/blog'
 import { isBlogCategory, categoryLabel } from '@/lib/blogCategories'
 import BlogPostCard from '@/components/blog/BlogPostCard'
 import BlogHero from '@/components/blog/BlogHero'
+import LoadingDots from '@/components/LoadingDots'
 import Link from 'next/link'
 
 export default function BlogPostPage() {
@@ -19,7 +20,12 @@ export default function BlogPostPage() {
   }, [id])
 
   if (loading) {
-    return <div className="bg-[#F9F4EE] min-h-screen" />
+    // 글을 불러오는 동안 빈 화면 대신 가운데에 로딩 표시 ("글을 찾을 수 없습니다" 화면과 같은 배치)
+    return (
+      <div className="bg-[#F9F4EE] min-h-screen flex items-center justify-center">
+        <LoadingDots />
+      </div>
+    )
   }
 
   if (!post) {
