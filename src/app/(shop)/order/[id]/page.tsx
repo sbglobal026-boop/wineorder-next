@@ -34,6 +34,8 @@ interface Order {
   shipping_fee_eur: number
   split_delivery: boolean
   split_delivery_fee_eur: number
+  referral_code: string | null
+  discount_eur: number
   tracking_number: string | null
   created_at: string
   split_deliveries?: SplitDelivery[]
@@ -246,6 +248,9 @@ export default function OrderPage() {
               <h3 className="font-[family-name:var(--font-playfair-display)] text-[20px] text-[#1C1A17] mb-4">결제 정보</h3>
               <div className="flex flex-col gap-2.5 text-sm pb-4 border-b border-[#eae7e7]">
                 <div className="flex justify-between"><span className="text-[#9b9797]">상품 합계</span><span className="text-[#1C1A17]">€{subtotal.toLocaleString()}</span></div>
+                {Number(order.discount_eur) > 0 && (
+                  <div className="flex justify-between"><span className="text-[#9b9797]">추천인 할인 ({order.referral_code})</span><span className="text-[#1C1A17]">−€{Number(order.discount_eur).toLocaleString()}</span></div>
+                )}
                 <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#1C1A17]">€{order.shipping_fee_eur.toLocaleString()}</span></div>
                 {order.split_delivery && (
                   <div className="flex justify-between"><span className="text-[#9b9797]">분할배송비</span><span className="text-[#1C1A17]">€{order.split_delivery_fee_eur.toLocaleString()}</span></div>

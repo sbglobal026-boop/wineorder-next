@@ -70,7 +70,11 @@ function CheckoutContent() {
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])
   const [eurToKrw, setEurToKrw] = useState<number | null>(null)
   const [eurToUsd, setEurToUsd] = useState<number | null>(null)
-  const [splitDelivery, setSplitDelivery] = useState(false)
+  // 추천인 코드: 입력칸 값 / [적용]으로 확인된 코드와 할인율
+  const [referralInput, setReferralInput] = useState('')
+  const [appliedReferral, setAppliedReferral] = useState<{ code: string; discountPercent: number } | null>(null)
+  const [referralError, setReferralError] = useState('')
+  const [referralLoading, setReferralLoading] = useState(false)
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false)
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
   const [orderLoading, setOrderLoading] = useState(false)
@@ -102,12 +106,38 @@ function CheckoutContent() {
   const zone = selectedAddress ? getZone(selectedAddress.country) : null
 
   // 배송비 데이터베이스에서 (서버의 /api/checkout/session 도 동일 로직으로 재계산함 — src/lib/orderPricing.ts)
-  const totalQty = items.reduce((sum, item) => sum + item.qty, 0)
   const rateInfo = shippingRates.find(r => r.zone === zone)
-  const { shippingFee, splitFee, vat, total } = calcOrderTotals({
-    zone, subtotal, splitDelivery, shippingRates,
+  const { shippingFee, discount, vat, total } = calcOrderTotals({
+    zone, subtotal, shippingRates,
     items: items.map(item => ({ qty: item.qty, shippingFee: item.product.shippingFee })),
+    discountPercent: appliedReferral?.discountPercent ?? 0,
   })
+
+  // [적용] 버튼 — 서버에서 코드 확인 후 할인율을 받아옴 (실제 결제 금액은 결제 시 서버가 다시 계산)
+  const applyReferral = async () => {
+    const code = referralInput.trim()
+    if (!code || referralLoading) return
+    setReferralLoading(true)
+    setReferralError('')
+    try {
+      const res = await fetch('/api/checkout/referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setReferralError(data.error ?? '추천인 코드를 확인하지 못했습니다')
+        return
+      }
+      setAppliedReferral({ code: data.code, discountPercent: data.discountPercent })
+      setReferralInput('')
+    } catch {
+      setReferralError('추천인 코드를 확인하지 못했습니다')
+    } finally {
+      setReferralLoading(false)
+    }
+  }
 
   useEffect(() => {
     // 배송지 불러오기
@@ -548,10 +578,57 @@ function CheckoutContent() {
 
             {/* 요금 내역 */}
             <div className="rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-6 mt-3 flex flex-col gap-3">
+              {/* 추천인 코드 (선택) */}
+              <div className="pb-3 border-b border-gray-100">
+                <p className="text-sm text-gray-500 mb-2">추천인 코드 <span className="text-xs text-gray-400">(선택)</span></p>
+                {appliedReferral ? (
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-[#F9F4EE] px-3 py-2.5">
+                    <span className="text-sm text-gray-900">
+                      <span className="font-mono font-semibold">{appliedReferral.code}</span>
+                      <span className="text-[#0e3719] ml-2">{appliedReferral.discountPercent}% 할인 적용</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAppliedReferral(null)}
+                      className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2 shrink-0"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={referralInput}
+                      onChange={e => { setReferralInput(e.target.value); setReferralError('') }}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); applyReferral() } }}
+                      maxLength={30}
+                      placeholder="코드를 입력해주세요"
+                      className="flex-1 min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm uppercase placeholder:normal-case focus:outline-none focus:border-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyReferral}
+                      disabled={!referralInput.trim() || referralLoading}
+                      className="shrink-0 rounded-lg bg-[#0e3719] hover:bg-[#22301C] text-white text-sm font-semibold px-4 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {referralLoading ? '확인 중' : '적용'}
+                    </button>
+                  </div>
+                )}
+                {referralError && <p className="text-xs text-red-500 mt-1.5">{referralError}</p>}
+              </div>
+
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">상품 금액</span>
                 <span className="text-gray-900 font-medium">€{subtotal.toLocaleString()}</span>
               </div>
+
+              {appliedReferral && discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">추천인 할인 ({appliedReferral.discountPercent}%)</span>
+                  <span className="text-[#0e3719] font-medium">−€{discount.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+              )}
 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">배송비</span>
@@ -563,34 +640,10 @@ function CheckoutContent() {
                 </span>
               </div>
 
-              {/* 분할배송 요청 (배송지가 한국일 경우에만)*/}
-              {zone === 'KR' && (
-                <div className="flex items-start gap-3 pl-1">
-                <input
-                  type="checkbox"
-                  id="split_delivery"
-                  checked={splitDelivery}
-                  onChange={e => setSplitDelivery(e.target.checked)}
-                  className="mt-0.5 cursor-pointer"
-                />
-                <label htmlFor="split_delivery" className="text-sm text-gray-600 cursor-pointer">
-                  분할배송 요청
-                  <span className="block text-xs text-gray-400 mt-0.5">병당 €1 추가 · 총 €{totalQty} 추가</span>
-                </label>
-              </div>
-              )}
-
               {zone === 'DE' && vat > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">부가세 (VAT {((rateInfo?.vat_rate ?? 0) * 100).toFixed(0)}%)</span>
                   <span className="text-gray-900 font-medium">€{vat.toFixed(2)}</span>
-                </div>
-              )}
-
-              {splitDelivery && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">분할배송비 ({totalQty}병 × €1)</span>
-                  <span className="text-gray-900 font-medium">€{splitFee}</span>
                 </div>
               )}
 
@@ -673,14 +726,21 @@ function CheckoutContent() {
                         totalEur: total,
                         shippingFeeEur: shippingFee,
                         dutyEur: dutyTotal,
-                        splitDelivery,
-                        splitFeeEur: splitFee,
                         memo: null,
+                        referralCode: appliedReferral?.code ?? null,
+                        expectedDiscountPercent: appliedReferral?.discountPercent ?? null,
                       }),
                     })
                     const data = await res.json()
                     if (!res.ok) {
                       setOrderError(data.error ?? '결제 처리 중 오류가 발생했습니다')
+                      // 추천인 코드가 그 사이 종료됐거나 할인율이 바뀐 경우 화면 금액도 맞춰서 갱신
+                      if (data.referralInvalid) {
+                        setAppliedReferral(null)
+                        setReferralError(data.error)
+                      } else if (data.referral) {
+                        setAppliedReferral(data.referral)
+                      }
                       return
                     }
                     // 사이트 안에 Stripe 결제창을 띄움 (리다이렉트 없음) — 장바구니는 결제 성공 후 주문 상세 페이지에서 비움

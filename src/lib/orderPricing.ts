@@ -40,15 +40,19 @@ export interface OrderShippingItem {
   shippingFee?: number | null // 상품별 배송비 직접 입력값(개당). null/미입력 시 국가별 기본 배송비 대상
 }
 
+// 센트 단위 반올림 — Stripe 청구 금액(센트 정수)과 주문에 저장되는 금액이 어긋나지 않게
+export function roundCents(value: number) {
+  return Math.round(value * 100) / 100
+}
+
 export function calcOrderTotals(params: {
   zone: CountryZone | null
   subtotal: number
   items: OrderShippingItem[]
-  splitDelivery: boolean
   shippingRates: ShippingRateRow[]
+  discountPercent?: number // 추천인 코드 할인율(%) — 상품 금액에만 적용
 }) {
-  const { zone, subtotal, items, splitDelivery, shippingRates } = params
-  const totalQty = items.reduce((sum, i) => sum + i.qty, 0)
+  const { zone, subtotal, items, shippingRates, discountPercent = 0 } = params
   const rateInfo = zone ? shippingRates.find(r => r.zone === zone) : undefined
 
   // 배송비를 직접 입력한 상품은 국가별 기본 배송비 계산에서 제외하고 개당 값 × 수량으로 따로 더함
@@ -62,8 +66,10 @@ export function calcOrderTotals(params: {
   const overrideShippingFee = overrideItems.reduce((sum, i) => sum + (i.shippingFee ?? 0) * i.qty, 0)
   const shippingFee = defaultShippingFee + overrideShippingFee
 
-  const splitFee = splitDelivery ? totalQty * 1 : 0
-  const vat = zone === 'DE' ? subtotal * (rateInfo?.vat_rate ?? 0) : 0
-  const total = subtotal + shippingFee + splitFee + vat
-  return { shippingFee, splitFee, vat, total }
+  // 할인은 상품 금액에만 적용 (배송비 제외). 할인율은 0~100%로 제한해 할인액이 상품 금액을 넘지 않게 함
+  const discount = roundCents(subtotal * Math.min(Math.max(discountPercent, 0), 100) / 100)
+  // 독일 부가세는 할인 후 상품 금액 기준
+  const vat = zone === 'DE' ? roundCents((subtotal - discount) * (rateInfo?.vat_rate ?? 0)) : 0
+  const total = roundCents(subtotal - discount + shippingFee + vat)
+  return { shippingFee, discount, vat, total }
 }

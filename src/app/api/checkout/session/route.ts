@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
 import { fetchExchangeRates } from '@/lib/exchangeRate'
 import { getStripe } from '@/lib/stripe'
+import { checkReferralCode, normalizeReferralCode } from '@/lib/referral'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -12,7 +13,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { addressId, items, splitDelivery, memo } = body
+  // 분할배송은 더 이상 신청받지 않음 — 요청에 splitDelivery가 있어도 무시 (임시 주문 컬럼은 기본값 false/0)
+  const { addressId, items, memo, referralCode, expectedDiscountPercent } = body
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: '주문 상품이 없습니다' }, { status: 400 })
@@ -51,6 +53,23 @@ export async function POST(request: Request) {
     }
   }
 
+  // 추천인 코드 — 화면에서 계산한 할인은 믿지 않고 서버에서 코드를 다시 확인
+  let referral: { code: string; discountPercent: number } | null = null
+  if (normalizeReferralCode(referralCode)) {
+    const check = await checkReferralCode(adminSupabase, referralCode)
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error, referralInvalid: true }, { status: 400 })
+    }
+    // [적용]을 누른 뒤 어드민에서 할인율이 바뀐 경우 — 바뀐 금액을 화면에서 확인하고 다시 결제하도록 안내
+    if (check.discountPercent !== Number(expectedDiscountPercent)) {
+      return NextResponse.json({
+        error: `추천인 코드 할인율이 ${check.discountPercent}%로 변경되었습니다. 금액을 확인하신 후 다시 결제해주세요.`,
+        referral: { code: check.code, discountPercent: check.discountPercent },
+      }, { status: 409 })
+    }
+    referral = { code: check.code, discountPercent: check.discountPercent }
+  }
+
   // 서버에서 신뢰할 수 있는 값(DB 가격)으로 주문 항목·금액을 다시 계산
   const trustedItems: { productId: number; name: string; qty: number; price_eur: number }[] = items.map(
     (item: { productId: number; qty: number }) => {
@@ -59,13 +78,18 @@ export async function POST(request: Request) {
     }
   )
   const subtotal = trustedItems.reduce((sum, i) => sum + i.price_eur * i.qty, 0)
-  const totalQty = trustedItems.reduce((sum, i) => sum + i.qty, 0)
 
   const { data: shippingRates } = await adminSupabase.from('shipping_rates').select('zone, fee, vat_rate')
-  const { shippingFee, splitFee, vat, total } = calcOrderTotals({
-    zone, subtotal, splitDelivery: !!splitDelivery, shippingRates: shippingRates ?? [],
+  const { shippingFee, discount, vat, total } = calcOrderTotals({
+    zone, subtotal, shippingRates: shippingRates ?? [],
     items: trustedItems.map(i => ({ qty: i.qty, shippingFee: productMap.get(i.productId)?.shipping_fee ?? null })),
+    discountPercent: referral?.discountPercent ?? 0,
   })
+
+  // Stripe는 €0.50 미만 결제를 만들 수 없음 (할인 후 금액이 너무 작아지는 경우)
+  if (total < 0.5) {
+    return NextResponse.json({ error: '결제 금액이 최소 결제 금액(€0.50)보다 적어 결제할 수 없습니다' }, { status: 400 })
+  }
 
   let dutyEur = 0
   if (zone === 'KR') {
@@ -87,9 +111,9 @@ export async function POST(request: Request) {
       total_eur: total,
       shipping_fee_eur: shippingFee,
       duty_eur: dutyEur,
-      split_delivery: !!splitDelivery,
-      split_delivery_fee_eur: splitFee,
       memo: memo ?? null,
+      referral_code: referral?.code ?? null,
+      discount_eur: discount,
     })
     .select()
     .single()
@@ -113,17 +137,26 @@ export async function POST(request: Request) {
       quantity: 1,
     })
   }
-  if (splitFee > 0) {
-    lineItems.push({
-      price_data: { currency: 'eur', product_data: { name: `분할배송비 (${totalQty}병)` }, unit_amount: Math.round(splitFee * 100) },
-      quantity: 1,
-    })
-  }
   if (vat > 0) {
     lineItems.push({
       price_data: { currency: 'eur', product_data: { name: '부가세 (VAT)' }, unit_amount: Math.round(vat * 100) },
       quantity: 1,
     })
+  }
+
+  // 추천인 할인 — 이 주문의 할인액만큼 1회용 정액 쿠폰을 만들어 결제창에 붙임
+  // (% 쿠폰을 쓰면 배송비·부가세 줄까지 할인되므로, 상품 금액 기준으로 계산한 할인액을 정액으로 넘겨 화면 금액과 일치시킴)
+  let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined
+  if (referral && discount > 0) {
+    const coupon = await getStripe().coupons.create({
+      amount_off: Math.round(discount * 100),
+      currency: 'eur',
+      duration: 'once',
+      max_redemptions: 1,
+      name: `추천인 ${referral.code}`,
+      metadata: { draft_id: draft.id, referral_code: referral.code },
+    })
+    discounts = [{ coupon: coupon.id }]
   }
 
   const origin = request.headers.get('origin') ?? new URL(request.url).origin
@@ -137,6 +170,7 @@ export async function POST(request: Request) {
     ui_mode: 'embedded_page',
     locale: 'auto', // 결제창 언어를 방문자 브라우저 언어에 맞춰 자동 설정 (한국 방문자는 한국어로 보임)
     line_items: lineItems,
+    discounts,
     customer_email: user.email ?? undefined,
     return_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
     metadata: { draft_id: draft.id },

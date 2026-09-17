@@ -60,6 +60,8 @@ interface Order {
   shipping_fee_eur: number
   split_delivery: boolean
   split_delivery_fee_eur: number
+  referral_code: string | null
+  discount_eur: number
   tracking_number: string | null
   created_at: string
   addresses?: {
@@ -657,6 +659,7 @@ export default function ShippingPanel() {
                       <p className="text-xs text-gray-400 mt-0.5">
                         {new Date(order.created_at).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })}
                         {order.addresses && ` · ${order.addresses.recipient_name} (${order.addresses.country})`}
+                        {order.referral_code && ` · 추천인 ${order.referral_code}`}
                       </p>
                     </div>
                   </div>
@@ -694,6 +697,14 @@ export default function ShippingPanel() {
                       </div>
                     )}
 
+                    {/* 추천인 코드 */}
+                    {order.referral_code && (
+                      <div className="mb-4">
+                        <p className="text-xs font-semibold text-gray-500 mb-1">추천인 코드</p>
+                        <p className="text-sm text-gray-700 font-mono">{order.referral_code}</p>
+                      </div>
+                    )}
+
                     {/* 금액 내역 */}
                     <div className="mb-4 flex flex-col gap-1">
                       <p className="text-xs font-semibold text-gray-500 mb-1">금액 내역</p>
@@ -701,6 +712,11 @@ export default function ShippingPanel() {
                         <span>상품 합계</span>
                         <span>€{order.items.reduce((s, i) => s + i.price_eur * i.qty, 0).toLocaleString()}</span>
                       </div>
+                      {Number(order.discount_eur) > 0 && (
+                        <div className="flex justify-between text-xs text-gray-600">
+                          <span>추천인 할인 ({order.referral_code})</span><span>−€{Number(order.discount_eur).toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-xs text-gray-600">
                         <span>배송비</span><span>€{order.shipping_fee_eur.toLocaleString()}</span>
                       </div>

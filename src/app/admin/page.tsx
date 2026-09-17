@@ -13,16 +13,18 @@ import NoticesPanel from './_components/NoticesPanel'
 import QnaPanel from './_components/QnaPanel'
 import VendorsPanel from './_components/VendorsPanel'
 import MembersPanel from './_components/MembersPanel'
+import ReferralCodesPanel from './_components/ReferralCodesPanel'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 
-type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping' | 'cs-board' | 'notices' | 'qna' | 'vendors' | 'members'
+type Panel = 'banner' | 'products' | 'sections' | 'blog' | 'writers' | 'shipping' | 'cs-board' | 'notices' | 'qna' | 'vendors' | 'members' | 'referral'
 
-const VALID_PANELS: Panel[] = ['products', 'shipping', 'vendors', 'members', 'blog', 'cs-board', 'notices', 'qna', 'writers', 'banner', 'sections']
+const VALID_PANELS: Panel[] = ['products', 'shipping', 'referral', 'vendors', 'members', 'blog', 'cs-board', 'notices', 'qna', 'writers', 'banner', 'sections']
   .filter(p => VENDOR_MARKETPLACE_ENABLED || p !== 'vendors') as Panel[]
 
 const ALL_NAV_ITEMS: { id: Panel; label: string; icon: string }[] = [
   { id: 'products', label: '상품 관리', icon: '🍷' },
   { id: 'shipping', label: '주문·배송 관리', icon: '🚚' },
+  { id: 'referral', label: '추천인 코드', icon: '🎟️' },
   { id: 'vendors', label: '벤더 관리', icon: '🏪' },
   { id: 'members', label: '회원 관리', icon: '🧑‍🤝‍🧑' },
   { id: 'blog', label: '블로그 관리', icon: '✍️' },
@@ -94,6 +96,7 @@ function AdminContent() {
       <main className="flex-1 p-8 overflow-auto">
         {activePanel === 'products' && <ProductsPanel />}
         {activePanel === 'shipping' && <ShippingPanel />}
+        {activePanel === 'referral' && <ReferralCodesPanel />}
         {activePanel === 'vendors' && VENDOR_MARKETPLACE_ENABLED && <VendorsPanel />}
         {activePanel === 'members' && <MembersPanel />}
         {activePanel === 'blog' && <BlogPanel />}

@@ -26,6 +26,11 @@ export async function finalizeCheckoutSession(stripeSessionId: string): Promise<
     .single()
   if (!draft) throw new Error('주문 정보를 찾을 수 없습니다')
 
+  // 안전 점검: Stripe 실제 청구액(EUR 센트)과 주문 금액이 다르면 로그로 남김 (결제는 이미 끝났으므로 주문 생성은 계속)
+  if (session.amount_total != null && session.amount_total !== Math.round(Number(draft.total_eur) * 100)) {
+    console.error(`[checkout] 청구액 불일치 session=${stripeSessionId} stripe=${session.amount_total} order=${draft.total_eur}`)
+  }
+
   const { data: order, error: orderError } = await adminSupabase
     .from('orders')
     .insert({
@@ -39,6 +44,8 @@ export async function finalizeCheckoutSession(stripeSessionId: string): Promise<
       split_delivery: draft.split_delivery,
       split_delivery_fee_eur: draft.split_delivery_fee_eur,
       memo: draft.memo,
+      referral_code: draft.referral_code,
+      discount_eur: draft.discount_eur,
       stripe_session_id: stripeSessionId,
     })
     .select()
