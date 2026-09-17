@@ -17,6 +17,8 @@ import {
   addComment,
   deleteComment,
 } from '@/lib/blog'
+import { useMemberTiers } from '@/lib/memberBadges'
+import TierBadge from '@/components/member/TierBadge'
 
 export default function BlogPostCard({ post }: { post: BlogPost }) {
   const { currentUser } = useAuth()
@@ -25,6 +27,8 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
   const [liked, setLiked] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState<BlogComment[]>([])
+  // 댓글 작성자 등급 (이름 옆 배지)
+  const commenterTiers = useMemberTiers(comments.map(c => c.user_id))
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentText, setCommentText] = useState('')
 
@@ -143,6 +147,7 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
                   <div key={c.id} className="group flex items-start gap-2 text-sm">
                     <p className="flex-1 min-w-0">
                       <span className="font-semibold text-gray-900">{c.author_name}</span>{' '}
+                      {commenterTiers[c.user_id] && <><TierBadge tier={commenterTiers[c.user_id]} className="align-middle" />{' '}</>}
                       <span className="text-gray-600">{c.content}</span>
                     </p>
                     {currentUser?.id === c.user_id && (

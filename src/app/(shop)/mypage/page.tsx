@@ -9,6 +9,8 @@ import { fetchMyReviews, deleteReview, ProductReview } from '@/lib/reviews'
 import { fetchWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import { memberDisplayName, type MemberTier } from '@/lib/memberTiers'
+import TierBadge from '@/components/member/TierBadge'
 import {
   fetchMyAddresses, saveAddress, deleteAddress, setDefaultAddress,
   Address, AddressInput, COUNTRY_OPTIONS, countryLabel,
@@ -54,7 +56,13 @@ export default function MyPage() {
       <header className="max-w-[760px] mx-auto text-center px-5 pt-16 md:pt-20 pb-8">
         <p className="text-[13px] tracking-[0.28em] uppercase text-[#0e3719] mb-3.5">My Page</p>
         <h1 className="font-[family-name:var(--font-playfair-display)] font-medium text-[34px] md:text-[46px] leading-[1.1] text-[#1C1A17]">
-          안녕하세요, {currentUser.name}님
+          {/* 이름과 "님" 사이에 회원 등급 배지 — 좁은 화면에서는 이름·배지·님이 한 덩어리로 줄바꿈 */}
+          안녕하세요,{' '}
+          <span className="inline-block">
+            {memberDisplayName(currentUser.name, currentUser.email)}{' '}
+            <TierBadge tier={currentUser.tier} size="lg" className="align-middle -translate-y-[0.12em]" />{' '}
+            님
+          </span>
         </h1>
       </header>
 
@@ -100,7 +108,7 @@ export default function MyPage() {
           {tab === 'wishlist' && <WishlistPanel userId={currentUser.id} />}
           {tab === 'addresses' && <AddressesPanel userId={currentUser.id} />}
           {tab === 'reviews' && <ReviewsPanel userId={currentUser.id} />}
-          {tab === 'profile' && <ProfilePanel name={currentUser.name} email={currentUser.email} />}
+          {tab === 'profile' && <ProfilePanel name={currentUser.name} email={currentUser.email} tier={currentUser.tier} />}
         </div>
       </div>
     </div>
@@ -259,7 +267,7 @@ function ReviewsPanel({ userId }: { userId: string }) {
 }
 
 /* ===== 회원 정보 ===== */
-function ProfilePanel({ name, email }: { name: string; email: string }) {
+function ProfilePanel({ name, email, tier }: { name: string; email: string; tier: MemberTier }) {
   return (
     <div className={cardCls}>
       <h3 className="font-[family-name:var(--font-playfair-display)] text-[22px] text-[#1C1A17] mb-5">회원 정보</h3>
@@ -271,6 +279,10 @@ function ProfilePanel({ name, email }: { name: string; email: string }) {
         <div className="pt-4 border-t border-[#eae7e7]">
           <p className="text-xs text-[#9b9797] mb-1">이메일</p>
           <p className="text-sm text-[#1C1A17]">{email}</p>
+        </div>
+        <div className="pt-4 border-t border-[#eae7e7]">
+          <p className="text-xs text-[#9b9797] mb-1.5">회원 등급</p>
+          <TierBadge tier={tier} size="lg" />
         </div>
       </div>
       <p className="text-xs text-[#9b9797] mt-6">회원 정보 수정·비밀번호 변경은 추후 제공됩니다.</p>

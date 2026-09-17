@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { Menu, X } from 'lucide-react'
 import { childCategories, categoryLabel } from '@/lib/blogCategories'
+import { memberDisplayName, type MemberTier } from '@/lib/memberTiers'
+import TierBadge from '@/components/member/TierBadge'
 
 type NavItem = { label: string; href: string; children?: { label: string; href: string }[] }
 
@@ -49,6 +51,20 @@ const eventsNav: NavItem[] = [
   { label: 'Wine', href: '/events/wines' },
   { label: 'Food', href: '/events/food' },
 ]
+
+// 로그인한 회원 이름 + 등급 배지 (가입 때 입력한 이름이 없으면 이메일 앞부분)
+// compact: 데스크톱 헤더가 좁은 화면(1024px 미만)에서 넘치지 않도록 이름은 숨기고 배지만 표시
+function MemberNameBadge({ name, email, tier, compact = false }: { name: string; email: string; tier: MemberTier; compact?: boolean }) {
+  const displayName = memberDisplayName(name, email)
+  const nameCls = compact ? 'hidden lg:inline' : ''
+  return (
+    <span className="flex items-center gap-1.5 min-w-0 text-[#FBFAF7]" title={`${displayName} 님`}>
+      <span className={`truncate max-w-[120px] ${nameCls}`}>{displayName}</span>
+      <span className={`shrink-0 ${nameCls}`}>님</span>
+      <TierBadge tier={tier} className="shrink-0" />
+    </span>
+  )
+}
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -154,9 +170,12 @@ export default function Header() {
             <>
               <div className="hidden md:flex items-center gap-2.5">
                 {currentUser ? (
-                  <button onClick={logout} className="rounded-full border border-[#FBFAF7]/40 text-[#FBFAF7] px-4 py-1.5 hover:bg-[#FBFAF7]/[0.12] transition-colors cursor-pointer">
-                    Logout
-                  </button>
+                  <>
+                    <MemberNameBadge name={currentUser.name} email={currentUser.email} tier={currentUser.tier} compact />
+                    <button onClick={logout} className="rounded-full border border-[#FBFAF7]/40 text-[#FBFAF7] px-4 py-1.5 hover:bg-[#FBFAF7]/[0.12] transition-colors cursor-pointer">
+                      Logout
+                    </button>
+                  </>
                 ) : (
                   <Link href="/login" className="rounded-full border border-[#FBFAF7]/40 text-[#FBFAF7] px-4 py-1.5 hover:bg-[#FBFAF7]/[0.12] transition-colors">
                     Login
@@ -176,6 +195,7 @@ export default function Header() {
               <div className="hidden md:flex items-center gap-2.5">
                 {currentUser ? (
                   <div className="flex items-center gap-2.5">
+                    <MemberNameBadge name={currentUser.name} email={currentUser.email} tier={currentUser.tier} compact />
                     {isAdmin && (
                       <Link href="/admin" className="rounded-full border border-[#FBFAF7]/40 text-[#FBFAF7] px-3 py-1.5 hover:bg-[#FBFAF7]/[0.12] transition-colors">
                         Admin
@@ -237,6 +257,11 @@ export default function Header() {
 
             {/* 모바일 전용: 로그인/카트/어드민 (데스크톱 알약 버튼 대체). 홈에선 카트 숨김 */}
             <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-[#FBFAF7]/15">
+              {currentUser && (
+                <div className="text-[15px] font-medium">
+                  <MemberNameBadge name={currentUser.name} email={currentUser.email} tier={currentUser.tier} />
+                </div>
+              )}
               {!isHome && (
                 <Link href="/cart" onClick={() => setMobileOpen(false)}
                   className="text-[15px] font-medium text-[#FBFAF7] hover:opacity-70 transition-opacity">

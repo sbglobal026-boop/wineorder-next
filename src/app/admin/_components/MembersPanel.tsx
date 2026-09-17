@@ -1,5 +1,8 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { MEMBER_TIERS, type MemberTier } from '@/lib/memberTiers'
+import TierBadge from '@/components/member/TierBadge'
+import TierBadgeImagesEditor from './TierBadgeImagesEditor'
 
 type Member = {
   id: string
@@ -11,27 +14,13 @@ type Member = {
   vendorStatus: string | null
   orderCount: number
   totalSpent: number
-  tier: string
+  tier: MemberTier
 }
 
 const VENDOR_STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   pending: { label: '벤더 승인대기', cls: 'bg-yellow-100 text-yellow-800' },
   approved: { label: '벤더 승인됨', cls: 'bg-green-100 text-green-800' },
   suspended: { label: '벤더 정지됨', cls: 'bg-red-100 text-red-800' },
-}
-
-const TIER_OPTIONS = [
-  { value: 'basic', label: '일반' },
-  { value: 'silver', label: '실버' },
-  { value: 'gold', label: '골드' },
-  { value: 'vip', label: 'VIP' },
-]
-
-const TIER_CLS: Record<string, string> = {
-  basic: 'bg-gray-100 text-gray-600',
-  silver: 'bg-slate-200 text-slate-700',
-  gold: 'bg-amber-100 text-amber-800',
-  vip: 'bg-purple-100 text-purple-800',
 }
 
 function formatDate(iso: string | null) {
@@ -45,7 +34,7 @@ export default function MembersPanel() {
   const [search, setSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [tierTarget, setTierTarget] = useState<Member | null>(null)
-  const [selectedTier, setSelectedTier] = useState('basic')
+  const [selectedTier, setSelectedTier] = useState<MemberTier>('basic')
 
   useEffect(() => {
     fetch('/api/admin/members')
@@ -96,6 +85,8 @@ export default function MembersPanel() {
         전체 가입자 {members.length}명 · 벤더 {vendorCount}명 · 벤더 승인/수수료 설정은 “벤더 관리” 탭에서
       </p>
 
+      <TierBadgeImagesEditor />
+
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
@@ -134,9 +125,7 @@ export default function MembersPanel() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${TIER_CLS[m.tier] ?? TIER_CLS.basic}`}>
-                          {TIER_OPTIONS.find(t => t.value === m.tier)?.label ?? '일반'}
-                        </span>
+                        <TierBadge tier={m.tier} />
                         <button
                           onClick={() => openTierModal(m)}
                           className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2 whitespace-nowrap cursor-pointer"
@@ -171,7 +160,7 @@ export default function MembersPanel() {
             <p className="text-xs text-gray-400 mb-5">{tierTarget.email}</p>
 
             <div className="flex flex-col gap-2 mb-6">
-              {TIER_OPTIONS.map(t => (
+              {MEMBER_TIERS.map(t => (
                 <label
                   key={t.value}
                   className={`flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition-colors ${
@@ -186,7 +175,7 @@ export default function MembersPanel() {
                     onChange={() => setSelectedTier(t.value)}
                     className="cursor-pointer"
                   />
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${TIER_CLS[t.value]}`}>{t.label}</span>
+                  <TierBadge tier={t.value} />
                 </label>
               ))}
             </div>

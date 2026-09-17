@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { tierFromAppMetadata } from '@/lib/memberTiers'
 
 export async function GET() {
   const admin = await getAdminUser()
@@ -31,7 +32,7 @@ export async function GET() {
     .map(u => {
       const vendor = vendorByUserId.get(u.id)
       const stats = orderStatsByUserId.get(u.id) ?? { count: 0, total: 0 }
-      const metadata = u.user_metadata as { name?: string; tier?: string } | null
+      const metadata = u.user_metadata as { name?: string } | null
       return {
         id: u.id,
         email: u.email ?? null,
@@ -42,7 +43,7 @@ export async function GET() {
         vendorStatus: vendor?.status ?? null,
         orderCount: stats.count,
         totalSpent: stats.total,
-        tier: metadata?.tier ?? 'basic',
+        tier: tierFromAppMetadata(u.app_metadata),
       }
     })
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

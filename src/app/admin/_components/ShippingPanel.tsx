@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import * as XLSX from 'xlsx'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import type { MemberTier } from '@/lib/memberTiers'
+import TierBadge from '@/components/member/TierBadge'
 
 const ZONE_LABELS: Record<string, { label: string; icon: string; desc: string }> = {
   DE: { label: '독일', icon: '🇩🇪', desc: '독일 내 배송 & VAT 적용' },
@@ -62,6 +64,7 @@ interface Order {
   split_delivery_fee_eur: number
   referral_code: string | null
   discount_eur: number
+  memberTier: MemberTier | null // 주문한 회원의 등급 (탈퇴 등으로 모르면 null)
   tracking_number: string | null
   created_at: string
   addresses?: {
@@ -659,6 +662,7 @@ export default function ShippingPanel() {
                       <p className="text-xs text-gray-400 mt-0.5">
                         {new Date(order.created_at).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })}
                         {order.addresses && ` · ${order.addresses.recipient_name} (${order.addresses.country})`}
+                        {order.memberTier && <TierBadge tier={order.memberTier} className="ml-1.5 align-middle" />}
                         {order.referral_code && ` · 추천인 ${order.referral_code}`}
                       </p>
                     </div>

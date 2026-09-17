@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { fetchCsPosts, CsPost } from '@/lib/csBoard'
+import { useMemberTiers } from '@/lib/memberBadges'
+import TierBadge from '@/components/member/TierBadge'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -12,6 +14,8 @@ export default function CsBoardPage() {
   const { currentUser } = useAuth()
   const [posts, setPosts] = useState<CsPost[]>([])
   const [loading, setLoading] = useState(true)
+  // 글쓴이 등급 (이름 옆 배지)
+  const authorTiers = useMemberTiers(posts.map(p => p.author_id))
 
   useEffect(() => {
     fetchCsPosts().then(data => { setPosts(data); setLoading(false) })
@@ -56,7 +60,10 @@ export default function CsBoardPage() {
                   <p className="truncate text-sm font-semibold text-gray-900">{post.title}</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-gray-400 shrink-0">
-                  <span>{post.author_name}</span>
+                  <span className="flex items-center gap-1.5">
+                    {post.author_name}
+                    {authorTiers[post.author_id] && <TierBadge tier={authorTiers[post.author_id]} />}
+                  </span>
                   <span>{formatDate(post.created_at)}</span>
                 </div>
               </Link>

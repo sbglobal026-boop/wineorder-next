@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useParams, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { fetchCsPost, CsPost } from '@/lib/csBoard'
+import { useMemberTiers } from '@/lib/memberBadges'
+import TierBadge from '@/components/member/TierBadge'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -12,6 +14,8 @@ export default function CsBoardDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [post, setPost] = useState<CsPost | null>(null)
   const [loading, setLoading] = useState(true)
+  // 글쓴이 등급 (이름 옆 배지)
+  const authorTiers = useMemberTiers(post ? [post.author_id] : [])
 
   useEffect(() => {
     fetchCsPost(Number(id)).then(data => { setPost(data); setLoading(false) })
@@ -39,7 +43,11 @@ export default function CsBoardDetailPage() {
             </span>
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-2">{post.title}</h1>
-          <p className="text-xs text-gray-400 mb-6">{post.author_name} · {formatDate(post.created_at)}</p>
+          <p className="text-xs text-gray-400 mb-6 flex items-center gap-1.5">
+            {post.author_name}
+            {authorTiers[post.author_id] && <TierBadge tier={authorTiers[post.author_id]} />}
+            <span>· {formatDate(post.created_at)}</span>
+          </p>
           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{post.content}</p>
 
           {post.answer && (

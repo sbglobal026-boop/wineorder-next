@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { tierFromAppMetadata } from '@/lib/memberTiers'
 
 export async function GET() {
   const admin = await getAdminUser()
@@ -26,13 +27,17 @@ export async function GET() {
     })
   )
 
+  // 주문한 회원의 등급 (회원관리에서 지정, app_metadata)
+  const { data: usersPage } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const tierByUserId = new Map((usersPage?.users ?? []).map(u => [u.id, tierFromAppMetadata(u.app_metadata)]))
+
   const enriched = (data ?? []).map(order => {
     const items = (order.items as { productId: number }[]).map(item => ({
       ...item,
       imageUrl: productInfoMap.get(item.productId)?.imageUrl ?? null,
     }))
     const vendorNames = Array.from(new Set(items.map(i => productInfoMap.get(i.productId)?.vendorName ?? '미상')))
-    return { ...order, items, vendorNames }
+    return { ...order, items, vendorNames, memberTier: tierByUserId.get(order.user_id) ?? null }
   })
 
   return NextResponse.json(enriched)

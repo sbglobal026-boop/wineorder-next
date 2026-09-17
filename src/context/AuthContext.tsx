@@ -1,11 +1,23 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { tierFromAppMetadata, type MemberTier } from '@/lib/memberTiers'
 
 type CurrentUser = {
   id: string
   email: string
   name: string
+  tier: MemberTier // 회원 등급 (어드민 회원관리에서 지정)
+}
+
+function toCurrentUser(user: User): CurrentUser {
+  return {
+    id: user.id,
+    email: user.email!,
+    name: user.user_metadata?.name ?? user.email!,
+    tier: tierFromAppMetadata(user.app_metadata),
+  }
 }
 
 type AuthContextType = {
@@ -28,22 +40,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setCurrentUser({
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata?.name ?? session.user.email!,
+        setCurrentUser(toCurrentUser(session.user))
+        // 세션(토큰)에 담긴 등급은 로그인·토큰 갱신 시점의 값이라, 어드민이 바꾼 최신 등급을 서버에서 다시 받아옴
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) setCurrentUser(prev => (prev?.id === user.id ? toCurrentUser(user) : prev))
         })
       }
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        setCurrentUser({
-          id: session.user.id,
-          email: session.user.email!,
-          name: session.user.user_metadata?.name ?? session.user.email!,
-        })
+        const next = toCurrentUser(session.user)
+        // 같은 사용자의 세션 재확인(탭 복귀 등)은 옛 토큰 값일 수 있으므로 서버에서 받은 등급을 유지
+        // 토큰이 새로 발급된 경우(TOKEN_REFRESHED)에만 토큰의 등급으로 갱신
+        setCurrentUser(prev =>
+          prev?.id === next.id && event !== 'TOKEN_REFRESHED' ? { ...next, tier: prev.tier } : next
+        )
       } else {
         setCurrentUser(null)
       }

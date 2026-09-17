@@ -10,6 +10,8 @@ import { fetchReviews, addReview, deleteReview, ProductReview } from '@/lib/revi
 import { fetchWishlist, addToWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import { useMemberTiers } from '@/lib/memberBadges'
+import TierBadge from '@/components/member/TierBadge'
 
 // 카테고리별 상단 카드 그라데이션 (카드 컨셉)
 const categoryGradient: Record<string, string> = {
@@ -86,6 +88,8 @@ export default function ProductDetailView({
   const carouselRef = useRef<HTMLDivElement>(null)
 
   const [reviews, setReviews] = useState<ProductReview[]>([])
+  // 리뷰 작성자 등급 (작성자 이름 옆 배지)
+  const reviewerTiers = useMemberTiers(reviews.map(r => r.user_id))
   const [reviewOpen, setReviewOpen] = useState(false)
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState('')
@@ -309,7 +313,10 @@ export default function ProductDetailView({
                 {reviews.map(r => (
                   <div key={r.id} className="flex flex-col gap-1 pb-3 border-b border-[#eae7e7] last:border-b-0 last:pb-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-[13px] font-medium text-[#1C1A17]">{r.author_name}</span>
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[13px] font-medium text-[#1C1A17] truncate">{r.author_name}</span>
+                        {reviewerTiers[r.user_id] && <TierBadge tier={reviewerTiers[r.user_id]} className="shrink-0" />}
+                      </span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-[#9b9797]">{new Date(r.created_at).toLocaleDateString()}</span>
                         {currentUser?.id === r.user_id && (
