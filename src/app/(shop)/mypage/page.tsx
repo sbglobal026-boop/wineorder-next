@@ -13,7 +13,7 @@ import { memberDisplayName, type MemberTier } from '@/lib/memberTiers'
 import TierBadge from '@/components/member/TierBadge'
 import {
   fetchMyAddresses, saveAddress, deleteAddress, setDefaultAddress,
-  Address, AddressInput, COUNTRY_OPTIONS, countryLabel,
+  Address, AddressInput, COUNTRY_OPTIONS, DEFAULT_COUNTRY, countryLabel,
 } from '@/lib/addresses'
 
 type Tab = 'orders' | 'wishlist' | 'addresses' | 'reviews' | 'profile'
@@ -291,7 +291,7 @@ function ProfilePanel({ name, email, tier }: { name: string; email: string; tier
 }
 
 /* ===== 배송지 관리 ===== */
-const emptyAddr: AddressInput = { recipient_name: '', address: '', city: '', postal_code: '', country: 'DE', is_default: false, customs_code: '' }
+const emptyAddr: AddressInput = { recipient_name: '', address: '', city: '', postal_code: '', country: DEFAULT_COUNTRY, is_default: false, customs_code: '' }
 
 function AddressesPanel({ userId }: { userId: string }) {
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -301,7 +301,9 @@ function AddressesPanel({ userId }: { userId: string }) {
   const [form, setForm] = useState<AddressInput>(emptyAddr)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  // 삭제 확인 팝업에 띄울 배송지 id
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = () => fetchMyAddresses(userId).then(d => { setAddresses(d); setLoading(false) })
   useEffect(() => { load() }, [userId])
@@ -323,19 +325,33 @@ function AddressesPanel({ userId }: { userId: string }) {
     setSaving(false)
   }
 
-  const remove = async (id: string) => {
-    if (deleteConfirm === id) { await deleteAddress(id, userId); setDeleteConfirm(null); await load() }
-    else setDeleteConfirm(id)
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return
+    setDeleting(true)
+    setError('')
+    try {
+      await deleteAddress(deleteConfirm, userId)
+      setDeleteConfirm(null)
+      await load()
+    } catch {
+      // 삭제가 거부되는 경우 고객에게 이유를 보여줌
+      setError('배송지를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.')
+      setDeleteConfirm(null)
+    }
+    setDeleting(false)
   }
 
   const makeDefault = async (id: string) => { await setDefaultAddress(id, userId); await load() }
 
   const inputCls = 'w-full rounded-xl border border-[#eae7e7] bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#5C7A63] transition-colors'
 
+  const deleteTarget = addresses.find(a => a.id === deleteConfirm)
+
   if (loading) return <p className="text-sm text-[#9b9797] py-16 text-center">불러오는 중...</p>
 
   return (
     <div className="flex flex-col gap-4">
+      {!showForm && error && <p className="text-xs text-red-500">{error}</p>}
       {addresses.map(a => (
         <div key={a.id} className={`${cardCls} ${a.is_default ? 'border-[#5C7A63]' : ''}`}>
           <div className="flex items-start justify-between gap-3">
@@ -351,7 +367,7 @@ function AddressesPanel({ userId }: { userId: string }) {
             <div className="flex flex-col items-end gap-1.5 shrink-0 text-xs">
               {!a.is_default && <button onClick={() => makeDefault(a.id)} className="text-[#0e3719] hover:underline">기본 지정</button>}
               <button onClick={() => startEdit(a)} className="text-[#605d5d] hover:text-[#0e3719]">수정</button>
-              <button onClick={() => remove(a.id)} className={deleteConfirm === a.id ? 'text-red-600 font-semibold' : 'text-[#bab6b6] hover:text-[#0e3719]'}>{deleteConfirm === a.id ? '확인?' : '삭제'}</button>
+              <button onClick={() => { setError(''); setDeleteConfirm(a.id) }} className="text-[#bab6b6] hover:text-[#0e3719]">삭제</button>
             </div>
           </div>
         </div>
@@ -386,6 +402,37 @@ function AddressesPanel({ userId }: { userId: string }) {
         <button onClick={startAdd} className="rounded-[24px] border border-dashed border-[#d7d3d3] text-[#9b9797] hover:border-[#5C7A63] hover:text-[#0e3719] text-sm font-medium py-4 transition-colors">
           + 새 배송지 추가
         </button>
+      )}
+
+      {/* 삭제 확인 팝업 */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => !deleting && setDeleteConfirm(null)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 md:p-7">
+            <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">배송지를 삭제하시겠습니까?</h3>
+            <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
+              {deleteTarget.recipient_name} · {deleteTarget.address}, {deleteTarget.city}
+              <br />
+              삭제하면 되돌릴 수 없습니다. 이미 주문한 내역의 배송지는 그대로 남습니다.
+            </p>
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-xs font-bold uppercase tracking-widest py-3.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {deleting ? '삭제 중...' : '삭제'}
+              </button>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleting}
+                className="w-full text-xs font-bold uppercase tracking-widest text-[#9b9797] hover:text-[#1C1A17] py-3 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
