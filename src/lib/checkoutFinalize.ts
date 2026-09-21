@@ -36,6 +36,7 @@ export async function finalizeCheckoutSession(stripeSessionId: string): Promise<
     .insert({
       user_id: draft.user_id,
       address_id: draft.address_id,
+      shipping_address: draft.shipping_address,
       items: draft.items,
       status: 'pending',
       total_eur: draft.total_eur,

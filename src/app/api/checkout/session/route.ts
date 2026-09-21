@@ -23,16 +23,19 @@ export async function POST(request: Request) {
   const adminSupabase = createAdminClient()
 
   // 배송지는 본인 것만 사용 가능 + 국가로 배송존 결정
+  // 주소 내용은 주문에 복사해 저장 — 고객이 나중에 주소록에서 지워도 어드민 주문의 배송지가 남도록
   let zone: ReturnType<typeof getZone> | null = null
+  let shippingAddress: Record<string, string | null> | null = null
   if (addressId) {
     const { data: address } = await adminSupabase
       .from('addresses')
-      .select('country')
+      .select('recipient_name, address, city, postal_code, country, customs_code')
       .eq('id', addressId)
       .eq('user_id', user.id)
       .single()
     if (!address) return NextResponse.json({ error: '잘못된 배송지입니다' }, { status: 400 })
     zone = getZone(address.country)
+    shippingAddress = address
   }
 
   // 상품 정보(가격·재고·원산지)는 클라이언트 값이 아니라 DB에서 직접 조회 — 가격 조작 방지
@@ -107,6 +110,7 @@ export async function POST(request: Request) {
     .insert({
       user_id: user.id,
       address_id: addressId ?? null,
+      shipping_address: shippingAddress,
       items: trustedItems,
       total_eur: total,
       shipping_fee_eur: shippingFee,

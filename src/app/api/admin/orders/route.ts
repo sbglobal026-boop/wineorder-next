@@ -37,7 +37,9 @@ export async function GET() {
       imageUrl: productInfoMap.get(item.productId)?.imageUrl ?? null,
     }))
     const vendorNames = Array.from(new Set(items.map(i => productInfoMap.get(i.productId)?.vendorName ?? '미상')))
-    return { ...order, items, vendorNames, memberTier: tierByUserId.get(order.user_id) ?? null }
+    // 배송지는 주문에 복사된 값 우선 — 고객이 주소록에서 지워도 주문의 배송지는 남음
+    const addresses = order.shipping_address ?? order.addresses ?? null
+    return { ...order, items, addresses, vendorNames, memberTier: tierByUserId.get(order.user_id) ?? null }
   })
 
   return NextResponse.json(enriched)
