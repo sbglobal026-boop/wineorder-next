@@ -47,11 +47,15 @@ function Thumb({ post, className = '' }: { post: BlogPost; className?: string })
   )
 }
 
-export function BlogCard({ post }: { post: BlogPost }) {
+// variant: 'round' = 기본(둥근 모서리), 'square' = 각진 모서리 + 음영 (메인 블로그 섹션용)
+export function BlogCard({ post, variant = 'round' }: { post: BlogPost; variant?: 'round' | 'square' }) {
+  const shapeCls = variant === 'square'
+    ? 'rounded-none shadow-xl'
+    : 'rounded-[24px]'
   return (
     <Link
       href={`/blog/${post.category}/${post.id}`}
-      className="cutecard group block rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden no-underline"
+      className={`cutecard group block border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden no-underline ${shapeCls}`}
     >
       <Thumb post={post} className="h-[180px]" />
       <div className="p-5">

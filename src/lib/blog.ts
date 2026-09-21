@@ -32,6 +32,18 @@ export async function fetchBlogPosts(category?: BlogCategory | BlogCategory[]): 
   return data ?? []
 }
 
+// 메인 하단 블로그 카드용 — 카테고리 구분 없이 최신 글 몇 개만
+export async function fetchRecentBlogPosts(limit: number): Promise<BlogPost[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data ?? []
+}
+
 // 목록 페이지네이션 전용 — 필요한 페이지 분량만 서버에서 가져옴 (본문 포함 전체를 매번 다 받지 않도록)
 export async function fetchBlogPostsPage(
   category: BlogCategory | BlogCategory[],
