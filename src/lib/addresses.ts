@@ -11,19 +11,15 @@ export type Address = {
   customs_code: string | null
 }
 
+// 배송지 입력에서 고를 수 있는 국가 (마이페이지·결제 화면 공용). 첫 번째가 기본 선택값
 export const COUNTRY_OPTIONS = [
   { code: 'KR', label: '🇰🇷 한국' },
   { code: 'DE', label: '🇩🇪 독일' },
   { code: 'FR', label: '🇫🇷 프랑스' },
   { code: 'IT', label: '🇮🇹 이탈리아' },
-  { code: 'ES', label: '🇪🇸 스페인' },
-  { code: 'NL', label: '🇳🇱 네덜란드' },
-  { code: 'BE', label: '🇧🇪 벨기에' },
-  { code: 'AT', label: '🇦🇹 오스트리아' },
-  { code: 'PT', label: '🇵🇹 포르투갈' },
-  { code: 'SE', label: '🇸🇪 스웨덴' },
-  { code: 'PL', label: '🇵🇱 폴란드' },
 ]
+
+export const DEFAULT_COUNTRY = COUNTRY_OPTIONS[0].code
 
 export function countryLabel(code: string): string {
   return COUNTRY_OPTIONS.find(c => c.code === code)?.label ?? code

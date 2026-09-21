@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
 import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
+import { COUNTRY_OPTIONS, DEFAULT_COUNTRY } from '@/lib/addresses'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 
@@ -28,20 +29,6 @@ interface ShippingRate {
   fee: number
   vat_rate: number
 }
-
-const COUNTRY_OPTIONS = [
-  { code: 'KR', label: '🇰🇷 한국' },
-  { code: 'DE', label: '🇩🇪 독일' },
-  { code: 'FR', label: '🇫🇷 프랑스' },
-  { code: 'IT', label: '🇮🇹 이탈리아' },
-  { code: 'ES', label: '🇪🇸 스페인' },
-  { code: 'NL', label: '🇳🇱 네덜란드' },
-  { code: 'BE', label: '🇧🇪 벨기에' },
-  { code: 'AT', label: '🇦🇹 오스트리아' },
-  { code: 'PT', label: '🇵🇹 포르투갈' },
-  { code: 'SE', label: '🇸🇪 스웨덴' },
-  { code: 'PL', label: '🇵🇱 폴란드' },
-]
 
 export default function CheckoutPage() {
   return (
@@ -81,14 +68,14 @@ function CheckoutContent() {
   const [orderError, setOrderError] = useState('')
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
 
-  const emptyForm = { recipient_name: '', address: '', city: '', postal_code: '', country: 'DE', is_default: false, customs_code: '' }
+  const emptyForm = { recipient_name: '', address: '', city: '', postal_code: '', country: DEFAULT_COUNTRY, is_default: false, customs_code: '' }
 
   const [form, setForm] = useState({
     recipient_name: '',
     address: '',
     city: '',
     postal_code: '',
-    country: 'DE',
+    country: DEFAULT_COUNTRY,
     is_default: false,
     customs_code: '',
   })
