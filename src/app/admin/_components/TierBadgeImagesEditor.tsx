@@ -38,13 +38,13 @@ export default function TierBadgeImagesEditor() {
     <section className="bg-gray-50 rounded-2xl border border-gray-100 p-5 mb-8">
       <p className="text-sm font-semibold text-gray-700">등급 배지 이미지</p>
       <p className="text-xs text-gray-400 mt-1 mb-4">
-        PNG·WebP, 500KB 이하 · 투명 배경의 정사각형(96×96px 이상)을 권장합니다 · 그림 아래에 등급 이름이 함께 표시됩니다
+        올린 그림이 기본 아이콘(N·S·G·V)을 대신합니다 · PNG·WebP, 500KB 이하 · 투명 배경의 정사각형(96×96px 이상) 권장 · 아주 작게(20px) 표시되므로 단순한 모양이 잘 보입니다
       </p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {MEMBER_TIERS.map(t => (
           <div key={t.value} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col items-center gap-3">
             <div className="h-16 flex items-center justify-center">
-              <TierBadge tier={t.value} size="lg" />
+              <TierBadge tier={t.value} size="lg" showLabel />
             </div>
             <div className="flex items-center gap-2">
               <label className={`text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 transition-colors ${busyTier ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}>

@@ -282,7 +282,7 @@ function ProfilePanel({ name, email, tier }: { name: string; email: string; tier
         </div>
         <div className="pt-4 border-t border-[#eae7e7]">
           <p className="text-xs text-[#9b9797] mb-1.5">회원 등급</p>
-          <TierBadge tier={tier} size="lg" />
+          <TierBadge tier={tier} size="lg" showLabel />
         </div>
       </div>
       <p className="text-xs text-[#9b9797] mt-6">회원 정보 수정·비밀번호 변경은 추후 제공됩니다.</p>

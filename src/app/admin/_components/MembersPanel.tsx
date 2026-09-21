@@ -125,7 +125,7 @@ export default function MembersPanel() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-1.5">
-                        <TierBadge tier={m.tier} />
+                        <TierBadge tier={m.tier} showLabel />
                         <button
                           onClick={() => openTierModal(m)}
                           className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2 whitespace-nowrap cursor-pointer"
@@ -175,7 +175,7 @@ export default function MembersPanel() {
                     onChange={() => setSelectedTier(t.value)}
                     className="cursor-pointer"
                   />
-                  <TierBadge tier={t.value} />
+                  <TierBadge tier={t.value} showLabel />
                 </label>
               ))}
             </div>
