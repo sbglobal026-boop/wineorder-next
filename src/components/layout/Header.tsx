@@ -50,6 +50,7 @@ const eventsNav: NavItem[] = [
   { label: 'Top Drop', href: '/' },
   { label: 'Wine', href: '/events/wines' },
   { label: 'Food', href: '/events/food' },
+  { label: 'Winery', href: '/events/winery' },
 ]
 
 // 로그인한 회원 이름 + 등급 배지 (가입 때 입력한 이름이 없으면 이메일 앞부분)

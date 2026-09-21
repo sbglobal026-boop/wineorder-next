@@ -6,6 +6,7 @@ import { uploadProductImage } from '@/lib/uploadImage'
 import { fetchAdminProducts, createProductRow, updateProductRow, deleteProductRow } from '@/lib/products'
 import { productsToCsv, parseProductsCsv, downloadCsv } from '@/lib/productsCsv'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import { fetchAdminWineries, type Winery } from '@/lib/wineries'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -38,6 +39,15 @@ function ProductForm({
   saved?: boolean
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // 와이너리 선택 목록 — 어드민 "와이너리 관리"에서 등록한 것
+  const [wineries, setWineries] = useState<Winery[]>([])
+  useEffect(() => {
+    let ignore = false
+    fetchAdminWineries()
+      .then(list => { if (!ignore) setWineries(list) })
+      .catch(() => { if (!ignore) setWineries([]) })
+    return () => { ignore = true }
+  }, [])
   const extraFileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
   const [uploading, setUploading] = useState(false)
   const [uploadingExtraIndex, setUploadingExtraIndex] = useState<number | null>(null)
@@ -220,6 +230,20 @@ function ProductForm({
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
           placeholder="예: 프랑스"
         />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">와이너리</label>
+        <select
+          value={data.wineryId ?? ''}
+          onChange={(e) => onChange({ ...data, wineryId: e.target.value ? Number(e.target.value) : null })}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+        >
+          <option value="">선택 안 함</option>
+          {wineries.map(w => (
+            <option key={w.id} value={w.id}>{w.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 mt-1">&quot;와이너리 관리&quot; 탭에서 먼저 등록한 뒤 고를 수 있습니다</p>
       </div>
       {/* 원가 추가 */}
       <div>
