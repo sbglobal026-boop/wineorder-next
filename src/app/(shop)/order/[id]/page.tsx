@@ -4,7 +4,20 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
+import { trackingUrl } from '@/lib/tracking'
 import { useAppConfig } from '@/context/AppConfigContext'
+
+// 운송장번호 — 번호 형식이 맞으면 우체국 배송조회 링크, 아니면 글자 그대로
+function TrackingNumber({ value }: { value: string }) {
+  const url = trackingUrl(value)
+  const cls = 'text-xs font-mono font-semibold text-[#1C1A17]'
+  if (!url) return <span className={cls}>{value}</span>
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className={`${cls} underline underline-offset-2 hover:text-[#0e3719] transition-colors`}>
+      {value}
+    </a>
+  )
+}
 
 const pageBg = { background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }
 const cardCls = 'rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF]'
@@ -227,7 +240,7 @@ export default function OrderPage() {
                         <p className="text-xs text-[#9b9797]">{s.product_name} · {STATUS_LABEL[s.status] ?? s.status}</p>
                       </div>
                       {s.tracking_number
-                        ? <span className="text-xs font-mono font-semibold text-[#1C1A17]">{s.tracking_number}</span>
+                        ? <TrackingNumber value={s.tracking_number} />
                         : <span className="text-xs text-[#bab6b6]">운송장 준비 중</span>}
                     </div>
                   ))
@@ -235,7 +248,7 @@ export default function OrderPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-semibold text-[#605d5d]">운송장번호</span>
                   {order.tracking_number
-                    ? <span className="text-xs font-mono font-semibold text-[#1C1A17]">{order.tracking_number}</span>
+                    ? <TrackingNumber value={order.tracking_number} />
                     : <span className="text-xs text-[#bab6b6]">운송장 준비 중</span>}
                 </div>
               )}

@@ -5,6 +5,23 @@ import * as XLSX from 'xlsx'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 import type { MemberTier } from '@/lib/memberTiers'
 import TierBadge from '@/components/member/TierBadge'
+import { trackingUrl } from '@/lib/tracking'
+
+// 저장된 운송장번호를 우체국 배송조회로 여는 링크 (번호 형식이 맞을 때만 표시)
+function TrackingLink({ value }: { value: string | null | undefined }) {
+  const url = trackingUrl(value)
+  if (!url) return null
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs font-semibold text-gray-500 hover:text-gray-900 underline underline-offset-2 whitespace-nowrap shrink-0"
+    >
+      조회
+    </a>
+  )
+}
 
 const ZONE_LABELS: Record<string, { label: string; icon: string; desc: string }> = {
   DE: { label: '독일', icon: '🇩🇪', desc: '독일 내 배송 & VAT 적용' },
@@ -794,6 +811,7 @@ export default function ShippingPanel() {
                                 >
                                   {savingTracking === shipment.id ? '저장 중' : '저장'}
                                 </button>
+                                <TrackingLink value={shipment.tracking_number} />
                               </div>
                             </div>
                           ))}
@@ -820,6 +838,7 @@ export default function ShippingPanel() {
                           >
                             {savingTracking === order.id ? '저장 중' : '저장'}
                           </button>
+                          <TrackingLink value={order.tracking_number} />
                         </div>
                       </div>
                     )}
@@ -918,6 +937,7 @@ export default function ShippingPanel() {
                                     >
                                       {savingCsTracking === cs.id ? '저장 중' : '저장'}
                                     </button>
+                                    <TrackingLink value={cs.tracking_number} />
                                   </div>
                                   {/* 상태 버튼 */}
                                   <div className="flex gap-1.5">
