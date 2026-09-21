@@ -268,13 +268,70 @@ function ReviewsPanel({ userId }: { userId: string }) {
 
 /* ===== 회원 정보 ===== */
 function ProfilePanel({ name, email, tier }: { name: string; email: string; tier: MemberTier }) {
+  const { updateName } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(name)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  const startEdit = () => { setDraft(name); setError(''); setSaved(false); setEditing(true) }
+
+  const save = async () => {
+    const trimmed = draft.trim()
+    if (!trimmed) { setError('이름을 입력해주세요'); return }
+    if (trimmed.length > 30) { setError('이름은 30자 이하로 입력해주세요'); return }
+    setSaving(true)
+    setError('')
+    const err = await updateName(trimmed)
+    setSaving(false)
+    if (err) { setError('이름을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.'); return }
+    setEditing(false)
+    setSaved(true)
+  }
+
   return (
     <div className={cardCls}>
       <h3 className="font-[family-name:var(--font-playfair-display)] text-[22px] text-[#1C1A17] mb-5">회원 정보</h3>
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-xs text-[#9b9797] mb-1">이름</p>
-          <p className="text-sm text-[#1C1A17]">{name}</p>
+          {editing ? (
+            <div className="flex flex-col gap-2">
+              <input
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); save() } }}
+                maxLength={30}
+                autoFocus
+                className="w-full max-w-xs rounded-xl border border-[#eae7e7] bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#5C7A63] transition-colors"
+                placeholder="이름"
+              />
+              {error && <p className="text-xs text-red-500">{error}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={save}
+                  disabled={saving}
+                  className="rounded-full bg-[#0e3719] hover:bg-[#22301C] text-white text-sm font-semibold px-5 py-2 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {saving ? '저장 중...' : '저장'}
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setError('') }}
+                  disabled={saving}
+                  className="rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] text-sm px-5 py-2 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-[#1C1A17]">{name}</p>
+              <button onClick={startEdit} className="text-xs text-[#0e3719] hover:underline cursor-pointer">수정</button>
+              {saved && <span className="text-xs text-[#5C7A63]">변경되었습니다</span>}
+            </div>
+          )}
         </div>
         <div className="pt-4 border-t border-[#eae7e7]">
           <p className="text-xs text-[#9b9797] mb-1">이메일</p>
@@ -285,7 +342,7 @@ function ProfilePanel({ name, email, tier }: { name: string; email: string; tier
           <TierBadge tier={tier} size="lg" showLabel />
         </div>
       </div>
-      <p className="text-xs text-[#9b9797] mt-6">회원 정보 수정·비밀번호 변경은 추후 제공됩니다.</p>
+      <p className="text-xs text-[#9b9797] mt-6">이메일 변경·비밀번호 변경은 추후 제공됩니다.</p>
     </div>
   )
 }

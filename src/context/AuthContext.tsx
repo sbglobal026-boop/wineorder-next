@@ -26,6 +26,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<string | null>
   logout: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<string | null>
+  updateName: (name: string) => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -79,12 +80,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error ? error.message : null
   }
 
+  // 회원 이름 변경 (마이페이지 회원 정보) — 저장하면 헤더·마이페이지 표시가 바로 바뀜
+  const updateName = async (name: string): Promise<string | null> => {
+    const { data, error } = await supabase.auth.updateUser({ data: { name } })
+    if (error) return error.message
+    if (data.user) setCurrentUser(toCurrentUser(data.user))
+    return null
+  }
+
   const logout = async () => {
     await supabase.auth.signOut()
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout, register, updateName }}>
       {children}
     </AuthContext.Provider>
   )
