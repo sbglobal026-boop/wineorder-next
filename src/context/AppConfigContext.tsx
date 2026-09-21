@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { Product, FixedCost } from '@/data/products'
 import { useAuth } from '@/context/AuthContext'
 import {
@@ -77,6 +77,38 @@ const defaultConfig: AppConfig = {
   cart: [],
 }
 
+// 장바구니 저장 위치 — 로그인 전에는 게스트 칸, 로그인 후에는 계정별 칸
+const GUEST_CART_KEY = 'wineorder-cart-guest'
+const cartKey = (userId: string | null) => (userId ? `wineorder-cart-${userId}` : GUEST_CART_KEY)
+
+function readCart(key: string): CartItem[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) ?? 'null')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeCart(key: string, cart: CartItem[]) {
+  try {
+    localStorage.setItem(key, JSON.stringify(cart))
+  } catch {
+    console.warn('localStorage 용량 초과')
+  }
+}
+
+// 로그인 전 담아둔 장바구니와 계정 장바구니를 합침 — 같은 상품은 수량을 더함
+function mergeCarts(accountCart: CartItem[], guestCart: CartItem[]): CartItem[] {
+  const merged = accountCart.map(item => ({ ...item }))
+  for (const item of guestCart) {
+    const found = merged.find(m => m.productId === item.productId)
+    if (found) found.qty += item.qty
+    else merged.push({ ...item })
+  }
+  return merged
+}
+
 const AppConfigContext = createContext<AppConfigContextType | null>(null)
 
 export function AppConfigProvider({ children }: { children: ReactNode }) {
@@ -120,19 +152,45 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // 장바구니: 로그인한 사용자별로 localStorage에 저장 — 로그아웃하면 비고, 로그인하면 그 계정 것만 복원
+  // 현재 장바구니의 주인 — null = 로그인 전(게스트), undefined = 아직 불러오기 전
+  const cartOwnerRef = useRef<string | null | undefined>(undefined)
+  // 방금 불러온 장바구니가 화면 상태에 반영되기 전에 저장이 먼저 돌아 빈 값으로 덮어쓰는 것을 막기 위한 표시
+  const pendingCartRef = useRef<CartItem[] | null>(null)
+
+  // 장바구니 불러오기: 로그인 전에는 게스트 장바구니, 로그인하면 계정 장바구니와 합쳐서 복원
   useEffect(() => {
-    if (!currentUser) {
-      setConfig(prev => ({ ...prev, cart: [] }))
-      return
+    const ownerId = currentUser?.id ?? null
+    // 같은 주인인데 로그인 상태만 다시 확인된 경우(탭 복귀 등)에는 화면의 장바구니를 그대로 둠
+    if (cartOwnerRef.current === ownerId) return
+    const previousOwner = cartOwnerRef.current
+    cartOwnerRef.current = ownerId
+
+    let nextCart: CartItem[]
+    if (!ownerId) {
+      // 첫 방문(불러오기 전)에는 게스트 장바구니 복원, 로그아웃한 경우에는 비움
+      nextCart = previousOwner === undefined ? readCart(GUEST_CART_KEY) : []
+      writeCart(GUEST_CART_KEY, nextCart)
+    } else {
+      // 로그인 — 로그인 전 담아둔 장바구니를 계정 장바구니와 합치고, 게스트 쪽은 비움
+      const guestCart = readCart(GUEST_CART_KEY)
+      nextCart = mergeCarts(readCart(cartKey(ownerId)), guestCart)
+      if (guestCart.length > 0) writeCart(GUEST_CART_KEY, [])
+      writeCart(cartKey(ownerId), nextCart)
     }
-    const stored = localStorage.getItem(`wineorder-cart-${currentUser.id}`)
-    setConfig(prev => ({ ...prev, cart: stored ? JSON.parse(stored) : [] }))
+
+    pendingCartRef.current = nextCart
+    setConfig(prev => ({ ...prev, cart: nextCart }))
   }, [currentUser])
 
+  // 장바구니 저장 (로그인 전에는 게스트 칸에 저장 → 새로고침해도 유지되고 로그인 시 합쳐짐)
   useEffect(() => {
-    if (!currentUser) return
-    localStorage.setItem(`wineorder-cart-${currentUser.id}`, JSON.stringify(config.cart))
+    if (cartOwnerRef.current === undefined) return
+    if (pendingCartRef.current) {
+      // 불러온 장바구니가 아직 반영되기 전이면 저장하지 않음
+      if (config.cart !== pendingCartRef.current) return
+      pendingCartRef.current = null
+    }
+    writeCart(cartKey(cartOwnerRef.current), config.cart)
   }, [config.cart, currentUser])
 
   useEffect(() => {
