@@ -26,7 +26,7 @@ function compressToBlob(file: File, maxWidth = 1080, quality = 0.75): Promise<Bl
   })
 }
 
-export async function uploadImage(file: File, bucket: string, folder: string): Promise<string> {
+export async function uploadImage(file: File, bucket: string, folder: string, maxWidth = 1080): Promise<string> {
   const supabase = createClient()
 
   // 압축 실패(브라우저가 해석 못 하는 포맷 등) 시 원본 그대로 업로드해서 조용한 실패를 막음
@@ -34,7 +34,7 @@ export async function uploadImage(file: File, bucket: string, folder: string): P
   let contentType = file.type || 'image/jpeg'
   let ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   try {
-    blob = await compressToBlob(file)
+    blob = await compressToBlob(file, maxWidth)
     contentType = 'image/jpeg'
     ext = 'jpg'
   } catch {
@@ -66,8 +66,9 @@ export async function uploadProductImage(file: File): Promise<string> {
   return uploadImage(file, 'product-images', 'products')
 }
 
+// 배너는 화면 끝까지 가로로 길게 보이므로 더 큰 폭까지 허용
 export async function uploadBannerImage(file: File): Promise<string> {
-  return uploadImage(file, 'banner-images', 'banners')
+  return uploadImage(file, 'banner-images', 'banners', 1920)
 }
 
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
