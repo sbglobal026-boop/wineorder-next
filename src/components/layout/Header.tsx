@@ -17,7 +17,7 @@ const homeItem: NavItem = { label: 'Home', href: '/' }
 
 const navItems: NavItem[] = [
   { label: '소개', href: '/about' },
-  { label: 'FAQ', href: '/faq' },
+  { label: 'QnA', href: '/qna' },
   {
     label: 'Top Drop',
     href: '/',
@@ -84,9 +84,9 @@ export default function Header() {
   const isBlog = pathname.startsWith('/blog')
   const isJournal = pathname.startsWith('/journal')
   // 안내·법적·게시판 페이지: 메뉴바를 Home/소개/FAQ만 노출
-  const INFO_PREFIXES = ['/about', '/faq', '/cs-board', '/shipping-guide', '/returns', '/notices', '/ueber-uns', '/agb', '/datenschutz', '/impressum']
+  const INFO_PREFIXES = ['/about', '/qna', '/cs-board', '/shipping-guide', '/returns', '/notices', '/ueber-uns', '/agb', '/datenschutz', '/impressum']
   const isInfo = INFO_PREFIXES.some(p => pathname.startsWith(p))
-  const HOME_NAV = ['/about', '/faq']
+  const HOME_NAV = ['/about', '/qna']
   // 블로그 페이지: Home + 블로그 카테고리(Wine/Food & Drink/Travel/Monthly Table)만, 나머지 숨김
   const BLOG_NAV = ['/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table']
   // 저널 페이지: Home + Journal만, 나머지 숨김
