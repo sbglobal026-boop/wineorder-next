@@ -5,8 +5,8 @@ import { fetchRecentBlogPosts, BlogPost } from '@/lib/blog'
 import { BlogCard } from '@/components/blog/BlogCard'
 import LoadingDots from '@/components/LoadingDots'
 
-// 메인 Top Drop 아래 블로그 기사 섹션 — 카테고리 구분 없이 최신 글 3개를 카드로 보여줌
-const CARD_COUNT = 3
+// 메인 Top Drop 아래 블로그 기사 섹션 — 카테고리 구분 없이 최신 글 2개를 카드로 보여줌
+const CARD_COUNT = 2
 
 export default function MainBlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([])
@@ -39,7 +39,7 @@ export default function MainBlogSection() {
         <LoadingDots className="py-16" />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-7">
             {posts.map(post => (
               <BlogCard key={post.id} post={post} variant="square" />
             ))}

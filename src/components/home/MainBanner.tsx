@@ -27,7 +27,8 @@ const ratioCls = 'aspect-[16/9] md:aspect-[21/9] max-h-[585px]'
 
 export default function MainBanner() {
   const { config, bannerSlidesLoaded } = useAppConfig()
-  const slides = config.bannerSlides
+  // 어드민에서 사진(또는 영상)을 올린 배너만 표시 — 내용이 비어 있는 배너는 건너뜀
+  const slides = config.bannerSlides.filter(slide => slide.imageUrl || slide.videoUrl)
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
 
@@ -65,8 +66,8 @@ export default function MainBanner() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={slide.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
               ) : null}
-              {/* 사진 위 글씨가 잘 보이도록 아래쪽을 어둡게 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/10" />
+              {/* 글씨가 놓이는 아래쪽만 어둡게, 위쪽은 사진 원본 그대로 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 from-0% via-black/40 via-30% to-transparent to-65%" />
               <div className="absolute inset-x-0 bottom-0">
                 <div className="max-w-[1240px] mx-auto px-5 pb-8 md:pb-12 text-[#FBFAF7]">
                   <p className="font-[family-name:var(--font-playfair-display)] font-semibold text-[20px] md:text-[34px] leading-snug whitespace-pre-line">

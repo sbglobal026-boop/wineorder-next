@@ -18,14 +18,11 @@ export default function Home() {
       <MainBanner />
 
       <div className="max-w-[1240px] mx-auto px-5 py-16 md:py-20">
-      <header className="text-center max-w-[640px] mx-auto mb-12 md:mb-16">
-        <p className="text-[13px] tracking-[0.32em] uppercase text-[#0e3719] mb-3">Top Drop</p>
-        <h1 className="font-[family-name:var(--font-playfair-display)] font-semibold text-[32px] md:text-[44px] leading-tight text-[#1C1A17] mb-3">
-          이번 Top Drop
+      <header className="text-center max-w-[640px] mx-auto mb-8 md:mb-10">
+        {/* 문구는 한 줄만, 글씨 크기는 이전(32/44px)의 절반 */}
+        <h1 className="font-[family-name:var(--font-playfair-display)] font-semibold text-[16px] md:text-[22px] leading-tight text-[#1C1A17]">
+          최신 top drop
         </h1>
-        <p className="text-[15px] text-[#605d5d] leading-relaxed">
-          지금 이 순간 가장 추천하는 상품들을 모았습니다.
-        </p>
       </header>
 
       {!productsLoaded ? (

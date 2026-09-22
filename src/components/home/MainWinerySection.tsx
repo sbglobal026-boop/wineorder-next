@@ -57,14 +57,12 @@ export default function MainWinerySection() {
 
   return (
     <section className="max-w-[1240px] mx-auto px-5 pb-16 md:pb-20">
-      <div className="flex items-end justify-between gap-4 mb-8 md:mb-10">
-        <div>
-          <p className="text-[13px] tracking-[0.32em] uppercase text-[#0e3719] mb-3">Winery</p>
-          <h2 className="font-[family-name:var(--font-playfair-display)] font-semibold text-[28px] md:text-[38px] leading-tight text-[#1C1A17]">
-            table code가 만난 생산자
-          </h2>
-        </div>
-        <Link href="/events/winery" className="shrink-0 text-sm text-[#605d5d] hover:text-[#0e3719] transition-colors no-underline">
+      <div className="flex items-center justify-between gap-4 mb-6 md:mb-8">
+        {/* 제목 한 줄만, 글씨 크기는 이전(28/38px)의 절반 */}
+        <h2 className="font-[family-name:var(--font-playfair-display)] font-semibold text-[14px] md:text-[19px] leading-tight text-[#1C1A17]">
+          table code가 만난 생산자
+        </h2>
+        <Link href="/events/winery" className="shrink-0 text-[13px] text-[#605d5d] hover:text-[#0e3719] transition-colors no-underline">
           전체 보기 →
         </Link>
       </div>
@@ -80,16 +78,16 @@ export default function MainWinerySection() {
         >
           <div
             ref={trackRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar"
+            className="flex gap-5 items-stretch overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-2"
           >
             {wineries.map(w => (
               <Link
                 key={w.id}
                 href={`/events/winery/${w.slug}`}
                 data-winery-card
-                className="snap-start shrink-0 w-[150px] md:w-[190px] no-underline group"
+                className="cutecard snap-start shrink-0 w-[165px] md:w-[210px] no-underline group border border-[#eae7e7] bg-[#FFFFFF] shadow-xl overflow-hidden flex flex-col"
               >
-                <div className="relative w-full aspect-square overflow-hidden rounded-[16px] bg-[#EFE9E1]">
+                <div className="relative w-full aspect-square overflow-hidden bg-[#EFE9E1]">
                   {w.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -101,15 +99,17 @@ export default function MainWinerySection() {
                     <div className="absolute inset-0 flex items-center justify-center text-3xl select-none">🍇</div>
                   )}
                 </div>
-                <p className="mt-3 text-[14px] font-semibold text-[#1C1A17] leading-snug line-clamp-2 group-hover:text-[#0e3719] transition-colors">
-                  {w.name}
-                </p>
-                {(w.country || w.region) && (
-                  <p className="mt-1 text-[12px] text-[#9b9797]">{[w.country, w.region].filter(Boolean).join(' · ')}</p>
-                )}
-                {w.description && (
-                  <p className="mt-1.5 text-[12.5px] leading-snug text-[#605d5d] line-clamp-1">{w.description}</p>
-                )}
+                <div className="p-4 flex flex-col">
+                  <p className="text-[14px] font-semibold text-[#1C1A17] leading-snug line-clamp-2 group-hover:text-[#0e3719] transition-colors">
+                    {w.name}
+                  </p>
+                  {(w.country || w.region) && (
+                    <p className="mt-1 text-[12px] text-[#9b9797]">{[w.country, w.region].filter(Boolean).join(' · ')}</p>
+                  )}
+                  {w.description && (
+                    <p className="mt-1.5 text-[12.5px] leading-snug text-[#605d5d] line-clamp-1">{w.description}</p>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
