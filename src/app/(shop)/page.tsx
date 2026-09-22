@@ -4,6 +4,7 @@ import ProductGridCard from '@/components/product/ProductGridCard'
 import LoadingDots from '@/components/LoadingDots'
 import MainBanner from '@/components/home/MainBanner'
 import MainBlogSection from '@/components/home/MainBlogSection'
+import MainWinerySection from '@/components/home/MainWinerySection'
 
 // 메인(/) = Top Drop: 어드민에서 여러 개 선택 가능 → 진열대처럼 카드로 나열, 클릭하면 각자의 상세페이지로 이동
 // (기존 /events 주소는 이 페이지로 redirect, 이전 홈의 카드 3개 화면은 /welcome으로 이동)
@@ -40,6 +41,9 @@ export default function Home() {
         <p className="text-center text-[#9b9797] py-20">아직 선택된 Top Drop 상품이 없습니다.</p>
       )}
       </div>
+
+      {/* Top Drop과 블로그 사이 — 와이너리 카드 슬라이드 */}
+      <MainWinerySection />
 
       {/* Top Drop 아래 블로그 기사 카드 3장 */}
       <MainBlogSection />
