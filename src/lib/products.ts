@@ -93,13 +93,19 @@ export async function fetchAdminProducts(): Promise<Product[]> {
   return rows.map(rowToProduct)
 }
 
+// 서버가 돌려준 실패 이유를 그대로 전달 (원인을 알 수 없는 "실패했습니다"만 뜨지 않도록)
+async function toError(res: Response, fallback: string) {
+  const data = await res.json().catch(() => null)
+  return new Error(data?.error ? `${fallback}: ${data.error}` : fallback)
+}
+
 export async function createProductRow(product: Omit<Product, 'id'>): Promise<Product> {
   const res = await fetch('/api/admin/products', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(product),
   })
-  if (!res.ok) throw new Error('상품 추가에 실패했습니다')
+  if (!res.ok) throw await toError(res, '상품 추가에 실패했습니다')
   return rowToProduct(await res.json())
 }
 
@@ -109,7 +115,7 @@ export async function updateProductRow(product: Product): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(product),
   })
-  if (!res.ok) throw new Error('상품 수정에 실패했습니다')
+  if (!res.ok) throw await toError(res, '상품 수정에 실패했습니다')
 }
 
 export async function deleteProductRow(id: number, imageUrl?: string, extraImages?: string[]): Promise<void> {

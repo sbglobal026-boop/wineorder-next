@@ -15,12 +15,6 @@ const emptyProduct: Omit<Product, 'id'> = {
   name: '', price: 0, EK: 0, margin: 0, type: 'wine', category: '레드', origin: '', rating: 4.5, description: '', criticRatings: '', grapeVariety: '', volume: '', alcohol: '', stock: 0,
 }
 
-// 가격 계산 함수
-function calculatePrice(EK: number, margin: number) {
-  return Math.round(EK * (1 + margin / 100))
-  //return Math.round(EK * (1 + margin / 100))
-}
-
 function ProductForm({
   data,
   onChange,
@@ -88,17 +82,6 @@ function ProductForm({
     if (extraFileInputRefs[index].current) extraFileInputRefs[index].current!.value = ''
   }
 
-  // 원가 및 마진 변동 가격 자동 계산 핸들러
-  // const { getTotalFixedCost } = useAppConfig()
-  // const fixedTotal = getTotalFixedCost()
-  const handleCostChange = (EK: number) => {
-    const price = calculatePrice(EK, data.margin ?? 20)
-    onChange({...data, EK, price})
-  }
-  const handleMarginChange = (margin: number) => {
-    const price = calculatePrice(data.EK ?? onCancel, margin)
-    onChange({...data, margin, price})
-  }
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
@@ -245,40 +228,17 @@ function ProductForm({
         </select>
         <p className="text-xs text-gray-400 mt-1">&quot;와이너리 관리&quot; 탭에서 먼저 등록한 뒤 고를 수 있습니다</p>
       </div>
-      {/* 원가 추가 */}
+      {/* 판매가 — 원가·마진 없이 직접 입력 */}
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">원가 (유로) *</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">판매가 (유로) *</label>
         <input
           type="number"
-          value={data.EK || ''}
-          onChange={(e)=>handleCostChange(Number(e.target.value))}
-          //onChange={(e) => onChange({ ...data, price: Number(e.target.value) })}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-          placeholder="예: 35"
-        />
-      </div>
-      {/* 마진 추가 */}
-      <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">마진 (%) *</label>
-        <input
-          type="number"
-          value={data.margin || ''}
-          onChange={(e) => handleMarginChange(Number(e.target.value))}
-          //onChange={(e) => onChange({ ...data, price: Number(e.target.value) })}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-          placeholder="예: 20"
-        />
-      </div>
-      {/* 판매가 */}
-      <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">가격 (유로) *</label>
-        <input
-          type="number"
+          min="0"
+          step="0.01"
           value={data.price || ''}
-          readOnly
-          //onChange={(e) => onChange({ ...data, price: Number(e.target.value) })}
+          onChange={(e) => onChange({ ...data, price: Number(e.target.value) })}
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-          //placeholder="예: "
+          placeholder="예: 42"
         />
       </div>
       <div>
@@ -456,6 +416,8 @@ export default function ProductsPanel() {
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState<Omit<Product, 'id'>>(emptyProduct)
   const [saving, setSaving] = useState(false)
+  // 상품 저장 실패 사유 (서버가 준 메시지를 그대로 보여줌)
+  const [saveError, setSaveError] = useState('')
   const [savedFlash, setSavedFlash] = useState(false)
 
   // 저장 완료 표시를 잠깐 보여줌
@@ -533,6 +495,7 @@ export default function ProductsPanel() {
   const saveEdit = async () => {
     if (!editForm || saving) return
     setSaving(true)
+    setSaveError('')
     try {
       await updateProductRow(editForm)
       setProducts(prev => prev.map(p => p.id === editForm.id ? editForm : p))
@@ -540,6 +503,8 @@ export default function ProductsPanel() {
       setEditingId(null)
       setEditForm(null)
       flashSaved()
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : '상품 수정에 실패했습니다')
     } finally {
       setSaving(false)
     }
@@ -548,6 +513,7 @@ export default function ProductsPanel() {
   const handleAdd = async () => {
     if (saving || !addForm.name || !addForm.price) return
     setSaving(true)
+    setSaveError('')
     try {
       const created = await createProductRow(addForm)
       setProducts(prev => [...prev, created])
@@ -555,6 +521,8 @@ export default function ProductsPanel() {
       setAddForm(emptyProduct)
       setShowAdd(false)
       flashSaved()
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : '상품 추가에 실패했습니다')
     } finally {
       setSaving(false)
     }
@@ -636,6 +604,12 @@ export default function ProductsPanel() {
         와인 및 식품 상품을 추가, 편집, 삭제할 수 있습니다
         {csvStatus && <span className="text-green-600 ml-2">· {csvStatus}</span>}
       </p>
+
+      {saveError && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-700">{saveError}</p>
+        </div>
+      )}
 
       {showAdd && (
         <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-6">
