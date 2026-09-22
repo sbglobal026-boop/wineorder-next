@@ -125,12 +125,14 @@ export default function CartPage() {
             <h3 className="font-[family-name:var(--font-playfair-display)] text-[22px] text-[#1C1A17] mb-5">결제 금액</h3>
             <div className="flex flex-col gap-3 text-sm pb-4 border-b border-[#eae7e7]">
               <div className="flex justify-between"><span className="text-[#9b9797]">상품 금액</span><span className="text-[#1C1A17]">€{total.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#1C1A17]">무료</span></div>
+              {/* 배송비는 배송지(국가)에 따라 달라져 결제 단계에서 계산됨 */}
+              <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#9b9797]">배송지 선택 후 계산</span></div>
             </div>
-            <div className="flex items-baseline justify-between py-5">
-              <span className="text-[15px] text-[#1C1A17]">총 결제금액</span>
+            <div className="flex items-baseline justify-between pt-5 pb-1.5">
+              <span className="text-[15px] text-[#1C1A17]">상품 합계</span>
               <span className="font-[family-name:var(--font-playfair-display)] text-[28px] text-[#0e3719]">€{total.toLocaleString()}</span>
             </div>
+            <p className="text-xs text-[#9b9797] mb-4">배송비와 세금은 결제 단계에서 더해집니다</p>
             <button
               onClick={handleOrder}
               className="w-full rounded-full bg-[#0e3719] hover:bg-[#22301C] text-[#FFFFFF] text-sm font-semibold py-3.5 transition-colors mb-2.5"
