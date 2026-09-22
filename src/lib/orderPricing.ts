@@ -13,12 +13,18 @@ export function getZone(country: string): CountryZone {
 }
 
 // 관세 계산 (한국 배송 전용 — 통관 예상 관세)
-export function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
+// 과세가격 = (상품 단가 + 배송비 12€ − 2.8€) × 수량  ← 병 단위로 더함
+export const DUTY_SHIPPING_EUR = 12
+export const DUTY_DEDUCTION_EUR = 2.8
+
+export function calcDuty(unitPrice: number, qty: number, eurToKrw: number, eurToUsd: number, origin: string) {
   const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈']
   const isFTA = ftaOrigins.some(o => origin.includes(o))
 
-  const priceUsd = price * eurToUsd
-  const priceKrw = price * eurToKrw
+  // 병당 (단가 + 12 − 2.8)을 더한 금액이 과세가격 (음수가 되지 않게 0으로 막음)
+  const dutiableEur = Math.max(0, unitPrice + DUTY_SHIPPING_EUR - DUTY_DEDUCTION_EUR) * qty
+  const priceUsd = dutiableEur * eurToUsd
+  const priceKrw = dutiableEur * eurToKrw
 
   if (priceUsd <= 150) {
     const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)

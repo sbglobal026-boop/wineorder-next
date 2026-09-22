@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     const { krw, usd } = await fetchExchangeRates()
     dutyEur = trustedItems.reduce((sum, i) => {
       const product = productMap.get(i.productId)!
-      return sum + calcDuty(i.price_eur * i.qty, krw, usd, product.origin ?? '').total
+      return sum + calcDuty(i.price_eur, i.qty, krw, usd, product.origin ?? '').total
     }, 0)
   }
 

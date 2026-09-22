@@ -336,17 +336,17 @@ function CheckoutContent() {
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">도시</label>
                           <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
-                            value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+                            value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="서울특별시 강남구" />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">상세 주소</label>
                           <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
-                            value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
+                            value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="테헤란로 123, 101동 1004호" />
                         </div>
                         <div>
                           <label className="text-xs text-gray-500 mb-1 block">우편번호</label>
                           <input className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
-                            value={form.postal_code} onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="10115" />
+                            value={form.postal_code} onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))} placeholder="06134" />
                         </div>
                         {form.country === 'KR' && (
                           <div>
@@ -447,7 +447,7 @@ function CheckoutContent() {
                     className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.city}
                     onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                    placeholder="Berlin"
+                    placeholder="서울특별시 강남구"
                   />
                 </div>
 
@@ -457,7 +457,7 @@ function CheckoutContent() {
                     className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.address}
                     onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                    placeholder="Musterstraße 1"
+                    placeholder="테헤란로 123, 101동 1004호"
                   />
                 </div>
 
@@ -467,7 +467,7 @@ function CheckoutContent() {
                     className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#0e3719]"
                     value={form.postal_code}
                     onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))}
-                    placeholder="10115"
+                    placeholder="06134"
                   />
                 </div>
 
@@ -527,7 +527,7 @@ function CheckoutContent() {
               {items.map(({ productId, qty, product }) => {
                 const perBottleKrw = eurToKrw ? product.price * eurToKrw : null
                 const perBottleDuty = (eurToKrw && eurToUsd)
-                  ? calcDuty(product.price, eurToKrw, eurToUsd, product.origin).total
+                  ? calcDuty(product.price, 1, eurToKrw, eurToUsd, product.origin).total
                   : null
                 return (
                   <div key={productId} className="p-4">
@@ -652,6 +652,13 @@ function CheckoutContent() {
                   <span>1€ = ₩{eurToKrw.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}</span>
                 </div>
               )}
+
+              {/* 원화 금액은 참고용 — 실제 청구액은 카드사·결제수단 환율로 정해짐 */}
+              {zone === 'KR' && eurToKrw && (
+                <p className="text-xs text-gray-400 leading-relaxed">
+                  * 원화 금액은 참고용이며, 실제 결제 금액은 카드사 환율에 따라 달라질 수 있습니다.
+                </p>
+              )}
             </div>
             <Link
               href="/cart"
@@ -700,7 +707,7 @@ function CheckoutContent() {
                     }))
                     const dutyTotal = zone === 'KR' && eurToKrw && eurToUsd
                       ? items.reduce((sum, i) => {
-                          const d = calcDuty(i.product.price * i.qty, eurToKrw, eurToUsd, i.product.origin ?? '')
+                          const d = calcDuty(i.product.price, i.qty, eurToKrw, eurToUsd, i.product.origin ?? '')
                           return sum + d.total
                         }, 0)
                       : 0

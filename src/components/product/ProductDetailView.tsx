@@ -10,6 +10,7 @@ import { fetchReviews, addReview, deleteReview, ProductReview } from '@/lib/revi
 import { fetchWishlist, addToWishlist, removeFromWishlist } from '@/lib/wishlist'
 import ProductGridCard from '@/components/product/ProductGridCard'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import { calcDuty } from '@/lib/orderPricing'
 import { useMemberTiers } from '@/lib/memberBadges'
 import TierBadge from '@/components/member/TierBadge'
 
@@ -29,23 +30,6 @@ function extractVintage(name: string): string {
 
 function fmt(n: number): string {
   return '€' + n.toLocaleString()
-}
-
-// 관세 계산(배송비 미포함 ver.)
-function calcDuty(price: number, eurToKrw: number, eurToUsd: number, origin: string) {
-  const ftaOrigins = ['프랑스', '이탈리아', '스페인', '독일', '포르투갈']
-  const isFTA = ftaOrigins.some(o => origin.includes(o))
-
-  const priceUsd = price * eurToUsd
-  const priceKrw = price * eurToKrw
-
-  if (priceUsd <= 150) {
-    const total = Math.round(isFTA ? priceKrw * 0.33 : priceKrw * 0.683)
-    return { total }
-  } else {
-    const total = Math.round(isFTA ? priceKrw * 0.463 : priceKrw * 0.683)
-    return { total }
-  }
 }
 
 export default function ProductDetailView({
@@ -194,7 +178,7 @@ export default function ProductDetailView({
   }
 
   const priceKrw = (showDuty && eurToKrw) ? product.price * eurToKrw : null
-  const duty = (showDuty && eurToKrw && eurToUsd) ? calcDuty(product.price, eurToKrw, eurToUsd, product.origin) : null
+  const duty = (showDuty && eurToKrw && eurToUsd) ? calcDuty(product.price, 1, eurToKrw, eurToUsd, product.origin) : null
 
   const criticRatings = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
 
@@ -367,6 +351,7 @@ export default function ProductDetailView({
             <div className="mb-5">
               <p className="text-xs text-[#0e3719]">* 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}</p>
               <p className="text-xs text-[#0e3719] mt-0.5">* 배송비 별도</p>
+              <p className="text-xs text-[#0e3719]/70 mt-0.5">* 실제 결제 금액은 카드사 환율에 따라 달라질 수 있습니다</p>
             </div>
           )}
 
