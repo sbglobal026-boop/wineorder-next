@@ -25,15 +25,8 @@ export default function MainBlogSection() {
 
   return (
     <section className="max-w-[1240px] mx-auto px-5 pb-16 md:pb-20">
-      <header className="text-center max-w-[640px] mx-auto mb-10 md:mb-12">
-        <p className="text-[13px] tracking-[0.32em] uppercase text-[#0e3719] mb-3">Stories</p>
-        <h2 className="font-[family-name:var(--font-playfair-display)] font-semibold text-[28px] md:text-[38px] leading-tight text-[#1C1A17] mb-3">
-          table code 이야기
-        </h2>
-        <p className="text-[15px] text-[#605d5d] leading-relaxed">
-          와인과 음식, 그리고 그 자리에 대한 기록입니다.
-        </p>
-      </header>
+      {/* 제목 문구 대신 구분선만 */}
+      <div className="border-t border-[#dcd6cd] mb-10 md:mb-12" />
 
       {loading ? (
         <LoadingDots className="py-16" />
