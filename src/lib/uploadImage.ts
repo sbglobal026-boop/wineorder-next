@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/client'
 
+// 원본 그대로 올릴 때의 용량 상한 (Storage 낭비 방지)
+const MAX_ORIGINAL_IMAGE_SIZE = 15 * 1024 * 1024 // 15MB
+
 function compressToBlob(file: File, maxWidth = 1080, quality = 0.75): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -26,7 +29,25 @@ function compressToBlob(file: File, maxWidth = 1080, quality = 0.75): Promise<Bl
   })
 }
 
-export async function uploadImage(file: File, bucket: string, folder: string, maxWidth = 1080): Promise<string> {
+// 원본 그대로 업로드 (압축·크기 변경 없음) — 압축하면 화질이 떨어지는 PNG 등에 사용
+export async function uploadOriginalImage(file: File, bucket: string, folder: string): Promise<string> {
+  if (file.size > MAX_ORIGINAL_IMAGE_SIZE) {
+    throw new Error('이미지 용량은 15MB 이하만 올릴 수 있습니다')
+  }
+  const supabase = createClient()
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+  const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const { error } = await supabase.storage.from(bucket).upload(filename, file, {
+    contentType: file.type || 'image/png',
+    cacheControl: '31536000',
+  })
+  if (error) throw error
+
+  return supabase.storage.from(bucket).getPublicUrl(filename).data.publicUrl
+}
+
+export async function uploadImage(file: File, bucket: string, folder: string, maxWidth = 1080, quality = 0.75): Promise<string> {
   const supabase = createClient()
 
   // 압축 실패(브라우저가 해석 못 하는 포맷 등) 시 원본 그대로 업로드해서 조용한 실패를 막음
@@ -34,7 +55,7 @@ export async function uploadImage(file: File, bucket: string, folder: string, ma
   let contentType = file.type || 'image/jpeg'
   let ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   try {
-    blob = await compressToBlob(file, maxWidth)
+    blob = await compressToBlob(file, maxWidth, quality)
     contentType = 'image/jpeg'
     ext = 'jpg'
   } catch {
@@ -66,9 +87,11 @@ export async function uploadProductImage(file: File): Promise<string> {
   return uploadImage(file, 'product-images', 'products')
 }
 
-// 배너는 화면 끝까지 가로로 길게 보이므로 더 큰 폭까지 허용
+// 배너는 화면 끝까지 가로로 길게 보이므로 더 큰 폭까지 허용하고 압축도 약하게(품질 92%)
+// PNG는 압축하면 글자·로고가 뭉개지고 투명 배경도 사라지므로 원본 그대로 업로드
 export async function uploadBannerImage(file: File): Promise<string> {
-  return uploadImage(file, 'banner-images', 'banners', 1920)
+  if (file.type === 'image/png') return uploadOriginalImage(file, 'banner-images', 'banners')
+  return uploadImage(file, 'banner-images', 'banners', 1920, 0.92)
 }
 
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
