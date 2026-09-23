@@ -33,6 +33,10 @@ function ProductForm({
   saved?: boolean
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // 자동 채우기(AI) 상태
+  const [filling, setFilling] = useState(false)
+  const [fillError, setFillError] = useState('')
+  const [uncertainFields, setUncertainFields] = useState<string[]>([])
   // 와이너리 선택 목록 — 어드민 "와이너리 관리"에서 등록한 것
   const [wineries, setWineries] = useState<Winery[]>([])
   useEffect(() => {
@@ -81,6 +85,57 @@ function ProductForm({
     onChange({ ...data, extraImages })
     if (extraFileInputRefs[index].current) extraFileInputRefs[index].current!.value = ''
   }
+
+  // 상품명 등 이미 입력한 값으로 나머지 칸을 채움 (판매가·별점·평가·재고·배송비는 건드리지 않음)
+  const handleAutoFill = async () => {
+    if (!data.name.trim() || filling) return
+    setFilling(true)
+    setFillError('')
+    setUncertainFields([])
+    try {
+      const res = await fetch('/api/admin/ai/product-fill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          type: data.type,
+          origin: data.origin,
+          category: data.category,
+          grapeVariety: data.grapeVariety,
+          volume: data.volume,
+          alcohol: data.alcohol,
+        }),
+      })
+      const result = await res.json().catch(() => null)
+      if (!res.ok) {
+        setFillError(result?.error ?? '자동 채우기에 실패했습니다')
+        return
+      }
+      const winery = wineries.find(w => w.name === result.wineryName)
+      const isWineCategory = (wineCategories as string[]).includes(result.category)
+      onChange({
+        ...data,
+        // 빈 값으로 덮어쓰지 않음 — AI가 모른다고 한 칸은 기존 값 유지
+        category: data.type === 'wine' && isWineCategory ? (result.category as Category) : data.category,
+        origin: result.origin || data.origin,
+        wineryId: winery ? winery.id : data.wineryId,
+        grapeVariety: result.grapeVariety || data.grapeVariety,
+        volume: result.volume || data.volume,
+        alcohol: result.alcohol || data.alcohol,
+        description: result.description || data.description,
+      })
+      setUncertainFields(Array.isArray(result.uncertain) ? result.uncertain : [])
+    } catch {
+      setFillError('자동 채우기에 실패했습니다')
+    } finally {
+      setFilling(false)
+    }
+  }
+
+  const uncertainNote = (field: string) =>
+    uncertainFields.includes(field)
+      ? <span className="text-[11px] font-normal text-amber-600 ml-1.5">AI 추정 · 확인 필요</span>
+      : null
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -186,16 +241,33 @@ function ProductForm({
       </div>
       <div className="md:col-span-2">
         <label className="block text-xs font-semibold text-gray-600 mb-1">상품명 *</label>
-        <input
-          value={data.name}
-          onChange={(e) => onChange({ ...data, name: e.target.value })}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-          placeholder="예: 샤또 마고 2018"
-        />
+        <div className="flex gap-2">
+          <input
+            value={data.name}
+            onChange={(e) => onChange({ ...data, name: e.target.value })}
+            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+            placeholder="예: 샤또 마고 2018"
+          />
+          <button
+            type="button"
+            onClick={handleAutoFill}
+            disabled={!data.name.trim() || filling}
+            title="상품명을 바탕으로 카테고리·원산지·와이너리·품종·용량·알코올·설명을 채웁니다"
+            className="shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {filling ? '작성 중...' : '✨ 자동 채우기'}
+          </button>
+        </div>
+        {fillError && <p className="text-xs text-red-600 mt-1">{fillError}</p>}
+        {uncertainFields.length > 0 && (
+          <p className="text-xs text-amber-600 mt-1">
+            자동으로 채웠습니다. 표시된 칸은 확인 후 저장해주세요. (판매가·별점·평가·재고·배송비는 채우지 않습니다)
+          </p>
+        )}
       </div>
       {data.type === 'wine' && (
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">카테고리</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">카테고리{uncertainNote('category')}</label>
           <select
             value={data.category}
             onChange={(e) => onChange({ ...data, category: e.target.value as Category })}
@@ -206,7 +278,7 @@ function ProductForm({
         </div>
       )}
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">원산지</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">원산지{uncertainNote('origin')}</label>
         <input
           value={data.origin}
           onChange={(e) => onChange({ ...data, origin: e.target.value })}
@@ -254,7 +326,7 @@ function ProductForm({
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">포도품종</label>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">포도품종{uncertainNote('grapeVariety')}</label>
         <input
           value={data.grapeVariety ?? ''}
           onChange={(e) => onChange({ ...data, grapeVariety: e.target.value })}
@@ -264,7 +336,7 @@ function ProductForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">용량</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">용량{uncertainNote('volume')}</label>
           <div className="relative">
             <input
               inputMode="numeric"
@@ -277,7 +349,7 @@ function ProductForm({
           </div>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">알코올</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">알코올{uncertainNote('alcohol')}</label>
           <div className="relative">
             <input
               inputMode="decimal"
