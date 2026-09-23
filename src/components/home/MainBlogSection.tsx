@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { fetchRecentBlogPosts, BlogPost } from '@/lib/blog'
 import { BlogCard } from '@/components/blog/BlogCard'
 import LoadingDots from '@/components/LoadingDots'
@@ -31,21 +30,11 @@ export default function MainBlogSection() {
       {loading ? (
         <LoadingDots className="py-16" />
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-7">
-            {posts.map(post => (
-              <BlogCard key={post.id} post={post} variant="square" />
-            ))}
-          </div>
-          <div className="text-center mt-10">
-            <Link
-              href="/journal"
-              className="inline-block rounded-full border border-[#d7d3d3] text-[#605d5d] hover:border-[#5C7A63] hover:text-[#0e3719] text-sm px-7 py-3 transition-colors no-underline"
-            >
-              이야기 더 보기
-            </Link>
-          </div>
-        </>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-7">
+          {posts.map(post => (
+            <BlogCard key={post.id} post={post} variant="square" />
+          ))}
+        </div>
       )}
     </section>
   )
