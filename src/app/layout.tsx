@@ -5,6 +5,8 @@ import { Playfair_Display } from "next/font/google";
 import { Lato } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { organizationJsonLd } from "@/lib/seo";
 import Providers from "@/components/Providers";
 
 const geist = Geist({
@@ -41,8 +43,23 @@ const nanumSquare = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "table code | 프리미엄 와인 쇼핑몰",
-  description: "엄선된 세계 각국의 와인을 합리적인 가격에 만나보세요",
+  // 페이지마다 제목을 따로 주면 "상품명 | table code" 형태로 조합됨
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} | 유럽 와인 직배송`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'ko_KR',
+    url: SITE_URL,
+    title: `${SITE_NAME} | 유럽 와인 직배송`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -61,6 +78,11 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${geist.variable} ${grotesk.variable} ${playfairDisplay.variable} ${lato.variable} ${nanumSquare.variable} h-full antialiased`} style={fontVars}>
       <body className="min-h-full bg-[#F9F4EE] font-korean">
+        {/* 검색엔진에 사이트 기본 정보 제공 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>
