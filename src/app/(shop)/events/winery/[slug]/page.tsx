@@ -39,11 +39,13 @@ export default function WineryDetailPage() {
     <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
       {/* 상단 — 사진 + 이름 */}
       <section className="max-w-[1240px] mx-auto px-5 pt-10 md:pt-14">
-        <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
-          <div className="relative w-full aspect-[4/3] md:aspect-[3/2] overflow-hidden rounded-[24px] bg-[#EFE9E1]">
+        {/* 사진은 최대 400px, 옆 글 영역은 최소 280px 확보 */}
+        <div className="grid md:grid-cols-[minmax(0,400px)_minmax(280px,1fr)] gap-6 md:gap-10 items-center">
+          {/* 사진 칸은 400×400 정사각형까지 — 사진은 비율 그대로 안쪽에 맞추고 남는 공간은 페이지 배경 그대로 */}
+          <div className="relative w-full max-w-[400px] aspect-square">
             {winery.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={winery.image_url} alt={winery.name} className="absolute inset-0 w-full h-full object-cover" />
+              <img src={winery.image_url} alt={winery.name} className="absolute inset-0 w-full h-full object-contain" />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-5xl select-none">🍇</div>
             )}
