@@ -60,6 +60,8 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   robots: { index: true, follow: true },
+  // 네이버 서치어드바이저 사이트 소유확인용 태그 (공개용 확인 값)
+  verification: { other: { 'naver-site-verification': 'e253286db77ce9a3ed1e4029a6c109509aa9b652' } },
 };
 
 export default function RootLayout({
