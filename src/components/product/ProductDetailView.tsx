@@ -334,7 +334,7 @@ export default function ProductDetailView({
           <h1 className="font-[family-name:var(--font-playfair-display)] text-[34px] md:text-[42px] leading-[1.1] text-[#1C1A17] mb-4">
             {product.name}
           </h1>
-          <p className="text-[15px] leading-[1.75] text-[#605d5d] mb-6 max-w-[46ch] whitespace-pre-line">{product.description}</p>
+          {/* 설명은 아래 "테이스팅 노트"에서만 보여줌 (같은 글이 두 번 나오지 않게) */}
 
           {/* 가격 (+ 할인 껍데기) */}
           <div className="flex items-baseline gap-2.5 mb-1">
