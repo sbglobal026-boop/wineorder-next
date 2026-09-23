@@ -4,6 +4,9 @@
   "engines": {
     "node": "22.x"
   },
+  "overrides": {
+    "jsdom": "26.1.0"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",
