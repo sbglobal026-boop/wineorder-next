@@ -1,11 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { fetchRecentBlogPosts, BlogPost } from '@/lib/blog'
+import { fetchBlogPostsPage, BlogPost } from '@/lib/blog'
+import { childCategories, type BlogCategory } from '@/lib/blogCategories'
 import { BlogCard } from '@/components/blog/BlogCard'
 import LoadingDots from '@/components/LoadingDots'
 
-// 메인 Top Drop 아래 블로그 기사 섹션 — 카테고리 구분 없이 최신 글 2개를 카드로 보여줌
+// 메인 Top Drop 아래 블로그 기사 섹션 — Wine 계열 최신 글 2개를 카드로 보여줌
 const CARD_COUNT = 2
+// Wine 아래 하위 카테고리(Winery·Tasting 등)까지 포함 — /blog/wine 목록 페이지와 같은 기준
+const WINE_CATEGORIES: BlogCategory[] = ['wine', ...childCategories('wine')]
 
 export default function MainBlogSection() {
   const [posts, setPosts] = useState<BlogPost[]>([])
@@ -13,8 +16,8 @@ export default function MainBlogSection() {
 
   useEffect(() => {
     let ignore = false
-    fetchRecentBlogPosts(CARD_COUNT)
-      .then(data => { if (!ignore) { setPosts(data); setLoading(false) } })
+    fetchBlogPostsPage(WINE_CATEGORIES, 1, CARD_COUNT)
+      .then(({ posts }) => { if (!ignore) { setPosts(posts); setLoading(false) } })
       .catch(() => { if (!ignore) setLoading(false) })
     return () => { ignore = true }
   }, [])
