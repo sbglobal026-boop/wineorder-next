@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Product } from '@/data/products'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
+import { formatEur } from '@/lib/formatPrice'
 
 // 상품 카드 (카드 컨셉 · 둥근 카드). 와인/음식 리스트, 장바구니·상세 추천에서 공유.
 
@@ -16,7 +17,7 @@ const CATEGORY_META: Record<string, { label: string; bg: string }> = {
 }
 
 function fmt(n: number): string {
-  return '€' + n.toLocaleString()
+  return formatEur(n)
 }
 
 export default function ProductGridCard({ product, isNew = false }: { product: Product; isNew?: boolean }) {

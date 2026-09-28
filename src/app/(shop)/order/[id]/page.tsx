@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
 import { trackingUrl } from '@/lib/tracking'
 import { useAppConfig } from '@/context/AppConfigContext'
+import { formatEur } from '@/lib/formatPrice'
 
 // 운송장번호 — 번호 형식이 맞으면 우체국 배송조회 링크, 아니면 글자 그대로
 function TrackingNumber({ value }: { value: string }) {
@@ -186,7 +187,7 @@ export default function OrderPage() {
             <div>
               <p className="text-sm font-semibold text-[#1C1A17] mb-1">취소된 주문입니다</p>
               <p className="text-[13px] leading-relaxed text-[#605d5d]">
-                결제하신 €{order.total_eur.toLocaleString()}는 결제하신 수단으로 환불 처리됐습니다.
+                결제하신 {formatEur(order.total_eur)}는 결제하신 수단으로 환불 처리됐습니다.
                 카드사·은행에 따라 영업일 기준 5~10일 내에 명세서에 반영되며, 결제 직후 취소된 경우에는
                 환불 내역 대신 원래 결제 내역이 사라지는 형태로 표시될 수 있습니다.
               </p>
@@ -217,9 +218,9 @@ export default function OrderPage() {
                 <div key={i} className="flex justify-between items-center py-3 first:pt-0 last:pb-0">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[#1C1A17] truncate">{item.name}</p>
-                    <p className="text-xs text-[#9b9797]">수량 {item.qty}개 · €{item.price_eur}</p>
+                    <p className="text-xs text-[#9b9797]">수량 {item.qty}개 · {formatEur(item.price_eur)}</p>
                   </div>
-                  <p className="font-[family-name:var(--font-playfair-display)] text-[17px] text-[#1C1A17] shrink-0">€{(item.price_eur * item.qty).toLocaleString()}</p>
+                  <p className="font-[family-name:var(--font-playfair-display)] text-[17px] text-[#1C1A17] shrink-0">{formatEur(item.price_eur * item.qty)}</p>
                 </div>
               ))}
             </div>
@@ -260,18 +261,18 @@ export default function OrderPage() {
             <div className={`${cardCls} p-6 md:p-7`}>
               <h3 className="font-[family-name:var(--font-playfair-display)] text-[20px] text-[#1C1A17] mb-4">결제 정보</h3>
               <div className="flex flex-col gap-2.5 text-sm pb-4 border-b border-[#eae7e7]">
-                <div className="flex justify-between"><span className="text-[#9b9797]">상품 합계</span><span className="text-[#1C1A17]">€{subtotal.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-[#9b9797]">상품 합계</span><span className="text-[#1C1A17]">{formatEur(subtotal)}</span></div>
                 {Number(order.discount_eur) > 0 && (
-                  <div className="flex justify-between"><span className="text-[#9b9797]">추천인 할인 ({order.referral_code})</span><span className="text-[#1C1A17]">−€{Number(order.discount_eur).toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9b9797]">추천인 할인 ({order.referral_code})</span><span className="text-[#1C1A17]">−{formatEur(order.discount_eur)}</span></div>
                 )}
-                <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#1C1A17]">€{order.shipping_fee_eur.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#1C1A17]">{formatEur(order.shipping_fee_eur)}</span></div>
                 {order.split_delivery && (
-                  <div className="flex justify-between"><span className="text-[#9b9797]">분할배송비</span><span className="text-[#1C1A17]">€{order.split_delivery_fee_eur.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9b9797]">분할배송비</span><span className="text-[#1C1A17]">{formatEur(order.split_delivery_fee_eur)}</span></div>
                 )}
               </div>
               <div className="flex items-baseline justify-between pt-4">
                 <span className="text-[15px] text-[#1C1A17]">총 결제금액</span>
-                <span className="font-[family-name:var(--font-playfair-display)] text-[26px] text-[#0e3719]">€{order.total_eur.toLocaleString()}</span>
+                <span className="font-[family-name:var(--font-playfair-display)] text-[26px] text-[#0e3719]">{formatEur(order.total_eur)}</span>
               </div>
             </div>
             <Link href="/mypage" className="block text-center rounded-full border border-[#5C7A63] text-[#0e3719] hover:bg-[#0e3719] hover:text-[#FFFFFF] text-sm font-semibold py-3.5 transition-colors no-underline">
@@ -309,7 +310,7 @@ export default function OrderPage() {
               <>
                 <h3 className="font-[family-name:var(--font-playfair-display)] text-[19px] text-[#1C1A17] mb-2">주문이 취소됐어요</h3>
                 <p className="text-sm text-[#605d5d] leading-relaxed mb-5">
-                  결제하신 €{order.total_eur.toLocaleString()}는 결제하신 수단으로 환불 처리됐습니다.
+                  결제하신 {formatEur(order.total_eur)}는 결제하신 수단으로 환불 처리됐습니다.
                   카드사·은행에 따라 영업일 기준 5~10일 내에 명세서에 반영됩니다.
                 </p>
                 <button

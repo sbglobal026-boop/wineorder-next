@@ -15,6 +15,7 @@ import {
   fetchMyAddresses, saveAddress, deleteAddress, setDefaultAddress,
   Address, AddressInput, COUNTRY_OPTIONS, DEFAULT_COUNTRY, countryLabel,
 } from '@/lib/addresses'
+import { formatEur } from '@/lib/formatPrice'
 
 type Tab = 'orders' | 'wishlist' | 'addresses' | 'reviews' | 'profile'
 const TABS: { id: Tab; label: string }[] = [
@@ -154,7 +155,7 @@ function OrdersPanel({ userId }: { userId: string }) {
           <p className="text-sm text-[#1C1A17] mb-2 truncate">
             {(o.items ?? []).map(i => `${i.name} × ${i.qty}`).join(', ') || '주문 상품'}
           </p>
-          <p className="font-[family-name:var(--font-playfair-display)] text-[18px] text-[#1C1A17]">€{o.total_eur?.toLocaleString()}</p>
+          <p className="font-[family-name:var(--font-playfair-display)] text-[18px] text-[#1C1A17]">{formatEur(o.total_eur)}</p>
         </Link>
       ))}
     </div>

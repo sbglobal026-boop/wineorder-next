@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
+import { formatEur } from '@/lib/formatPrice'
 
 export default function CartDrawer() {
   const { config, removeFromCart, updateCartQty, clearCart, isCartOpen, closeCart } = useAppConfig()
@@ -110,7 +111,7 @@ export default function CartDrawer() {
                   {/* 금액 + 삭제 */}
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     <p className="font-[family-name:var(--font-playfair-display)] text-[16px] text-[#1C1A17]">
-                      €{(product.price * qty).toLocaleString()}
+                      {formatEur(product.price * qty)}
                     </p>
                     <button
                       onClick={() => removeFromCart(productId)}
@@ -131,7 +132,7 @@ export default function CartDrawer() {
             {/* 총 합계 */}
             <div className="flex items-center justify-between py-2 border-b border-[#eae7e7] mb-1">
               <span className="text-xs font-bold uppercase tracking-widest text-[#605d5d]">합계</span>
-              <span className="font-[family-name:var(--font-playfair-display)] text-[20px] text-[#1C1A17]">€{total.toLocaleString()}</span>
+              <span className="font-[family-name:var(--font-playfair-display)] text-[20px] text-[#1C1A17]">{formatEur(total)}</span>
             </div>
             <Link
               href="/cart"

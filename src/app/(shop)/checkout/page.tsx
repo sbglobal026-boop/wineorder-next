@@ -9,6 +9,7 @@ import { getZone, calcDuty, calcOrderTotals } from '@/lib/orderPricing'
 import { COUNTRY_OPTIONS, DEFAULT_COUNTRY } from '@/lib/addresses'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
+import { formatEur } from '@/lib/formatPrice'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -543,7 +544,7 @@ function CheckoutContent() {
                         <p className="text-xs text-gray-600 mt-0.5">수량 {qty}개</p>
                       </div>
                       <p className="text-sm font-black text-gray-900 whitespace-nowrap">
-                        €{(product.price * qty).toLocaleString()}
+                        {formatEur(product.price * qty)}
                       </p>
                     </div>
 
@@ -607,13 +608,13 @@ function CheckoutContent() {
 
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">상품 금액</span>
-                <span className="text-gray-900 font-medium">€{subtotal.toLocaleString()}</span>
+                <span className="text-gray-900 font-medium">{formatEur(subtotal)}</span>
               </div>
 
               {appliedReferral && discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">추천인 할인 ({appliedReferral.discountPercent}%)</span>
-                  <span className="text-[#0e3719] font-medium">−€{discount.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-[#0e3719] font-medium">−{formatEur(discount)}</span>
                 </div>
               )}
 
@@ -630,13 +631,13 @@ function CheckoutContent() {
               {zone === 'DE' && vat > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">부가세 (VAT {((rateInfo?.vat_rate ?? 0) * 100).toFixed(0)}%)</span>
-                  <span className="text-gray-900 font-medium">€{vat.toFixed(2)}</span>
+                  <span className="text-gray-900 font-medium">{formatEur(vat)}</span>
                 </div>
               )}
 
               <div className="flex justify-between font-black text-gray-900 text-2xl border-t border-gray-100 pt-3">
                 <span>총 결제금액</span>
-                <span>€{total.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>{formatEur(total)}</span>
               </div>
 
               {zone === 'KR' && eurToKrw && (

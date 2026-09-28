@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { formatEur } from '@/lib/formatPrice'
 
 // 와인/음식 리스트에서 공유하는 필터 UI (가격 슬라이더 + 드롭다운)
 
@@ -25,7 +26,7 @@ export function PriceRangeSlider({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 whitespace-nowrap font-[family-name:var(--font-lato)]">€{minVal.toLocaleString()} ~ €{maxVal.toLocaleString()}</span>
+      <span className="text-xs text-gray-500 whitespace-nowrap font-[family-name:var(--font-lato)]">{formatEur(minVal)} ~ {formatEur(maxVal)}</span>
       <div className="relative h-3.5 w-40 flex items-center">
         <div className="absolute h-[3px] w-full rounded-full bg-[#DAD4CD]" />
         <div

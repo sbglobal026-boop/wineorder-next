@@ -6,6 +6,7 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import ProductGridCard from '@/components/product/ProductGridCard'
 import CheckoutSteps from '@/components/cart/CheckoutSteps'
+import { formatEur } from '@/lib/formatPrice'
 
 // 카테고리별 카드 상단 그라데이션
 const categoryGradient: Record<string, string> = {
@@ -101,7 +102,7 @@ export default function CartPage() {
                   {/* 금액 + 삭제 */}
                   <div className="flex flex-col items-end justify-between self-stretch shrink-0">
                     <button onClick={() => removeFromCart(productId)} aria-label="삭제" className="text-[#bab6b6] hover:text-[#0e3719] text-lg leading-none transition-colors">×</button>
-                    <p className="font-[family-name:var(--font-playfair-display)] text-[19px] md:text-[22px] text-[#1C1A17]">€{(product.price * qty).toLocaleString()}</p>
+                    <p className="font-[family-name:var(--font-playfair-display)] text-[19px] md:text-[22px] text-[#1C1A17]">{formatEur(product.price * qty)}</p>
                   </div>
                 </div>
               )
@@ -124,13 +125,13 @@ export default function CartPage() {
           <div className="lg:sticky lg:top-[90px] rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] p-6 md:p-7">
             <h3 className="font-[family-name:var(--font-playfair-display)] text-[22px] text-[#1C1A17] mb-5">결제 금액</h3>
             <div className="flex flex-col gap-3 text-sm pb-4 border-b border-[#eae7e7]">
-              <div className="flex justify-between"><span className="text-[#9b9797]">상품 금액</span><span className="text-[#1C1A17]">€{total.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-[#9b9797]">상품 금액</span><span className="text-[#1C1A17]">{formatEur(total)}</span></div>
               {/* 배송비는 배송지(국가)에 따라 달라져 결제 단계에서 계산됨 */}
               <div className="flex justify-between"><span className="text-[#9b9797]">배송비</span><span className="text-[#9b9797]">배송지 선택 후 계산</span></div>
             </div>
             <div className="flex items-baseline justify-between pt-5 pb-1.5">
               <span className="text-[15px] text-[#1C1A17]">상품 합계</span>
-              <span className="font-[family-name:var(--font-playfair-display)] text-[28px] text-[#0e3719]">€{total.toLocaleString()}</span>
+              <span className="font-[family-name:var(--font-playfair-display)] text-[28px] text-[#0e3719]">{formatEur(total)}</span>
             </div>
             <p className="text-xs text-[#9b9797] mb-4">배송비와 세금은 결제 단계에서 더해집니다</p>
             <button
