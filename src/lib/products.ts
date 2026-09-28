@@ -148,3 +148,17 @@ export async function setFeaturedProductIdsRemote(ids: number[]): Promise<void> 
   const supabase = createClient()
   await supabase.from('app_config').upsert({ key: 'featuredProductIds', value: JSON.stringify(ids) })
 }
+
+// Preorder(예약 주문): Top Drop과 같은 방식으로 선택한 상품 ID 배열을 app_config에 저장
+export async function fetchPreorderProductIds(): Promise<number[]> {
+  const supabase = createClient()
+  const { data } = await supabase.from('app_config').select('value').eq('key', 'preorderProductIds').maybeSingle()
+  if (!data?.value) return []
+  const parsed = JSON.parse(data.value)
+  return Array.isArray(parsed) ? parsed.map(Number) : []
+}
+
+export async function setPreorderProductIdsRemote(ids: number[]): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('app_config').upsert({ key: 'preorderProductIds', value: JSON.stringify(ids) })
+}

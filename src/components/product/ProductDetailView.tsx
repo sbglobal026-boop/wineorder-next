@@ -130,6 +130,8 @@ export default function ProductDetailView({
   const images = [product.imageUrl, ...(product.extraImages ?? [])].filter(Boolean) as string[]
   const gradient = categoryGradient[product.category] ?? categoryGradient['로제']
   const isSoldOut = (product.stock ?? 1) === 0
+  // 예약 주문 상품 — 재고 상품과 배송 기간이 달라 상세에서도 알려줌
+  const isPreorder = config.preorderWineIds.includes(product.id)
 
   // 5초마다 자동 슬라이드
   useEffect(() => {
@@ -377,7 +379,12 @@ export default function ProductDetailView({
             </div>
           )}
 
-          <div className="text-[12px] tracking-[0.22em] uppercase text-[#0e3719] mb-3">{eyebrow === catLabel ? catLabel : `${eyebrow} · ${catLabel}`}</div>
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="text-[12px] tracking-[0.22em] uppercase text-[#0e3719]">{eyebrow === catLabel ? catLabel : `${eyebrow} · ${catLabel}`}</span>
+            {isPreorder && (
+              <span className="text-[11px] tracking-[0.12em] border border-[#c79a4e] text-[#8a5a12] rounded-full px-2.5 py-0.5">Preorder</span>
+            )}
+          </div>
           <h1 className="font-[family-name:var(--font-playfair-display)] text-[34px] md:text-[42px] leading-[1.1] text-[#1C1A17] mb-4">
             {product.name}
           </h1>
@@ -421,7 +428,7 @@ export default function ProductDetailView({
             <div className="flex items-center gap-3.5 text-[12.5px] text-[#605d5d]">
               <span className="inline-flex items-center gap-1.5">
                 <Truck size={15} strokeWidth={1.6} className="text-[#9b9797]" />
-                {isSoldOut ? '입고 후 발송' : '7일 이내 수령'}
+                {isPreorder ? '예약 주문 · 14일~2개월' : isSoldOut ? '입고 후 발송' : '7일 이내 수령'}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${isSoldOut ? 'bg-[#c9c4c4]' : 'bg-[#2F8F4E]'}`} />

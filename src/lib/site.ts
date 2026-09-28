@@ -6,7 +6,7 @@ export const SITE_DESCRIPTION =
 
 // 검색엔진에 노출할 안내 페이지 (자주 바뀌지 않는 고정 주소)
 export const STATIC_PATHS = [
-  '/', '/events/wines', '/events/food', '/events/winery',
+  '/', '/events/top-drop', '/events/preorder', '/events/wines', '/events/food', '/events/winery',
   '/journal', '/blog/wine', '/blog/food-drink', '/blog/travel', '/blog/monthly-table',
   '/about', '/qna', '/notices', '/cs-board', '/shipping-guide', '/returns',
   '/ueber-uns', '/agb', '/datenschutz', '/impressum',

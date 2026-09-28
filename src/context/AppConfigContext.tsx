@@ -6,6 +6,8 @@ import {
   fetchProducts,
   fetchFeaturedProductIds,
   setFeaturedProductIdsRemote,
+  fetchPreorderProductIds,
+  setPreorderProductIdsRemote,
 } from '@/lib/products'
 import { fetchBannerSlides, updateBannerSlideRow } from '@/lib/banners'
 
@@ -33,6 +35,7 @@ export type CartItem = {
 
 export type AppConfig = {
   featuredWineIds: number[]
+  preorderWineIds: number[]
   bannerSlides: BannerSlide[]
   products: Product[]
   approvedWriters: string[]
@@ -45,6 +48,7 @@ type AppConfigContextType = {
   productsLoaded: boolean
   bannerSlidesLoaded: boolean
   toggleFeaturedWine: (id: number) => void
+  togglePreorderWine: (id: number) => void
   updateBannerSlide: (slide: BannerSlide) => void
   approveWriter: (email: string) => void
   revokeWriter: (email: string) => void
@@ -70,6 +74,7 @@ const defaultBannerSlides: BannerSlide[] = [
 
 const defaultConfig: AppConfig = {
   featuredWineIds: [1],
+  preorderWineIds: [],
   bannerSlides: defaultBannerSlides,
   products: [],
   approvedWriters: [],
@@ -145,6 +150,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     })
     fetchFeaturedProductIds().then(ids => {
       setConfig(prev => ({ ...prev, featuredWineIds: ids }))
+    })
+    fetchPreorderProductIds().then(ids => {
+      setConfig(prev => ({ ...prev, preorderWineIds: ids }))
     })
     fetchBannerSlides().then(bannerSlides => {
       if (bannerSlides.length > 0) setConfig(prev => ({ ...prev, bannerSlides }))
@@ -224,6 +232,16 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         : [...prev.featuredWineIds, id]
       setFeaturedProductIdsRemote(next)
       return { ...prev, featuredWineIds: next }
+    })
+  }
+
+  const togglePreorderWine = (id: number) => {
+    setConfig(prev => {
+      const next = prev.preorderWineIds.includes(id)
+        ? prev.preorderWineIds.filter(existingId => existingId !== id)
+        : [...prev.preorderWineIds, id]
+      setPreorderProductIdsRemote(next)
+      return { ...prev, preorderWineIds: next }
     })
   }
 
@@ -322,7 +340,7 @@ const clearCart = () => {
 
   return (
     <AppConfigContext.Provider value={{
-      config, productsLoaded, bannerSlidesLoaded, toggleFeaturedWine,
+      config, productsLoaded, bannerSlidesLoaded, toggleFeaturedWine, togglePreorderWine,
       updateBannerSlide,
       approveWriter, revokeWriter,
       addFixedCost, deleteFixedCost,

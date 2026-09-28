@@ -21,7 +21,7 @@ function fmt(n: number): string {
 }
 
 export default function ProductGridCard({ product, isNew = false }: { product: Product; isNew?: boolean }) {
-  const { addToCart, openCart } = useAppConfig()
+  const { config, addToCart, openCart } = useAppConfig()
   const href = product.type === 'wine' ? `/events/wines/${product.id}` : `/events/food/${product.id}`
   const meta = CATEGORY_META[product.category] ?? { label: '', bg: 'radial-gradient(90% 120% at 70% 10%, #f7e7cf, #f1d6b0)' }
   const firstCriticRating = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean)[0]
@@ -31,6 +31,8 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
   const isLowStock = stock > 0 && stock <= 3
   // 배지 우선순위: 품절임박(실데이터) > 신상(임시 placeholder, isNew prop 전달 시)
   const badge = isLowStock ? '품절임박' : isNew ? '신상' : null
+  // 예약 주문 상품은 바로 배송되지 않으므로 카드에서 바로 알 수 있게 표시
+  const isPreorder = config.preorderWineIds.includes(product.id)
 
   return (
     <div className="cutecard group relative flex flex-col rounded-[24px] border border-[#eae7e7] bg-[#FFFFFF] overflow-hidden">
@@ -44,6 +46,11 @@ export default function ProductGridCard({ product, isNew = false }: { product: P
         {badge && !isSoldOut && (
           <span className="text-[11px] tracking-[0.12em] border border-[#5C7A63] text-[#0e3719] bg-[#FFFFFF] rounded-full px-3 py-1">
             {badge}
+          </span>
+        )}
+        {isPreorder && (
+          <span className="text-[11px] tracking-[0.12em] border border-[#c79a4e] text-[#8a5a12] bg-[#FFFFFF] rounded-full px-3 py-1">
+            Preorder
           </span>
         )}
       </div>

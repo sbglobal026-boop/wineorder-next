@@ -11,17 +11,19 @@ import TierBadge from '@/components/member/TierBadge'
 
 type NavItem = { label: string; href: string; children?: { label: string; href: string }[] }
 
-// 메인(/) = Top Drop 목록. 안내·블로그·저널 메뉴바 맨 앞에만 붙이고,
-// Top Drop 메뉴와 같은 곳을 가리키므로 두 메뉴가 함께 보이는 곳(쇼핑 메뉴바·기본 메뉴바)에서는 뺌
+// 메인(/) = 최신 Top Drop + 최신 Preorder. 안내·블로그·저널 메뉴바 맨 앞에만 붙이고,
+// Home 메뉴와 같은 곳을 가리키므로 두 메뉴가 함께 보이는 곳(쇼핑 메뉴바·기본 메뉴바)에서는 뺌
 const homeItem: NavItem = { label: 'Home', href: '/' }
 
 const navItems: NavItem[] = [
   { label: '소개', href: '/about' },
   { label: 'QnA', href: '/qna' },
   {
-    label: 'Top Drop',
+    label: 'Home',
     href: '/',
     children: [
+      { label: 'Top Drop', href: '/events/top-drop' },
+      { label: 'Preorder', href: '/events/preorder' },
       { label: 'Wine', href: '/events/wines' },
       { label: 'Food', href: '/events/food' },
     ],
@@ -47,7 +49,9 @@ const navItems: NavItem[] = [
 
 // 메인(/)·/events 계열 페이지 전용 평탄화 메뉴 (Top Drop 하위메뉴를 상단으로 올림, 나머지 숨김)
 const eventsNav: NavItem[] = [
-  { label: 'Top Drop', href: '/' },
+  { label: 'Home', href: '/' },
+  { label: 'Top Drop', href: '/events/top-drop' },
+  { label: 'Preorder', href: '/events/preorder' },
   { label: 'Wine', href: '/events/wines' },
   { label: 'Food', href: '/events/food' },
   { label: 'Winery', href: '/events/winery' },

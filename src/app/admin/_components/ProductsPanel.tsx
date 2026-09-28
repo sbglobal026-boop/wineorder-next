@@ -491,7 +491,7 @@ function plainTextToHtml(text: string): string {
 }
 
 export default function ProductsPanel() {
-  const { config, toggleFeaturedWine, refreshProducts } = useAppConfig()
+  const { config, toggleFeaturedWine, togglePreorderWine, refreshProducts } = useAppConfig()
   const [products, setProducts] = useState<Product[]>([])
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Product | null>(null)
@@ -807,6 +807,7 @@ export default function ProductsPanel() {
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">가격</th>
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[70px]">재고</th>
             <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">Top Drop</th>
+            <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2 w-[100px]">Preorder</th>
             <th className="px-3 py-2 w-[130px]"></th>
           </tr>
         </thead>
@@ -868,6 +869,23 @@ export default function ProductsPanel() {
                       <button
                         onClick={() => toggleFeaturedWine(product.id)}
                         className="text-xs text-gray-500 hover:text-[#0e3719] border border-gray-200 hover:border-[#0e3719]/40 hover:bg-[#0e3719]/5 px-2 py-1 rounded-full transition-colors"
+                      >
+                        선택
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-3 py-1.5">
+                    {config.preorderWineIds.includes(product.id) ? (
+                      <button
+                        onClick={() => togglePreorderWine(product.id)}
+                        className="text-xs font-bold text-[#8a5a12] bg-[#8a5a12]/10 border border-[#8a5a12]/30 hover:bg-[#8a5a12]/20 px-2 py-1 rounded-full whitespace-nowrap transition-colors"
+                      >
+                        ✓ Preorder
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => togglePreorderWine(product.id)}
+                        className="text-xs text-gray-500 hover:text-[#8a5a12] border border-gray-200 hover:border-[#8a5a12]/40 hover:bg-[#8a5a12]/5 px-2 py-1 rounded-full transition-colors"
                       >
                         선택
                       </button>
