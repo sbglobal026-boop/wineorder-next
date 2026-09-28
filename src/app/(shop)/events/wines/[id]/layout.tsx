@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { createPublicClient } from '@/lib/supabase/public'
 import { SITE_NAME } from '@/lib/site'
-import { productJsonLd, ProductSeoRow } from '@/lib/seo'
+import { productJsonLd, plainTextFromHtml, ProductSeoRow } from '@/lib/seo'
 
 // 상품별 검색 제목·설명 (상품 화면 자체는 클라이언트 컴포넌트라 이 껍데기에서 처리)
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   // 상위 페이지가 제목을 덮어써 서식(| table code)이 끊기므로 여기서 직접 붙임
   const title = `${[data.name, data.origin, data.category].filter(Boolean).join(' | ')} | ${SITE_NAME}`
-  const description = (data.description ?? '').replace(/\s+/g, ' ').trim().slice(0, 150)
+  const description = plainTextFromHtml(data.description).slice(0, 150)
     || `${data.name} — ${SITE_NAME}에서 만나보세요.`
 
   return {

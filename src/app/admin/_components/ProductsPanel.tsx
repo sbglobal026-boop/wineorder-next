@@ -7,6 +7,7 @@ import { fetchAdminProducts, createProductRow, updateProductRow, deleteProductRo
 import { productsToCsv, parseProductsCsv, downloadCsv } from '@/lib/productsCsv'
 import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 import { fetchAdminWineries, type Winery } from '@/lib/wineries'
+import RichTextEditor from '@/components/blog/RichTextEditor'
 
 type Category = Product['category']
 const wineCategories: Category[] = ['레드', '화이트', '로제', '스파클링']
@@ -122,7 +123,7 @@ function ProductForm({
         grapeVariety: result.grapeVariety || data.grapeVariety,
         volume: result.volume || data.volume,
         alcohol: result.alcohol || data.alcohol,
-        description: result.description || data.description,
+        description: result.description ? plainTextToHtml(result.description) : data.description,
       })
       setUncertainFields(Array.isArray(result.uncertain) ? result.uncertain : [])
     } catch {
@@ -396,12 +397,12 @@ function ProductForm({
       </div>
       <div className="md:col-span-3">
         <label className="block text-xs font-semibold text-gray-600 mb-1">상품 설명</label>
-        <textarea
+        {/* 블로그와 같은 편집기 — 글 중간에 사진을 넣을 수 있음 */}
+        <RichTextEditor
           value={data.description}
-          onChange={(e) => onChange({ ...data, description: e.target.value })}
-          rows={4}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none"
-          placeholder="예: 보르도의 왕이라 불리는 명품 레드와인"
+          onChange={(html) => onChange({ ...data, description: html })}
+          placeholder="상품 설명을 적어주세요. 사진 버튼으로 글 중간에 사진을 넣을 수 있습니다."
+          onUploadImages={(files) => Promise.all(files.map(uploadProductImage))}
         />
       </div>
       <div className="md:col-span-3 flex items-center gap-2">
@@ -479,6 +480,15 @@ function FixedCostsSection() {
     </div>
   )
 }*/
+
+// AI 자동 채우기는 줄바꿈만 있는 일반 글을 돌려주므로, 편집기가 문단으로 인식하도록 감싸준다
+function plainTextToHtml(text: string): string {
+  return text
+    .split(/\n{2,}/)
+    .map(block => `<p>${block.trim().replace(/\n/g, '<br />')}</p>`)
+    .filter(p => p !== '<p></p>')
+    .join('')
+}
 
 export default function ProductsPanel() {
   const { config, toggleFeaturedWine, refreshProducts } = useAppConfig()
@@ -603,7 +613,7 @@ export default function ProductsPanel() {
   const handleDelete = async (id: number) => {
     if (deleteConfirm === id) {
       const target = products.find(p => p.id === id)
-      await deleteProductRow(id, target?.imageUrl, target?.extraImages)
+      await deleteProductRow(id, target?.imageUrl, target?.extraImages, target?.description)
       setProducts(prev => prev.filter(p => p.id !== id))
       await refreshProducts()
       setDeleteConfirm(null)

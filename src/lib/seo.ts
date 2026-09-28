@@ -17,7 +17,7 @@ export function productJsonLd(product: ProductSeoRow, section: 'wines' | 'food')
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: (product.description ?? '').replace(/\s+/g, ' ').trim() || undefined,
+    description: plainTextFromHtml(product.description) || undefined,
     image: product.image_url ?? undefined,
     category: product.category ?? undefined,
     brand: product.origin ? { '@type': 'Brand', name: product.origin } : undefined,
@@ -43,4 +43,15 @@ export function organizationJsonLd() {
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
   }
+}
+
+// 상품 설명에 사진·서식이 섞인 글(HTML)이 들어올 수 있으므로,
+// 검색 결과에 보일 요약문에서는 태그를 걷어내고 글자만 남긴다.
+export function plainTextFromHtml(html: string | null | undefined): string {
+  return (html ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&[a-z]+;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }

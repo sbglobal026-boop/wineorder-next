@@ -118,8 +118,16 @@ export async function updateProductRow(product: Product): Promise<void> {
   if (!res.ok) throw await toError(res, '상품 수정에 실패했습니다')
 }
 
-export async function deleteProductRow(id: number, imageUrl?: string, extraImages?: string[]): Promise<void> {
-  const imagesToRemove = [imageUrl, ...(extraImages ?? [])].filter((url): url is string => !!url)
+// 상품 설명(HTML) 안에 넣은 사진 주소를 모두 찾아낸다 — 상품을 지울 때 저장소에서도 같이 지우기 위함
+export function imageUrlsInHtml(html: string | null | undefined): string[] {
+  const urls = new Set<string>()
+  for (const m of (html ?? '').matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) urls.add(m[1])
+  return [...urls]
+}
+
+export async function deleteProductRow(id: number, imageUrl?: string, extraImages?: string[], description?: string): Promise<void> {
+  const imagesToRemove = [imageUrl, ...(extraImages ?? []), ...imageUrlsInHtml(description)]
+    .filter((url): url is string => !!url)
   if (imagesToRemove.length > 0) {
     await removeStorageFiles('product-images', imagesToRemove)
   }
