@@ -2,8 +2,9 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Grape, Wine, MapPin, Star, Building2, Truck } from 'lucide-react'
 import { Product } from '@/data/products'
+import { fetchWineryByProductId, type Winery } from '@/lib/wineries'
 import { useAppConfig } from '@/context/AppConfigContext'
 import { useAuth } from '@/context/AuthContext'
 import { fetchReviews, addReview, deleteReview, ProductReview } from '@/lib/reviews'
@@ -13,6 +14,8 @@ import { VENDOR_MARKETPLACE_ENABLED } from '@/lib/featureFlags'
 import { calcDuty } from '@/lib/orderPricing'
 import { useMemberTiers } from '@/lib/memberBadges'
 import TierBadge from '@/components/member/TierBadge'
+import { formatEur } from '@/lib/formatPrice'
+import BlogContent from '@/components/blog/BlogContent'
 
 // 카테고리별 상단 카드 그라데이션 (카드 컨셉)
 const categoryGradient: Record<string, string> = {
@@ -28,9 +31,13 @@ function extractVintage(name: string): string {
   return match ? match[0] : '—'
 }
 
-function fmt(n: number): string {
-  return '€' + n.toLocaleString()
+// 예전에 저장된 설명은 태그 없는 일반 글, 새로 쓴 설명은 사진이 섞인 HTML.
+// 둘 다 깨지지 않게 형태를 보고 나눠서 그린다.
+function looksLikeHtml(text: string): boolean {
+  return /<(p|div|img|h2|h3|ul|ol|br|hr|blockquote|span|strong|em)\b/i.test(text)
 }
+
+const fmt = formatEur
 
 export default function ProductDetailView({
   product,
@@ -50,6 +57,16 @@ export default function ProductDetailView({
   const router = useRouter()
   const recommended = config.products.filter(p => p.id !== product.id).slice(0, 8)
   const foodGuide = config.products.find(p => p.type === 'food')
+
+  // 연결된 와이너리 — 경로 표시와 "와이너리 보기" 버튼에 사용
+  const [winery, setWinery] = useState<Winery | null>(null)
+  useEffect(() => {
+    let ignore = false
+    fetchWineryByProductId(product.id)
+      .then(w => { if (!ignore) setWinery(w) })
+      .catch(() => { if (!ignore) setWinery(null) })
+    return () => { ignore = true }
+  }, [product.id])
 
   // 위시리스트
   const [wished, setWished] = useState(false)
@@ -182,36 +199,66 @@ export default function ProductDetailView({
 
   const criticRatings = (product.criticRatings ?? '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
 
-  // 상품 정보 스펙표 (용량·알코올은 데이터 필드 없음 → 껍데기 '—')
-  const specRows = [
-    ...(VENDOR_MARKETPLACE_ENABLED && product.vendorName ? [{ k: '벤더', v: product.vendorName }] : []),
-    { k: '원산지', v: product.origin },
-    { k: '품종', v: product.grapeVariety || '—' },
-    { k: '빈티지', v: extractVintage(product.name) },
-    { k: '평가', v: criticRatings.length > 0 ? criticRatings.join(', ') : '—' },
-    { k: '용량', v: product.volume ? `${product.volume}ml` : '—' },
-    { k: '알코올', v: product.alcohol ? `${product.alcohol}%` : '—' },
+  const catLabel = product.category
+
+  // 제목 아래 아이콘 스펙 — 값이 있는 줄만 보여줌 (빈 줄로 '—'가 늘어서지 않게)
+  const vintage = extractVintage(product.name)
+  const bottleLine = [
+    catLabel,
+    product.alcohol ? `${product.alcohol}% Vol.` : '',
+    product.volume ? `${product.volume}ml` : '',
+  ].filter(Boolean).join(' · ')
+  const specs: { icon: React.ReactNode; lines: string[]; muted?: boolean }[] = [
+    ...(product.grapeVariety ? [{ icon: <Grape size={20} strokeWidth={1.5} />, lines: [product.grapeVariety] }] : []),
+    ...(bottleLine ? [{ icon: <Wine size={20} strokeWidth={1.5} />, lines: [bottleLine, vintage !== '—' ? `빈티지 ${vintage}` : ''].filter(Boolean) }] : []),
+    // 평론가 점수는 어드민에 입력이 없어도 자리를 비워 둔 채로 항상 보여줌
+    criticRatings.length > 0
+      ? { icon: <Star size={20} strokeWidth={1.5} />, lines: criticRatings }
+      : { icon: <Star size={20} strokeWidth={1.5} />, lines: ['평가 미등록'], muted: true },
+    ...(product.origin || winery ? [{
+      icon: <MapPin size={20} strokeWidth={1.5} />,
+      lines: [[product.origin, winery?.region].filter(Boolean).join(', ')].filter(Boolean),
+    }] : []),
+    ...(VENDOR_MARKETPLACE_ENABLED && product.vendorName
+      ? [{ icon: <Building2 size={20} strokeWidth={1.5} />, lines: [product.vendorName] }] : []),
   ]
+
+  // 리터당 가격 (750ml 등 용량이 있을 때만)
+  const volumeMl = Number(product.volume)
+  const pricePerLiter = volumeMl > 0 ? product.price / (volumeMl / 1000) : null
+
   const hashtags = [`#${product.category}`, product.type === 'wine' ? '#와인' : '#식품', '#선물추천']
 
   // 할인 표시용 껍데기 — 정가/할인율 필드가 데이터에 생기면 여기에 연결
   const originalPrice: number | null = null
   const discountRate: number | null = null
 
-  const catLabel = product.category
 
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(120% 90% at 15% 0%, #F9F4EE 0%, #F9F4EE 55%)' }}>
 
-      {/* 뒤로가기 */}
+      {/* 경로 표시 (홈 › 목록 › 원산지 › 와이너리 › 상품명) */}
       {backLink && (
         <div className="max-w-[1240px] mx-auto px-5 pt-8">
-          <Link
-            href={backLink.href}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#0e3719] hover:opacity-70 transition-opacity no-underline"
-          >
-            <ChevronLeft size={14} strokeWidth={2.5} /> {backLink.label}
-          </Link>
+          <nav aria-label="현재 위치" className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[12.5px] text-[#9b9797]">
+            <Link href="/" className="hover:text-[#0e3719] transition-colors no-underline">홈</Link>
+            <ChevronRight size={13} strokeWidth={2} className="text-[#c9c4c4]" />
+            <Link href={backLink.href} className="hover:text-[#0e3719] transition-colors no-underline">{backLink.label}</Link>
+            {product.origin && (
+              <>
+                <ChevronRight size={13} strokeWidth={2} className="text-[#c9c4c4]" />
+                <span>{product.origin}</span>
+              </>
+            )}
+            {winery && (
+              <>
+                <ChevronRight size={13} strokeWidth={2} className="text-[#c9c4c4]" />
+                <Link href={`/events/winery/${winery.slug}`} className="hover:text-[#0e3719] transition-colors no-underline">{winery.name}</Link>
+              </>
+            )}
+            <ChevronRight size={13} strokeWidth={2} className="text-[#c9c4c4]" />
+            <span className="text-[#1C1A17]">{product.name}</span>
+          </nav>
         </div>
       )}
 
@@ -330,27 +377,69 @@ export default function ProductDetailView({
             </div>
           )}
 
-          <div className="text-[12px] tracking-[0.22em] uppercase text-[#0e3719] mb-3">{eyebrow} · {catLabel}</div>
+          <div className="text-[12px] tracking-[0.22em] uppercase text-[#0e3719] mb-3">{eyebrow === catLabel ? catLabel : `${eyebrow} · ${catLabel}`}</div>
           <h1 className="font-[family-name:var(--font-playfair-display)] text-[34px] md:text-[42px] leading-[1.1] text-[#1C1A17] mb-4">
             {product.name}
           </h1>
           {/* 설명은 아래 "테이스팅 노트"에서만 보여줌 (같은 글이 두 번 나오지 않게) */}
 
-          {/* 가격 (+ 할인 껍데기) */}
-          <div className="flex items-baseline gap-2.5 mb-1">
-            <span className="font-[family-name:var(--font-playfair-display)] text-[34px] text-[#1C1A17]">{fmt(product.price)}</span>
-            {originalPrice && (
-              <span className="text-[15px] text-[#9b9797] line-through">{fmt(originalPrice)}</span>
-            )}
-            {discountRate && (
-              <span className="text-[12px] font-semibold text-[#0e3719] border border-[#5C7A63] rounded-full px-2.5 py-1">{discountRate}% OFF</span>
-            )}
+          {/* 와이너리로 이동 (상품에 와이너리가 연결된 경우만) */}
+          {winery && (
+            <Link
+              href={`/events/winery/${winery.slug}`}
+              className="self-start w-fit inline-flex items-center gap-1.5 mb-5 px-4 py-2 rounded-full border border-[#d7d3d3] text-[13px] text-[#1C1A17] hover:border-[#0e3719] hover:text-[#0e3719] transition-colors no-underline"
+            >
+              <Building2 size={14} strokeWidth={1.8} /> 와이너리 보기
+            </Link>
+          )}
+
+          {/* 상품 정보 — 아이콘 + 줄 구분 (참고 사이트 구조) */}
+          {specs.length > 0 && (
+            <div className="mb-6 border-t border-[#eae7e7]">
+              {specs.map((spec, i) => (
+                <div key={i} className="flex items-start gap-4 py-3.5 border-b border-[#eae7e7]">
+                  <span className="shrink-0 w-8 flex justify-center text-[#9b9797] pt-0.5">{spec.icon}</span>
+                  <div className={`text-[14.5px] leading-[1.6] ${spec.muted ? 'text-[#c2bdbd]' : 'text-[#1C1A17]'}`}>
+                    {spec.lines.map(line => <p key={line}>{line}</p>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 가격 (+ 할인 껍데기) — 오른쪽에 재고·배송 예상 */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 mb-1">
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-[family-name:var(--font-playfair-display)] text-[34px] text-[#1C1A17]">{fmt(product.price)}</span>
+              {originalPrice && (
+                <span className="text-[15px] text-[#9b9797] line-through">{fmt(originalPrice)}</span>
+              )}
+              {discountRate && (
+                <span className="text-[12px] font-semibold text-[#0e3719] border border-[#5C7A63] rounded-full px-2.5 py-1">{discountRate}% OFF</span>
+              )}
+            </div>
+            <div className="flex items-center gap-3.5 text-[12.5px] text-[#605d5d]">
+              <span className="inline-flex items-center gap-1.5">
+                <Truck size={15} strokeWidth={1.6} className="text-[#9b9797]" />
+                {isSoldOut ? '입고 후 발송' : '7일 이내 수령'}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${isSoldOut ? 'bg-[#c9c4c4]' : 'bg-[#2F8F4E]'}`} />
+                {isSoldOut ? '품절' : '재고 있음'}
+              </span>
+            </div>
           </div>
+
+          {/* 가격 밑 잔글씨 — 리터당 가격 · 상품번호 */}
+          <p className="text-[12px] text-[#9b9797] mb-1">
+            배송비 별도
+            {pricePerLiter && <> · {product.volume}ml · 리터당 {fmt(Math.round(pricePerLiter * 100) / 100)}</>}
+            {' · 상품번호 '}{product.id}
+          </p>
 
           {showDuty && (
             <div className="mb-5">
               <p className="text-xs text-[#0e3719]">* 예상 원화가 약 {priceKrw ? `${Math.round(priceKrw).toLocaleString()}원` : '환율 로딩중'} · 예상 관세 약 {duty ? `${duty.total.toLocaleString()}원` : '계산중'}</p>
-              <p className="text-xs text-[#0e3719] mt-0.5">* 배송비 별도</p>
               <p className="text-xs text-[#0e3719]/70 mt-0.5">* 실제 결제 금액은 카드사 환율에 따라 달라질 수 있습니다</p>
             </div>
           )}
@@ -391,27 +480,16 @@ export default function ProductDetailView({
           <h3 className="font-[family-name:var(--font-playfair-display)] text-[28px] md:text-[30px] text-[#1C1A17]">상품 상세 설명</h3>
         </div>
 
-        {/* 글 설명 */}
-        <div className="grid md:grid-cols-[1.4fr_1fr] gap-8 md:gap-12">
-          <div>
-            <h4 className="font-[family-name:var(--font-playfair-display)] text-[24px] text-[#1C1A17] mb-3.5">테이스팅 노트</h4>
-            <p className="text-[15px] leading-[1.85] text-[#605d5d] whitespace-pre-line">{product.description}</p>
-          </div>
-          <div className="md:border-l md:border-[#eae7e7] md:pl-8">
-            <h4 className="font-[family-name:var(--font-playfair-display)] text-[20px] text-[#1C1A17] mb-4">상품 정보</h4>
-            <div className="flex flex-col gap-3 text-sm">
-              {specRows.map((row, i) => (
-                <div key={row.k} className={`flex justify-between gap-4 ${i < specRows.length - 1 ? 'border-b border-dotted border-[#d7d3d3] pb-2' : ''}`}>
-                  <span className="text-[#9b9797]">{row.k}</span>
-                  <span className="text-[#1C1A17] text-right">{row.v}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {hashtags.map(tag => (
-                <span key={tag} className="text-[12px] text-[#0e3719] border border-[#e2d9c8] rounded-full px-3 py-1">{tag}</span>
-              ))}
-            </div>
+        {/* 글 설명 — 상품 정보 표는 위쪽(제목 아래)으로 옮겨서 여기서는 설명만 보여줌 */}
+        <div className="max-w-[760px] mx-auto">
+          <h4 className="font-[family-name:var(--font-playfair-display)] text-[24px] text-[#1C1A17] mb-3.5">테이스팅 노트</h4>
+          {looksLikeHtml(product.description ?? '')
+            ? <BlogContent html={product.description ?? ''} className="text-[15px] leading-[1.85] text-[#605d5d]" />
+            : <p className="text-[15px] leading-[1.85] text-[#605d5d] whitespace-pre-line">{product.description}</p>}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {hashtags.map(tag => (
+              <span key={tag} className="text-[12px] text-[#0e3719] border border-[#e2d9c8] rounded-full px-3 py-1">{tag}</span>
+            ))}
           </div>
         </div>
       </section>

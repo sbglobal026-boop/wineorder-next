@@ -80,6 +80,19 @@ export async function fetchWineryProductIds(slug: string): Promise<number[]> {
   return (data ?? []).map(row => row.product_id as number)
 }
 
+// 상품 하나에 연결된 와이너리 (상품 상세 페이지의 경로 표시·와이너리 버튼용)
+// products_public 뷰에는 winery_id가 없으므로 product_wineries 뷰를 거쳐 찾는다
+export async function fetchWineryByProductId(productId: number): Promise<Winery | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('product_wineries')
+    .select('winery_slug')
+    .eq('product_id', productId)
+    .maybeSingle()
+  if (error || !data?.winery_slug) return null
+  return fetchWineryBySlug(data.winery_slug as string)
+}
+
 // ===== 어드민 =====
 export async function fetchAdminWineries(): Promise<Winery[]> {
   const res = await fetch('/api/admin/wineries')
