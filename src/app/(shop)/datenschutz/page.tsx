@@ -11,8 +11,8 @@ export default function DatenschutzPage() {
       <h2 className="text-lg font-bold text-gray-900 mt-8 mb-2">1. Verantwortlicher</h2>
       <p className="mb-4">
         Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br />
-        sbglobal UG (haftungsbeschränkt)<br />
-        Musterstraße 1, 10115 Berlin, Deutschland<br />
+        Eunkyung Lee (Einzelunternehmer)<br />
+        Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland<br />
         E-Mail: sbglobal026@gmail.com
       </p>
 

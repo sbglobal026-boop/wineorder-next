@@ -59,8 +59,8 @@ export default function Footer() {
 
         {/* 사업자 정보 */}
         <div className="border-t border-[#FBFAF7]/15 pt-6 text-xs text-[#FBFAF7]/50 space-y-1.5">
-          <p>sbglobal UG (haftungsbeschränkt) &nbsp;|&nbsp; Geschäftsführer: Max Mustermann &nbsp;|&nbsp; Handelsregister: Amtsgericht Berlin-Charlottenburg, HRB 000000 B</p>
-          <p>USt-IdNr.: DE000000000 &nbsp;|&nbsp; Sitz der Gesellschaft: Musterstraße 1, 10115 Berlin, Deutschland</p>
+          <p>Eunkyung Lee (Einzelunternehmer) &nbsp;|&nbsp; Inhaber: Eunkyung Lee &nbsp;|&nbsp; USt-IdNr.: DE370567813</p>
+          <p>Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland &nbsp;|&nbsp; E-Mail: sbglobal026@gmail.com</p>
           <p className="pt-2">© 2026 table code. All rights reserved.</p>
         </div>
         </div>
