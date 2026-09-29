@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { removeStorageFiles } from '@/lib/uploadImage'
 
 // 와이너리(생산자) — 목록(/events/winery)·상세(/events/winery/[slug]) 페이지와 어드민에서 사용
 export type Winery = {
@@ -118,7 +119,19 @@ export async function updateWinery(id: number, input: WineryInput): Promise<void
   if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? '저장하지 못했습니다')
 }
 
-export async function deleteWinery(id: number): Promise<void> {
+// 소개글(HTML) 안에 넣은 사진 주소를 모두 찾아낸다 — 와이너리를 지울 때 저장소에서도 같이 지우기 위함
+export function imageUrlsInHtml(html: string | null | undefined): string[] {
+  const urls = new Set<string>()
+  for (const m of (html ?? '').matchAll(/<img[^>]+src=["']([^"']+)["']/gi)) urls.add(m[1])
+  return [...urls]
+}
+
+export async function deleteWinery(id: number, imageUrl?: string | null, description?: string): Promise<void> {
+  // 대표 사진과 소개글 속 사진을 저장소에서 먼저 정리 (지금까지는 사진이 그대로 남아 있었음)
+  const imagesToRemove = [imageUrl, ...imageUrlsInHtml(description)].filter((url): url is string => !!url)
+  if (imagesToRemove.length > 0) {
+    await removeStorageFiles('banner-images', imagesToRemove)
+  }
   const res = await fetch(`/api/admin/wineries/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? '삭제하지 못했습니다')
 }

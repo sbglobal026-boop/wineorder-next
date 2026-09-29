@@ -6,6 +6,12 @@ import { useAppConfig } from '@/context/AppConfigContext'
 import ProductGridCard from '@/components/product/ProductGridCard'
 import LoadingDots from '@/components/LoadingDots'
 import { fetchWineryBySlug, fetchWineryProductIds, type Winery } from '@/lib/wineries'
+import BlogContent from '@/components/blog/BlogContent'
+
+// 예전에 저장된 소개글은 태그 없는 일반 글, 새로 쓴 글은 사진이 섞인 HTML
+function looksLikeHtml(text: string): boolean {
+  return /<(p|div|img|h2|h3|ul|ol|br|hr|blockquote|span|strong|em)\b/i.test(text)
+}
 
 // 와이너리 상세 — 위에 사진·이름, 가운데 이 와이너리 상품, 맨 아래 소개글
 export default function WineryDetailPage() {
@@ -98,7 +104,9 @@ export default function WineryDetailPage() {
           <h2 className="font-[family-name:var(--font-playfair-display)] text-[24px] md:text-[30px] text-[#1C1A17] mb-5">
             {winery.name} 이야기
           </h2>
-          <p className="text-[15px] leading-[1.9] text-[#605d5d] whitespace-pre-wrap">{winery.description}</p>
+          {looksLikeHtml(winery.description)
+            ? <BlogContent html={winery.description} className="text-[15px] leading-[1.9] text-[#605d5d]" />
+            : <p className="text-[15px] leading-[1.9] text-[#605d5d] whitespace-pre-wrap">{winery.description}</p>}
         </section>
       )}
       {!winery.description && <div className="pb-20" />}

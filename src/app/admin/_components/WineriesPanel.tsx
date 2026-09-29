@@ -5,6 +5,7 @@ import {
   slugify, type Winery, type WineryInput,
 } from '@/lib/wineries'
 import { uploadImage } from '@/lib/uploadImage'
+import RichTextEditor from '@/components/blog/RichTextEditor'
 
 // 와이너리(생산자) 관리 — 여기서 등록한 와이너리를 상품 편집 화면에서 고르고, /events/winery 페이지에 표시됨
 const emptyForm: WineryInput = { slug: '', name: '', country: '', region: '', description: '', image_url: null }
@@ -83,7 +84,7 @@ export default function WineriesPanel() {
     setDeleteConfirm(null)
     setRowError('')
     try {
-      await deleteWinery(w.id)
+      await deleteWinery(w.id, w.image_url, w.description)
       await load()
     } catch (err) {
       setRowError(err instanceof Error ? err.message : '삭제하지 못했습니다')
@@ -151,12 +152,12 @@ export default function WineriesPanel() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">소개글</label>
-              <textarea
+              {/* 블로그와 같은 편집기 — 글 중간에 사진을 넣을 수 있음 */}
+              <RichTextEditor
                 value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={5}
-                className={`${inputCls} resize-none`}
-                placeholder="와이너리 소개 — 고객 페이지의 상품 목록 아래에 표시됩니다"
+                onChange={html => setForm(f => ({ ...f, description: html }))}
+                placeholder="와이너리 소개 — 고객 페이지의 상품 목록 아래에 표시됩니다. 사진 버튼으로 글 중간에 사진을 넣을 수 있습니다."
+                onUploadImages={files => Promise.all(files.map(file => uploadImage(file, 'banner-images', 'wineries', 1600)))}
               />
             </div>
 
