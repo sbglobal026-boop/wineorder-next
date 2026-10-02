@@ -14,7 +14,7 @@ export default function ImpressumPage() {
       <p className="mb-4">Inhaber: Eunkyung Lee</p>
 
       <h2 className="text-lg font-bold text-gray-900 mt-8 mb-2">Kontakt</h2>
-      <p className="mb-4">E-Mail: sbglobal026@gmail.com</p>
+      <p className="mb-4">E-Mail: info@tablecodeeu.com</p>
 
       <h2 className="text-lg font-bold text-gray-900 mt-8 mb-2">Umsatzsteuer-ID</h2>
       <p className="mb-4">

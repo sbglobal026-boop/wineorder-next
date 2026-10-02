@@ -14,7 +14,7 @@ export default function AgbPage() {
         Anbieter:<br />
         Eunkyung Lee (Einzelunternehmer)<br />
         Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland<br />
-        E-Mail: sbglobal026@gmail.com<br />
+        E-Mail: info@tablecodeeu.com<br />
         USt-IdNr.: DE370567813
       </p>
 
@@ -77,7 +77,7 @@ export default function AgbPage() {
         benannter Dritter die Ware in Besitz genommen haben.
       </p>
       <p className="mb-4">
-        Um Ihr Widerrufsrecht auszuüben, informieren Sie uns per E-Mail an sbglobal026@gmail.com über
+        Um Ihr Widerrufsrecht auszuüben, informieren Sie uns per E-Mail an info@tablecodeeu.com über
         Ihren Entschluss. Zur Wahrung der Frist genügt die rechtzeitige Absendung der Mitteilung.
       </p>
       <p className="mb-4">

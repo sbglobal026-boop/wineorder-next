@@ -13,7 +13,7 @@ export default function DatenschutzPage() {
         Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br />
         Eunkyung Lee (Einzelunternehmer)<br />
         Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland<br />
-        E-Mail: sbglobal026@gmail.com
+        E-Mail: info@tablecodeeu.com
       </p>
 
       <h2 className="text-lg font-bold text-gray-900 mt-8 mb-2">2. Erhebung und Speicherung personenbezogener Daten</h2>

@@ -52,7 +52,7 @@ export default function Footer() {
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-[#FBFAF7] mb-4">연락처.</h3>
             <ul className="space-y-2.5 text-sm text-[#FBFAF7]/70">
-              <li>sbglobal026@gmail.com</li>
+              <li>info@tablecodeeu.com</li>
             </ul>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function Footer() {
         {/* 사업자 정보 */}
         <div className="border-t border-[#FBFAF7]/15 pt-6 text-xs text-[#FBFAF7]/50 space-y-1.5">
           <p>Eunkyung Lee (Einzelunternehmer) &nbsp;|&nbsp; Inhaber: Eunkyung Lee &nbsp;|&nbsp; USt-IdNr.: DE370567813</p>
-          <p>Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland &nbsp;|&nbsp; E-Mail: sbglobal026@gmail.com</p>
+          <p>Richard-Wagner-Str. 13, 60318 Frankfurt am Main, Deutschland &nbsp;|&nbsp; E-Mail: info@tablecodeeu.com</p>
           <p className="pt-2">© 2026 table code. All rights reserved.</p>
         </div>
         </div>
