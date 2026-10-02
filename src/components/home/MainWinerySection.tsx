@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { fetchWineries, type Winery } from '@/lib/wineries'
 import LoadingDots from '@/components/LoadingDots'
+import { previewTextFromHtml } from '@/lib/sanitizeHtml'
 
 // 메인 Top Drop과 블로그 섹션 사이 — 와이너리를 작은 정사각형 카드로 보여주고 자동으로 옆으로 넘김
 const AUTO_SLIDE_MS = 4000
@@ -80,7 +81,10 @@ export default function MainWinerySection() {
             ref={trackRef}
             className="flex gap-5 items-stretch overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar py-2"
           >
-            {wineries.map(w => (
+            {wineries.map(w => {
+              // 소개글이 편집기(HTML) 형식이면 태그를 빼고 글자만 미리보기로 사용
+              const summary = w.description ? previewTextFromHtml(w.description) : ''
+              return (
               <Link
                 key={w.id}
                 href={`/events/winery/${w.slug}`}
@@ -106,12 +110,13 @@ export default function MainWinerySection() {
                   {(w.country || w.region) && (
                     <p className="mt-1 text-[12px] text-[#9b9797]">{[w.country, w.region].filter(Boolean).join(' · ')}</p>
                   )}
-                  {w.description && (
-                    <p className="mt-1.5 text-[12.5px] leading-snug text-[#605d5d] line-clamp-1">{w.description}</p>
+                  {summary && (
+                    <p className="mt-1.5 text-[12.5px] leading-snug text-[#605d5d] line-clamp-1">{summary}</p>
                   )}
                 </div>
               </Link>
-            ))}
+              )
+            })}
           </div>
 
           {canScroll && (

@@ -6,6 +6,7 @@ import {
 } from '@/lib/wineries'
 import { uploadImage } from '@/lib/uploadImage'
 import RichTextEditor from '@/components/blog/RichTextEditor'
+import { previewTextFromHtml } from '@/lib/sanitizeHtml'
 
 // 와이너리(생산자) 관리 — 여기서 등록한 와이너리를 상품 편집 화면에서 고르고, /events/winery 페이지에 표시됨
 const emptyForm: WineryInput = { slug: '', name: '', country: '', region: '', description: '', image_url: null }
@@ -226,7 +227,7 @@ export default function WineriesPanel() {
                 <p className="text-sm font-bold text-gray-900">{w.name}</p>
                 <p className="text-xs font-mono text-gray-400">/events/winery/{w.slug}</p>
                 <p className="text-xs text-gray-500">{[w.country, w.region].filter(Boolean).join(' · ') || '지역 미입력'}</p>
-                <p className="text-xs text-gray-400 line-clamp-2 mt-1">{w.description || '소개글 없음'}</p>
+                <p className="text-xs text-gray-400 line-clamp-2 mt-1">{(w.description && previewTextFromHtml(w.description)) || '소개글 없음'}</p>
                 <div className="flex items-center gap-2 mt-3">
                   <button onClick={() => openEdit(w)} className="text-xs border border-gray-200 hover:border-gray-400 text-gray-600 px-3 py-1.5 rounded-full transition-colors">
                     수정
