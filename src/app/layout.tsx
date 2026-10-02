@@ -8,6 +8,7 @@ import "./globals.css";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 import { organizationJsonLd } from "@/lib/seo";
 import Providers from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -86,6 +87,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
         />
         <Providers>{children}</Providers>
+        {/* Vercel 방문자/페이지뷰 집계 (배포된 사이트에서만 동작) */}
+        <Analytics />
       </body>
     </html>
   );
